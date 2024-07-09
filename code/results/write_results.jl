@@ -139,13 +139,13 @@ function save_simdata(
     model_df::DataFrame,
     seed::Int64,
 )
-    dir = pwd()
     # NOTE: CONVERSION DF TO STRING IS TMP SOLUTION, SHOULD BE FIXED BACK WHEN PACKAGES 
         #       ARE CONSISTENT AGAIN!
     # NOTE: CONVERSION DF TO STRING IS TMP SOLUTION, SHOULD BE FIXED BACK WHEN PACKAGES 
     #       ARE CONSISTENT AGAIN!
     #CSV.write(joinpath(dir, string(seed, "_agent.csv")), string.(agent_df))
-    CSV.write(joinpath("../data", string(seed, "_model.csv")), model_df)
+
+    CSV.write(joinpath(@__DIR__, "data", string(seed, "_model.csv")), model_df)
 
 end
 
@@ -156,9 +156,9 @@ function save_firm_data(
          
     #if first colum is named cp_i save it as "_cp_firm.csv"
     if "cp_i" in names(firm_df)
-        CSV.write(joinpath("../data/", string(seed, "_cp_firm.csv")), firm_df)
+        CSV.write(joinpath(@__DIR__, "data", string(seed, "_cp_firm.csv")), firm_df)
     else
-        CSV.write(joinpath("../data/", string(seed, "_kp_firm.csv")), firm_df)
+        CSV.write(joinpath(@__DIR__, "data", string(seed, "_kp_firm.csv")), firm_df)
     end
 
 end
@@ -194,7 +194,12 @@ function save_hh_shock_data(
 
         # Save data to CSV if t > t_warmup - 5 and t < t_warmup + 100
         file_name = "household_$(t)_hh.csv"
-        full_path = joinpath("../data/", "x_hh", file_name)
+        #full_path = joinpath("../data/", "x_hh", file_name)
+
+        full_path = joinpath(@__DIR__, "data", "x_hh", file_name)
+        # Ensure the directory exists
+        mkpath(dirname(full_path))
+
         CSV.write(full_path, df)
     end
 end
@@ -206,7 +211,6 @@ function save_final_dist(
     all_kp::Vector{Int}, 
     model::ABM
     )
-    dir = "../data/"
     # Save income data of households 
     df = DataFrame(
         all_I = map(hh_id -> model[hh_id].total_I, all_hh),
@@ -214,7 +218,7 @@ function save_final_dist(
         all_W = map(hh_id -> model[hh_id].W, all_hh),
         skills = map(hh_id -> model[hh_id].skill, all_hh)
     )
-    CSV.write(joinpath(dir, "final_income_dists.csv"), df)
+    CSV.write(joinpath(@__DIR__, "data", "final_income_dists.csv"), df)
 
 
     # Save sales, profits and market share of cp
@@ -226,7 +230,8 @@ function save_final_dist(
         all_p_cp = map(cp_id -> model[cp_id].p[end], all_cp),
         all_w_cp = map(cp_id -> model[cp_id].w̄[end], all_cp)
     )
-    CSV.write(joinpath(dir,"final_profit_dists_cp.csv"), df)
+    
+    CSV.write(joinpath(@__DIR__, "data", "final_profit_dists_cp.csv"), df)
 
     # Save sales, profits and market share of kp
     df = DataFrame(
@@ -235,7 +240,7 @@ function save_final_dist(
         all_f_kp = map(kp_id -> model[kp_id].f[end], all_kp),
         all_L_kp = map(kp_id -> model[kp_id].L, all_kp)
     )
-    CSV.write(joinpath(dir,"final_profit_dists_kp.csv"), df)
+    CSV.write(joinpath(@__DIR__, "data", "final_profit_dists_cp.csv"), df)
 
 end
 
@@ -268,7 +273,7 @@ function save_climate_data(
         emissions_cp = climate.carbon_emissions_cp,
         emissions_ep = energy_producer.emissions,
     )
-    CSV.write("results/result_data/climate_and_energy.csv", df)
+    CSV.write(joinpath(@__DIR__, "results", "result_data", "climate_and_energy.csv"), df)
 end
 
 
@@ -276,5 +281,5 @@ function save_household_quartiles(
     householddata::Array
 )
 
-    CSV.write("results/result_data/household_quantiles.csv", householddata[2])
+    CSV.write(joinpath(@__DIR__, "results", "result_data", "household_quantiles.csv"), householddata[2])
 end
