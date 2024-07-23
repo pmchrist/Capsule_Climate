@@ -9,7 +9,7 @@
     w::Vector{Float64} = ones(Float64, 4)       # wage
     wˢ::Float64 = 1.0                           # satisfying wage
     wʳ::Float64 = 1.0                           # requested wage
-    T_unemp::Int64 = 0                            # time periods unemployed
+    T_unemp::Int64 = 0                          # time periods unemployed
     skill::Float64                              # skill level of household
 
     # Income and wealth variables
@@ -106,7 +106,7 @@ function update_expected_incomes_hh!(
 
     # Update total expected income from labor and social benefits
     if hh.employed
-        hh.EY_t = P_getunemployed * UB + (1 - P_getunemployed) * hh.EYL_t + hh.EYS_t
+        hh.EY_t = P_getunemployed * UB + (1 - P_getunemployed) * hh.EYL_t + hh.EYS_t        # Is set to 0, legacy code because there is smart allocation?
     else
         hh.EY_t = P_getemployed * hh.EYL_t + (1 - P_getemployed) * UB + hh.EYS_t
     end

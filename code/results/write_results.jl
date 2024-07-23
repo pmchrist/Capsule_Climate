@@ -1,5 +1,6 @@
 """
 File used to write simulation results to data files
+(This also does not work because of inconsistent arguments and writing methods)
 """
 
 using DataFrames
@@ -145,7 +146,7 @@ function save_simdata(
     #       ARE CONSISTENT AGAIN!
     #CSV.write(joinpath(dir, string(seed, "_agent.csv")), string.(agent_df))
 
-    CSV.write(joinpath(@__DIR__, "data", string(seed, "_model.csv")), model_df)
+    CSV.write(joinpath(@__DIR__, "data", string(seed, "_model.csv")), model_df)         # That @DIR thing is not working in windows
 
 end
 

@@ -1,9 +1,9 @@
 @with_kw struct InitParam
     
     # Agent counts
-    n_kp::Int64 = 20                      # number of kp
-    n_cp::Int64 = 200                     # number of cp
-    n_hh::Int64 = 2500                    # number of hh
+    n_kp::Int64 = 20                      # number of (k)capital producers
+    n_cp::Int64 = 200                     # number of consumer producers
+    n_hh::Int64 = 2500                    # number of households
 
     # Init rates
     init_unempl_rate::Float64 = 0.05      # initial unemployment rate

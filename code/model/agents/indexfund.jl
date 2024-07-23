@@ -58,7 +58,8 @@ end
 
 
 """
-Distributes dividends over participants in indexfund
+Distributes dividends over participants in IndexFund
+(This thing is really strange, probably index fund is not the best name. More like Social Welfare)
 """
 function distribute_dividends_if!(
     indexfund::IndexFund,

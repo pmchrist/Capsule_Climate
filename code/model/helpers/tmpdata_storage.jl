@@ -42,12 +42,12 @@ function reset_matrices_cp!(
     )
 
     # Set to order of small to large id (minimum(all_cp):max(all_cp)
-    all_p = map(cp_id -> model[cp_id].p[end], minimum(all_cp):maximum(all_cp))
-    all_N_goods = map(cp_id -> model[cp_id].N_goods, minimum(all_cp):maximum(all_cp))
+    all_p = map(cp_id -> model[cp_id].p[end], minimum(all_cp):maximum(all_cp))              # Prices
+    all_N_goods = map(cp_id -> model[cp_id].N_goods, minimum(all_cp):maximum(all_cp))       # Inventory Size
 
     @inbounds for (i,hh_id) ∈ enumerate(minimum(all_hh):maximum(all_hh))
 
-        cmdata.all_C[i] = model[hh_id].C
+        cmdata.all_C[i] = model[hh_id].C        # C is budget, C for Capacity of HH
         cmdata.weights[i,:] .= 0.0
 
         for cp_id in model[hh_id].cp
@@ -58,6 +58,9 @@ function reset_matrices_cp!(
 
             cmdata.all_N[j] = all_N_goods[j] * all_p[j]
             cmdata.weights[i,j] = all_p[j] ^ -1
+
+            # !HERE WE SHOULD ALSO AGGREGATE THE EMISSIONS FOR THE WHOLE GOODS STOCK AT CP!
+            # !SO THAT IT COULD BE USED TO PENALIZE THE INTEREST FROM HH!
         end
     end
 

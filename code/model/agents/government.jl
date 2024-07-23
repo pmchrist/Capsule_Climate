@@ -271,6 +271,7 @@ end
 Redistributes surplusses such that government does not acquire assets, or acquires
     capital such that the government does not incur debts on the long run (long-run
     budget deficits thus drain the capital market)
+    (I'm pretty sure this assumption makes policy implementation slower and is not realistic, but the only way it is?)
 """
 function resolve_gov_balance!(
     government::Government,

@@ -36,9 +36,9 @@
     M_hh::Vector{Float64} = zeros(Float64, T)               # total amount of money at hh
     M_cp::Vector{Float64} = zeros(Float64, T)               # total amount of money at cp
     M_kp::Vector{Float64} = zeros(Float64, T)               # total amount of money at kp
-    M_ep::Vector{Float64} = zeros(Float64, T)               # total amount of money at ep
+    M_ep::Vector{Float64} = zeros(Float64, T)               # total amount of money at ep (energy producers)
     M_gov::Vector{Float64} = zeros(Float64, T)              # total amount of money at gov
-    M_if::Vector{Float64}  = zeros(Float64, T)              # total amount of money at if
+    M_if::Vector{Float64}  = zeros(Float64, T)              # total amount of money at if (index fund)
 
     
 
@@ -78,7 +78,7 @@
     EI_avg::Vector{Float64}  = zeros(Float64, T)            # average expansion investment
     n_mach_EI_avg::Vector{Float64} = zeros(Float64, T)      # average amount of ordered machines for EI
     RS_avg::Vector{Float64} = zeros(Float64, T)             # average replacement investment
-    n_mach_RS_avg::Vector{Float64} = zeros(Float64, T)      # average amounf of ordered machines for RS
+    n_mach_RS_avg::Vector{Float64} = zeros(Float64, T)      # average amount of ordered machines for RS
 
     # Productivity
     avg_pi_LP::Vector{Float64} = zeros(Float64, T)          # average labor productivity cp

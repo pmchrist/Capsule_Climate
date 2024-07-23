@@ -33,7 +33,7 @@ function close_balance_all_p!(
 
     for p_id in all_p
 
-        model[p_id].balance.debt = max(0.0, model[p_id].balance.debt)
+        model[p_id].balance.debt = max(0.0, model[p_id].balance.debt)       # Producer can have negative debt?
 
         # Compute interest payment
         update_interest_payment_p!(model[p_id], globalparam.r)
@@ -56,7 +56,7 @@ function close_balance_all_p!(
         # Update liquid assets NW
         update_NW_p!(model[p_id], government.τᴾ)
 
-        # Update valuation of inventory. kp do not have inventory.
+        # Update valuation of inventory (kp do not have inventory)
         if typeof(model[p_id]) == ConsumerGoodProducer
             model[p_id].balance.N = model[p_id].p[end] * model[p_id].N_goods
         end
@@ -76,7 +76,7 @@ function close_balance_all_p!(
             borrow_funds_p!(model[p_id], -model[p_id].balance.NW, globalparam.b)
             model[p_id].balance.NW = 0
 
-        elseif (!check_if_bankrupt_p!(model[p_id],  globalparam.t_wait) 
+        elseif (!check_if_bankrupt_p!(model[p_id],  globalparam.t_wait)                 # Is this correct bankruptcy procedure?
                 && (model[p_id].balance.NW > max_NW) && (t > globalparam.t_wait))
             
             # If enough liquid assets available, first pay off debts and then pay out dividends
@@ -124,7 +124,7 @@ function update_K_p!(
 
         p.balance.K = K
 
-        return writeoffs
+        return writeoffs            # Is it supposed to be never updated?
     else
         return 0.0
     end

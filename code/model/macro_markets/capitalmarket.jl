@@ -19,7 +19,7 @@ function capitalmarket_process!(
     total_n_rounds::Int64=3
 )
 
-    # First gather all cp ids of cp that want to buy capital goods
+    # First gather all cp ids of cp that want to buy kapital goods
     cp_ids = gather_expansionary_cp(all_cp, model)
 
     # Gather all kp ids and production capacitys
@@ -88,7 +88,8 @@ function capitalmarket_process!(
 
                 else
                     
-                    # If capacity smaller than demand, place partial order and decrease capacity
+                    # If capacity smaller than demand, place partial order and set capacity to 0
+                    # (capacity can't be negative, as orders amount are over current capacity)
                     order = kp_capacity[kp_id]
                     model.kmdata.orders[kp_i, cp_i] = order
                     kp_capacity[kp_id] = 0

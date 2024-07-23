@@ -16,6 +16,9 @@ global taxtype_dict = Dict(
 )
 
 
+"""
+Save taxation used in the simulation
+"""
 function getfilepath_tax(
     folderpath::String,
     taxtype::Symbol,
@@ -35,6 +38,9 @@ function getfilepath_tax(
     return folderpath * "_$(taxrate)_$(sim_nr).csv"
 end
 
+"""
+Save parameters of the simulation
+"""
 function getfilepath_params(
     folderpath::String,
     param::Symbol,
@@ -77,8 +83,6 @@ end
 
 
 """
-
-
 Runs OFAT experiment on the various tax rates
 """
 function OFAT_taxrates(

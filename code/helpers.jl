@@ -1,3 +1,6 @@
+"""
+Finds the rate of growth in percentages between values in the provided vector
+"""
 function compute_growthrates(
     ts::Vector{Float64}
     )
@@ -12,7 +15,6 @@ function compute_growthrates(
     return growthrates
 end
 
-
 """
 Computes moments of runoutput and writes to dataframe or array
 """
@@ -20,8 +22,8 @@ function convertrunoutput(
     runoutput::RunOutput,
     sim_nr::Int64;
     return_as_df::Bool=false,
-    t_warmup::Int64=300,
-)
+    t_warmup::Int64=300,            # These values are discarded
+    )
 
     # Prepare data to be written to dataframe
     GDP_1st = mean(runoutput.GDP_growth[t_warmup:end])
@@ -151,7 +153,9 @@ function convertrunoutput(
     end
 end
 
-
+"""
+Save raw outputs of the run
+"""
 function savefulloutput(
     runoutput::RunOutput,
     sim_nr::Int64;

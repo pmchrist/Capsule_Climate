@@ -84,12 +84,12 @@ function initialize_model(
     macroeconomy = MacroEconomy(T=T)
 
 
-    # Initialize empty DataFrames for cp_data and kp_data
+    # Initialize empty DataFrames for cp_data (consumer producer) and kp_data (kapital producer)
     cp_data = DataFrame()  # Define appropriate columns if needed
     kp_data = DataFrame()  # Define appropriate columns if needed
 
     # Initialize FirmTimeSeries
-    firm_time_series = FirmTimeSeries(cp_data, kp_data)
+    firm_time_series = FirmTimeSeries(cp_data, kp_data)     # Keeps intermediate results for firms
 
     # Initialize labor market struct
     labormarket = LaborMarket()
@@ -116,7 +116,7 @@ function initialize_model(
     # Make empty dict for kp_brochures
     kp_brochures = Dict()
 
-    # Determine ids for all agents
+    # Determine ids for all agents          (this is unnecessary complicated)
     all_hh = collect(1:initparam.n_hh)
     all_cp = collect(all_hh[end] + 1: all_hh[end] + initparam.n_cp)
     all_kp = collect(all_cp[end] + 1: all_cp[end] + initparam.n_kp)
@@ -182,7 +182,7 @@ function initialize_model(
     (model.i_param.n_cp + model.i_param.n_kp))
 
     # Determine initial amount of machines per cp
-    n_machines_init = ceil(Int64, 1.1 * emp_per_producer)
+    n_machines_init = ceil(Int64, 1.1 * emp_per_producer)       # Slightly more machines than employees, so that job market is running (I assume)
 
     # Initialize consumer good producers
     for cp_i in 1:model.i_param.n_cp
@@ -273,8 +273,8 @@ end
     initialize_datacategories(savedata::Bool)
 
 Initializes the data categories that should be stored during the model run.
-Returns `adata` and `mdata` arrays containing tuples descriving the properties
-to save of the agents and model, respectively (see `Agents.jl` documentation).
+Returns `adata` and `mdata` arrays containing tuples describing the properties
+of the agents and model to be saved, respectively (see `Agents.jl` documentation).
 
 ...
 # Arguments
@@ -787,7 +787,7 @@ function run_simulation(;
     savedata::Bool = true,
     save_firmdata::Bool = false,
     seed::Int64 = Random.rand(1000:9999)
-)
+    )
 
     # Set seed of simulation
     Random.seed!(seed)

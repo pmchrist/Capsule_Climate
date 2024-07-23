@@ -1,5 +1,6 @@
 """
 Runs MC simulation to acquire data for validation excercises.
+(It should not work, wrong initialization of run_simulation())
 """
 
 using PyCall
@@ -19,11 +20,7 @@ function runMCreplication(
     seed = repl_i + 1000
 
     # Run simulation with default (calibrated) parameters
-    runoutput, firmdata, householddata = run_simulation(
-        full_output=false,
-        seed=seed,
-        track_firms_households=true
-    )
+    runoutput, firmdata, householddata = run_simulation(full_output=false, seed=seed, track_firms_households=true)
 
     df = savefulloutput(runoutput, repl_i; return_as_df=true)
 

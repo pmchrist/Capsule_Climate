@@ -10,7 +10,7 @@ function update_firm_time_series!(
     firm_time_series::FirmTimeSeries
 )
     # Get current firm data
-    current_cp_data = get_cp_mdata(model)
+    current_cp_data = get_cp_mdata(model)           # Not clear from where this function comes, maybe needs include?
     current_kp_data = get_kp_mdata(model)
 
     # Initialize if empty

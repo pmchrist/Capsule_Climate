@@ -1,3 +1,7 @@
+"""
+Not used, functionality expandeded and moved to index fund and global markets
+"""
+
 mutable struct Bank 
     Deposits::Dict{}               # deposits at bank
     Debts::Dict{}                  # debts at bank

@@ -38,7 +38,7 @@
     φ6::Float64 = 0.02              # 2nd Beta dist support for kp entrant tech
 
     cu::Float64 = 0.75              # capacity utilization for cp
-    max_NW_ratio::Float64 = 0.5     # maximum ratio p can have monthly expenses in NW
+    max_NW_ratio::Float64 = 0.5     # maximum ratio p can have monthly expenses in NW   # Why is it limited?
     ϵ_w::Float64 = 0.03             # minimum desired wage increase rate
     ϵ_μ::Float64 = 0.05             # upper limit of markup shock
     Kg_max::Float64 = 0.5           # maximum capital growth rate
