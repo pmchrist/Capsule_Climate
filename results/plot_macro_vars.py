@@ -2,7 +2,10 @@ from matplotlib.gridspec import GridSpec
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-# import scipy.stats as stats
+from pathlib import Path
+import os
+PATH = os.path.join(os.path.curdir, 'results', 'data_saved', 'test_run', 'plots', 'macro')
+
 
 def plot_macro_vars(df):
     """
@@ -64,7 +67,7 @@ def plot_macro_vars(df):
     ax[2,1].legend()
 
     plt.tight_layout()
-    plt.savefig('plots/macro_ts.png', bbox_inches='tight')
+    plt.savefig(os.path.join(PATH, 'macro_ts.png'), bbox_inches='tight')
 
 
 def plot_household_vars(df):
@@ -116,7 +119,7 @@ def plot_household_vars(df):
     ax[1,1].legend()
 
     plt.tight_layout()
-    plt.savefig('plots/household_ts.png', bbox_inches='tight')
+    plt.savefig(os.path.join(PATH, 'household_ts.png'), bbox_inches='tight')
 
 
 def plot_producer_vars(df):
@@ -183,9 +186,9 @@ def plot_producer_vars(df):
     ax[3,0].plot(T, df.avg_A_LP, label='$\\bar{A}_{LP}$')
     ax[3,0].plot(T, df.avg_A_EE, label='$\\bar{A}_{EE}$')
     ax[3,0].plot(T, df.avg_A_EF, label='$\\bar{A}_{EF}$')
-    ax[3,0].plot(T, df.avg_B_LP, label='$\\bar{B}_{LP}}$')
-    ax[3,0].plot(T, df.avg_B_EE, label='$\\bar{B}_{EE}}$')
-    ax[3,0].plot(T, df.avg_B_EF, label='$\\bar{B}_{EF}}$')
+    ax[3,0].plot(T, df.avg_B_LP, label='$\\bar{B}_{LP}$')
+    ax[3,0].plot(T, df.avg_B_EE, label='$\\bar{B}_{EE}$')
+    ax[3,0].plot(T, df.avg_B_EF, label='$\\bar{B}_{EF}$')
     ax[3,0].set_title('Productivity')
     ax[3,0].legend()
 
@@ -198,7 +201,7 @@ def plot_producer_vars(df):
     ax[3,1].legend()
 
     plt.tight_layout()
-    plt.savefig('plots/producer_ts.png', bbox_inches='tight')
+    plt.savefig(os.path.join(PATH, 'producer_ts.png'), bbox_inches='tight')
 
 
 def plot_government_vars(df:pd.DataFrame):
@@ -237,7 +240,7 @@ def plot_government_vars(df:pd.DataFrame):
     ax[1,1].legend()
 
     plt.tight_layout()
-    plt.savefig('plots/government.png')
+    plt.savefig(os.path.join(PATH, 'government.png'))
 
 
 def plot_cons_vars(df):
@@ -352,7 +355,7 @@ def plot_cons_vars(df):
 
 
     plt.tight_layout()
-    plt.savefig('plots/consumption.png')
+    plt.savefig(os.path.join(PATH, 'consumption.png'))
 
 
 def plot_income_dist():
@@ -402,7 +405,7 @@ def plot_income_dist():
 
 
     plt.tight_layout()
-    plt.savefig('plots/final_income_dist.png')
+    plt.savefig(os.path.join(PATH, 'final_income_dist.png'))
 
 
 def plot_sales_dist():
@@ -450,7 +453,7 @@ def plot_sales_dist():
     ax[4,1].set_title("$p$ to $f$")
 
     plt.tight_layout()
-    plt.savefig('plots/final_dist_profit.png')
+    plt.savefig(os.path.join(PATH, 'final_dist_profit.png'))
 
 
 def plot_inequality(df_macro):
@@ -477,7 +480,7 @@ def plot_inequality(df_macro):
     ax[1].legend()
 
     plt.tight_layout()
-    plt.savefig('plots/inequality.png')
+    plt.savefig(os.path.join(PATH, 'inequality.png'))
 
 
 def plot_energy(df:pd.DataFrame):
@@ -517,7 +520,7 @@ def plot_energy(df:pd.DataFrame):
     ax[1,1].legend()
 
     plt.tight_layout()
-    plt.savefig('plots/energy.png')
+    plt.savefig(os.path.join(PATH, 'energy.png'))
 
 
 def plot_climate(df_climate_energy, df_macro):
@@ -564,7 +567,7 @@ def plot_climate(df_climate_energy, df_macro):
     # ax[1,1].legend()
 
     plt.tight_layout()
-    plt.savefig('plots/climate.png')
+    plt.savefig(os.path.join(PATH, 'climate.png'))
 
 
 def get_indexnumbers(timeseries):
@@ -597,7 +600,7 @@ def plot_emissions(df:pd.DataFrame, t_warmup:int=300, t_cutoff:int=200):
     
 
     plt.tight_layout()
-    plt.savefig('plots/emissions.png')
+    plt.savefig(os.path.join(PATH, 'emissions.png'))
 
 
 def plot_LIS(df_macro):
@@ -614,7 +617,7 @@ def plot_LIS(df_macro):
 if __name__=="__main__":
 
     #df_macro = pd.read_csv('../results/result_data/model_data_1234.csv')
-    df_macro = pd.read_csv('../data/1234_model.csv')
+    df_macro = pd.read_csv(os.path.join(os.path.join(os.path.curdir, 'results', 'data_saved', 'test_run'), '1234_model.csv'))
 
     plot_macro_vars(df_macro)
     plot_household_vars(df_macro)

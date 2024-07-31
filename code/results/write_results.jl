@@ -6,6 +6,115 @@ File used to write simulation results to data files
 using DataFrames
 using CSV
 
+
+function save_simdata(
+    agent_df::DataFrame,
+    model_df::DataFrame,
+    seed::Int64,
+)
+    # NOTE: CONVERSION DF TO STRING IS TMP SOLUTION, SHOULD BE FIXED BACK WHEN PACKAGES 
+        #       ARE CONSISTENT AGAIN!
+    # NOTE: CONVERSION DF TO STRING IS TMP SOLUTION, SHOULD BE FIXED BACK WHEN PACKAGES 
+    #       ARE CONSISTENT AGAIN!
+    #CSV.write(joinpath(dir, string(seed, "_agent.csv")), string.(agent_df))
+
+    CSV.write(joinpath(@__DIR__, "data", string(seed, "_model.csv")), model_df)         # That @DIR thing is not working in windows
+
+end
+
+function save_firm_data(
+    firm_df::DataFrame,
+    seed::Int64,
+)
+    #if first colum is named cp_i save it as "_cp_firm.csv"
+    if "cp_i" in names(firm_df)
+        CSV.write(joinpath(@__DIR__, "data", string(seed, "_cp_firm.csv")), firm_df)
+    else
+        CSV.write(joinpath(@__DIR__, "data", string(seed, "_kp_firm.csv")), firm_df)
+    end
+
+end
+
+
+function save_hh_shock_data(
+    all_hh::Vector{Int},
+    model::ABM,
+    t::Int64,
+    t_warmup::Int64
+    )
+    if t > t_warmup - 5 && t < t_warmup + 250
+        df = DataFrame(
+            hh_id = map(hh_id -> hh_id, all_hh),
+            all_I = map(hh_id -> model[hh_id].total_I, all_hh),
+            C_actual = map(hh_id -> model[hh_id].C_actual, all_hh),
+            all_w = map(hh_id -> model[hh_id].w[end], all_hh),
+            all_labor = map(hh_id -> model[hh_id].labor_I, all_hh),
+            all_captial = map(hh_id -> model[hh_id].capital_I, all_hh),
+            all_UB_I = map(hh_id -> model[hh_id].UB_I, all_hh),
+            all_socben_I = map(hh_id -> model[hh_id].socben_I, all_hh),
+            all_W = map(hh_id -> model[hh_id].W, all_hh),
+            #same with P̄
+            real_I = map(hh_id -> model[hh_id].total_I/model[hh_id].P̄, all_hh),
+            #same with hh.C 
+            all_C = map(hh_id -> model[hh_id].C, all_hh)
+        
+        )
+        #output the path i am currently in
+        #println(pwd())
+
+
+        # Save data to CSV if t > t_warmup - 5 and t < t_warmup + 100
+        file_name = "household_$(t)_hh.csv"
+        #full_path = joinpath("../data/", "x_hh", file_name)
+
+        full_path = joinpath(@__DIR__, "data", "x_hh", file_name)
+        # Ensure the directory exists
+        mkpath(dirname(full_path))
+
+        CSV.write(full_path, df)
+    end
+end
+
+
+function save_final_dist(
+    all_hh::Vector{Int},
+    all_cp::Vector{Int},
+    all_kp::Vector{Int}, 
+    model::ABM
+    )
+    # Save income data of households 
+    df = DataFrame(
+        all_I = map(hh_id -> model[hh_id].total_I, all_hh),
+        all_w = map(hh_id -> model[hh_id].w[end], all_hh),
+        all_W = map(hh_id -> model[hh_id].W, all_hh),
+        skills = map(hh_id -> model[hh_id].skill, all_hh)
+    )
+    CSV.write(joinpath(@__DIR__, "data", "final_income_dists.csv"), df)
+
+    # Save sales, profits and market share of cp
+    df = DataFrame(
+        all_S_cp = map(cp_id -> model[cp_id].curracc.S, all_cp),
+        all_profit_cp = map(cp_id -> model[cp_id].Π[end], all_cp),
+        all_f_cp = map(cp_id -> model[cp_id].f[end], all_cp),
+        all_L_cp = map(cp_id -> model[cp_id].L, all_cp),
+        all_p_cp = map(cp_id -> model[cp_id].p[end], all_cp),
+        all_w_cp = map(cp_id -> model[cp_id].w̄[end], all_cp)
+    )
+    
+    CSV.write(joinpath(@__DIR__, "data", "final_profit_dists_cp.csv"), df)
+
+    # Save sales, profits and market share of kp
+    df = DataFrame(
+        all_S_kp = map(kp_id -> model[kp_id].curracc.S, all_kp),
+        all_profit_kp = map(kp_id -> model[kp_id].Π[end], all_kp),
+        all_f_kp = map(kp_id -> model[kp_id].f[end], all_kp),
+        all_L_kp = map(kp_id -> model[kp_id].L, all_kp)
+    )
+    CSV.write(joinpath(@__DIR__, "data", "final_profit_dists_cp.csv"), df)
+
+end
+
+
 # """
 # Saves macro variables of interest to csv
 
@@ -135,152 +244,41 @@ using CSV
 # end
 
 
-function save_simdata(
-    agent_df::DataFrame,
-    model_df::DataFrame,
-    seed::Int64,
-)
-    # NOTE: CONVERSION DF TO STRING IS TMP SOLUTION, SHOULD BE FIXED BACK WHEN PACKAGES 
-        #       ARE CONSISTENT AGAIN!
-    # NOTE: CONVERSION DF TO STRING IS TMP SOLUTION, SHOULD BE FIXED BACK WHEN PACKAGES 
-    #       ARE CONSISTENT AGAIN!
-    #CSV.write(joinpath(dir, string(seed, "_agent.csv")), string.(agent_df))
+# function save_climate_data(
+#     energy_producer,
+#     climate,
+#     model::ABM
+#     )
 
-    CSV.write(joinpath(@__DIR__, "data", string(seed, "_model.csv")), model_df)         # That @DIR thing is not working in windows
+#     df = DataFrame(
+#         energy_demand = energy_producer.Dₑ,
+#         total_capacity = energy_producer.Q̄ₑ,
+#         green_capacity = energy_producer.green_capacity,
+#         dirty_capacity = energy_producer.dirty_capacity,
 
-end
+#         p_e = energy_producer.p_ep,
 
-function save_firm_data(
-    firm_df::DataFrame,
-    seed::Int64,
-)
-         
-    #if first colum is named cp_i save it as "_cp_firm.csv"
-    if "cp_i" in names(firm_df)
-        CSV.write(joinpath(@__DIR__, "data", string(seed, "_cp_firm.csv")), firm_df)
-    else
-        CSV.write(joinpath(@__DIR__, "data", string(seed, "_kp_firm.csv")), firm_df)
-    end
+#         RD = energy_producer.RDₑ,
+#         IN_g = energy_producer.IN_g,
+#         IN_d = energy_producer.IN_d,
 
-end
+#         IC_g = energy_producer.IC_g,
+#         A_d = energy_producer.Aᵀ_d,
+#         em_d = energy_producer.emᵀ_d,
+#         c_d = energy_producer.c_d,
 
-using DataFrames, CSV
-
-function save_hh_shock_data(
-    all_hh::Vector{Int},
-    model::ABM,
-    t::Int64,
-    t_warmup::Int64
-)
-    if t > t_warmup - 5 && t < t_warmup + 250
-        df = DataFrame(
-            hh_id = map(hh_id -> hh_id, all_hh),
-            all_I = map(hh_id -> model[hh_id].total_I, all_hh),
-            C_actual = map(hh_id -> model[hh_id].C_actual, all_hh),
-            all_w = map(hh_id -> model[hh_id].w[end], all_hh),
-            all_labor = map(hh_id -> model[hh_id].labor_I, all_hh),
-            all_captial = map(hh_id -> model[hh_id].capital_I, all_hh),
-            all_UB_I = map(hh_id -> model[hh_id].UB_I, all_hh),
-            all_socben_I = map(hh_id -> model[hh_id].socben_I, all_hh),
-            all_W = map(hh_id -> model[hh_id].W, all_hh),
-            #same with P̄
-            real_I = map(hh_id -> model[hh_id].total_I/model[hh_id].P̄, all_hh),
-            #same with hh.C 
-            all_C = map(hh_id -> model[hh_id].C, all_hh)
-        
-        )
-        #output the path i am currently in
-        #println(pwd())
+#         emissions_total = climate.carbon_emissions,
+#         emissions_kp = climate.carbon_emissions_kp,
+#         emissions_cp = climate.carbon_emissions_cp,
+#         emissions_ep = energy_producer.emissions,
+#     )
+#     CSV.write(joinpath(@__DIR__, "results", "result_data", "climate_and_energy.csv"), df)
+# end
 
 
-        # Save data to CSV if t > t_warmup - 5 and t < t_warmup + 100
-        file_name = "household_$(t)_hh.csv"
-        #full_path = joinpath("../data/", "x_hh", file_name)
+# function save_household_quartiles(
+#     householddata::Array
+# )
 
-        full_path = joinpath(@__DIR__, "data", "x_hh", file_name)
-        # Ensure the directory exists
-        mkpath(dirname(full_path))
-
-        CSV.write(full_path, df)
-    end
-end
-
-
-function save_final_dist(
-    all_hh::Vector{Int},
-    all_cp::Vector{Int},
-    all_kp::Vector{Int}, 
-    model::ABM
-    )
-    # Save income data of households 
-    df = DataFrame(
-        all_I = map(hh_id -> model[hh_id].total_I, all_hh),
-        all_w = map(hh_id -> model[hh_id].w[end], all_hh),
-        all_W = map(hh_id -> model[hh_id].W, all_hh),
-        skills = map(hh_id -> model[hh_id].skill, all_hh)
-    )
-    CSV.write(joinpath(@__DIR__, "data", "final_income_dists.csv"), df)
-
-
-    # Save sales, profits and market share of cp
-    df = DataFrame(
-        all_S_cp = map(cp_id -> model[cp_id].curracc.S, all_cp),
-        all_profit_cp = map(cp_id -> model[cp_id].Π[end], all_cp),
-        all_f_cp = map(cp_id -> model[cp_id].f[end], all_cp),
-        all_L_cp = map(cp_id -> model[cp_id].L, all_cp),
-        all_p_cp = map(cp_id -> model[cp_id].p[end], all_cp),
-        all_w_cp = map(cp_id -> model[cp_id].w̄[end], all_cp)
-    )
-    
-    CSV.write(joinpath(@__DIR__, "data", "final_profit_dists_cp.csv"), df)
-
-    # Save sales, profits and market share of kp
-    df = DataFrame(
-        all_S_kp = map(kp_id -> model[kp_id].curracc.S, all_kp),
-        all_profit_kp = map(kp_id -> model[kp_id].Π[end], all_kp),
-        all_f_kp = map(kp_id -> model[kp_id].f[end], all_kp),
-        all_L_kp = map(kp_id -> model[kp_id].L, all_kp)
-    )
-    CSV.write(joinpath(@__DIR__, "data", "final_profit_dists_cp.csv"), df)
-
-end
-
-
-function save_climate_data(
-    energy_producer,
-    climate,
-    model::ABM
-    )
-
-    df = DataFrame(
-        energy_demand = energy_producer.Dₑ,
-        total_capacity = energy_producer.Q̄ₑ,
-        green_capacity = energy_producer.green_capacity,
-        dirty_capacity = energy_producer.dirty_capacity,
-
-        p_e = energy_producer.p_ep,
-
-        RD = energy_producer.RDₑ,
-        IN_g = energy_producer.IN_g,
-        IN_d = energy_producer.IN_d,
-
-        IC_g = energy_producer.IC_g,
-        A_d = energy_producer.Aᵀ_d,
-        em_d = energy_producer.emᵀ_d,
-        c_d = energy_producer.c_d,
-
-        emissions_total = climate.carbon_emissions,
-        emissions_kp = climate.carbon_emissions_kp,
-        emissions_cp = climate.carbon_emissions_cp,
-        emissions_ep = energy_producer.emissions,
-    )
-    CSV.write(joinpath(@__DIR__, "results", "result_data", "climate_and_energy.csv"), df)
-end
-
-
-function save_household_quartiles(
-    householddata::Array
-)
-
-    CSV.write(joinpath(@__DIR__, "results", "result_data", "household_quantiles.csv"), householddata[2])
-end
+#     CSV.write(joinpath(@__DIR__, "results", "result_data", "household_quantiles.csv"), householddata[2])
+# end
