@@ -39,6 +39,7 @@
     P̄::Float64 = 1.0                           # weighted average price of bp
     P̄ᵉ::Float64 = 1.0                          # expected weighted average price of bp
     c_L::Float64 = 0.5                         # share of income used to buy luxury goods
+    Sust_Score::Float64 = 0.5                  # Opinion on how much environment is important [0-not important, 1-important]       ( TODO: INITIALIZE IT SOMEWHERE)
 end
 
 

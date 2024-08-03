@@ -32,7 +32,7 @@ function cpmarket_matching_cp!(
 
     # Normalize weights
     sum!(cmdata.weights_sum, cmdata.weights)
-    cmdata.weights ./= cmdata.weights_sum       # Weights are just Price*Goods at producer
+    cmdata.weights ./= cmdata.weights_sum       # Weights are just Price*Goods at producer (THEY WERE)
     sold_out = Int64[]
 
     for i in 1:3

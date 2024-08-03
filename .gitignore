@@ -45,6 +45,7 @@ performance_jl.ipynb
 performance_py.ipynb
 
 results/experiments/OFAT_experiments
+results/data_saved/
 
 parameters/calibration/calibrate_example.py
 parameters/calibration/calibration_simple.py
