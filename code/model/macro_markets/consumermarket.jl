@@ -22,6 +22,7 @@ end
 
 """
 Market matching process for consumer market.
+    This function needs verifications for sure - Might not work out of the box with the new Utility Function
 """
 function cpmarket_matching_cp!(
     cmdata::CMData,
@@ -32,31 +33,60 @@ function cpmarket_matching_cp!(
 
     # Normalize weights
     sum!(cmdata.weights_sum, cmdata.weights)
-    cmdata.weights ./= cmdata.weights_sum       # Weights are just Price*Goods at producer (THEY WERE)
+    # if any(isnan.(cmdata.weights))
+    #     println()
+    #     println("before")
+    # end
+    cmdata.weights ./= cmdata.weights_sum       # Weights are just Price*Goods at producer (THEY WERE, NOW USE UTILITY FGUNCTION IN TMPDATA_STORAGE)
+    # if any(isnan.(cmdata.weights))
+    #     println()
+    #     println("after")
+    # end
+
     sold_out = Int64[]
+    #display(cmdata.weights)
 
     for i in 1:3
 
         # Spread consumption budget according to weights (no allocs)
-        cmdata.C_spread .= cmdata.all_C 
+        cmdata.C_spread .= cmdata.all_C     # <- cmdata.all_C Is NaN with the new Utility Function
         cmdata.C_spread .*= cmdata.weights
 
-        # Compute the first choice of hh for the products (2 allocs)
+        # if i==1
+        #     if any(isnan.(cmdata.all_C))
+        #         println("lvl_1_All_C")
+        #     end
+        #     if any(isnan.(cmdata.weights))
+        #         println("lvl_1_weights")
+        #     end
+        #     if any(isnan.(cmdata.C_spread))
+        #         println("lvl_1_C_spread")
+        #     end
+        # end
 
+        # Compute the first choice of hh for the products (2 allocs)
         if i == 1
-            # !HERE SHOULD GO PENALTY FOR HIGH EMISSION PRODUCERS!
             cmdata.true_D .= cmdata.C_spread
         end
 
         # Compute demand per cp and find which cp is sold out
         sum!(cmdata.demand_per_cp, cmdata.C_spread')
+
         cmdata.demand_per_cp .= max.(floor.(cmdata.demand_per_cp, digits=8), 0.0)
+
+        #print(cmdata.demand_per_cp)
+
 
         sold_out = findall(cmdata.all_N .<= cmdata.demand_per_cp)
 
         # Sell goods
         cmdata.frac_sellable .= min.(cmdata.all_N ./ cmdata.demand_per_cp, 1.0)
         replace!(cmdata.frac_sellable, -Inf=>0.0, NaN=>0.0)
+        #print(cmdata.frac_sellable)
+
+        # if i==1
+        #     display(cmdata.frac_sellable')
+        # end
 
         cmdata.C_spread .*= cmdata.frac_sellable'
         cmdata.transactions .+= cmdata.C_spread
@@ -81,9 +111,12 @@ function cpmarket_matching_cp!(
         cmdata.weights ./= cmdata.weights_sum
         replace!(cmdata.weights, NaN=>0.0)
 
+        #println(cmdata.sold_per_hh_round, cmdata.sold_per_cp_round)
+
         cmdata.sold_per_hh_round .= 0.0
         cmdata.sold_per_cp_round .= 0.0
     end
+
 end
 
 
@@ -145,6 +178,8 @@ function process_transactions_cm!(
         shift_and_append!(model[cp_id].Dᵁ, sum(unsat_demand))
         model[cp_id].N_goods = abs(model[cp_id].N_goods - N_goods_sold) > 1e-1 ? model[cp_id].N_goods - N_goods_sold : 0.0
     end
+
+    #display(cmdata.true_D)
 
     receive_salestax_gov!(government, total_salestax, t)
 end

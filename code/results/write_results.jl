@@ -1,6 +1,6 @@
 """
 File used to write simulation results to data files
-(This also does not work because of inconsistent arguments and writing methods)
+
 """
 
 using DataFrames
@@ -8,17 +8,12 @@ using CSV
 
 
 function save_simdata(
-    agent_df::DataFrame,
     model_df::DataFrame,
     seed::Int64,
 )
-    # NOTE: CONVERSION DF TO STRING IS TMP SOLUTION, SHOULD BE FIXED BACK WHEN PACKAGES 
-        #       ARE CONSISTENT AGAIN!
-    # NOTE: CONVERSION DF TO STRING IS TMP SOLUTION, SHOULD BE FIXED BACK WHEN PACKAGES 
-    #       ARE CONSISTENT AGAIN!
-    #CSV.write(joinpath(dir, string(seed, "_agent.csv")), string.(agent_df))
-
-    CSV.write(joinpath(@__DIR__, "data", string(seed, "_model.csv")), model_df)         # That @DIR thing is not working in windows
+    # NOTE: CONVERSION DF TO STRING IS TMP SOLUTION, SHOULD BE FIXED BACK WHEN PACKAGES ARE CONSISTENT AGAIN!
+    # (Seems to be working fine)
+    CSV.write(joinpath(@__DIR__, "data", string(seed, "_model.csv")), model_df)
 
 end
 
@@ -26,7 +21,7 @@ function save_firm_data(
     firm_df::DataFrame,
     seed::Int64,
 )
-    #if first colum is named cp_i save it as "_cp_firm.csv"
+    #if first colum is named cp_i it is a Consumer Producer, otherwise it should be Kapital Producer
     if "cp_i" in names(firm_df)
         CSV.write(joinpath(@__DIR__, "data", string(seed, "_cp_firm.csv")), firm_df)
     else
@@ -35,14 +30,14 @@ function save_firm_data(
 
 end
 
-
 function save_hh_shock_data(
     all_hh::Vector{Int},
     model::ABM,
     t::Int64,
-    t_warmup::Int64
-    )
-    if t > t_warmup - 5 && t < t_warmup + 250
+    t_warmup::Int64,
+    T::Int64
+)
+    if t > t_warmup - 5 && t < T - 50    # Just limits output, how much of warmup to show and how much of the last entries to show
         df = DataFrame(
             hh_id = map(hh_id -> hh_id, all_hh),
             all_I = map(hh_id -> model[hh_id].total_I, all_hh),
@@ -59,29 +54,18 @@ function save_hh_shock_data(
             all_C = map(hh_id -> model[hh_id].C, all_hh)
         
         )
-        #output the path i am currently in
-        #println(pwd())
-
-
-        # Save data to CSV if t > t_warmup - 5 and t < t_warmup + 100
-        file_name = "household_$(t)_hh.csv"
-        #full_path = joinpath("../data/", "x_hh", file_name)
-
-        full_path = joinpath(@__DIR__, "data", "x_hh", file_name)
-        # Ensure the directory exists
-        mkpath(dirname(full_path))
-
+        full_path = joinpath(@__DIR__, "data", "x_hh", "household_$(t)_hh.csv")     # Each time has its own snapshot saved
+        mkpath(dirname(full_path))      # Ensure the directory exists
         CSV.write(full_path, df)
     end
 end
-
 
 function save_final_dist(
     all_hh::Vector{Int},
     all_cp::Vector{Int},
     all_kp::Vector{Int}, 
     model::ABM
-    )
+)
     # Save income data of households 
     df = DataFrame(
         all_I = map(hh_id -> model[hh_id].total_I, all_hh),
@@ -100,7 +84,6 @@ function save_final_dist(
         all_p_cp = map(cp_id -> model[cp_id].p[end], all_cp),
         all_w_cp = map(cp_id -> model[cp_id].w̄[end], all_cp)
     )
-    
     CSV.write(joinpath(@__DIR__, "data", "final_profit_dists_cp.csv"), df)
 
     # Save sales, profits and market share of kp
@@ -110,9 +93,43 @@ function save_final_dist(
         all_f_kp = map(kp_id -> model[kp_id].f[end], all_kp),
         all_L_kp = map(kp_id -> model[kp_id].L, all_kp)
     )
-    CSV.write(joinpath(@__DIR__, "data", "final_profit_dists_cp.csv"), df)
+    CSV.write(joinpath(@__DIR__, "data", "final_profit_dists_kp.csv"), df)
 
 end
+
+
+# Following was mostly been integrated into the model.csv
+
+# function save_climate_data(
+#     model::ABM
+# )
+#     energy_producer = model.ep
+#     climate = model.climate
+
+#     df = DataFrame(
+#         energy_demand = energy_producer.Dₑ,
+#         total_capacity = energy_producer.Q̄ₑ,
+#         green_capacity = energy_producer.green_capacity,
+#         dirty_capacity = energy_producer.dirty_capacity,
+
+#         p_e = energy_producer.p_ep,
+
+#         RD = energy_producer.RDₑ,
+#         IN_g = energy_producer.IN_g,
+#         IN_d = energy_producer.IN_d,
+
+#         IC_g = energy_producer.IC_g,
+#         A_d = energy_producer.Aᵀ_d,
+#         em_d = energy_producer.emᵀ_d,
+#         c_d = energy_producer.c_d,
+
+#         emissions_total = climate.carbon_emissions,
+#         emissions_kp = climate.carbon_emissions_kp,
+#         emissions_cp = climate.carbon_emissions_cp,
+#         emissions_ep = energy_producer.emissions,
+#     )
+#     CSV.write(joinpath(@__DIR__, "results", "result_data", "climate_and_energy.csv"), df)
+# end
 
 
 # """
@@ -242,39 +259,6 @@ end
 
 #     CSV.write("results/result_data/alpha_W_quantiles.csv", DataFrame(macroeconomy.α_W_quantiles, :auto))
 # end
-
-
-# function save_climate_data(
-#     energy_producer,
-#     climate,
-#     model::ABM
-#     )
-
-#     df = DataFrame(
-#         energy_demand = energy_producer.Dₑ,
-#         total_capacity = energy_producer.Q̄ₑ,
-#         green_capacity = energy_producer.green_capacity,
-#         dirty_capacity = energy_producer.dirty_capacity,
-
-#         p_e = energy_producer.p_ep,
-
-#         RD = energy_producer.RDₑ,
-#         IN_g = energy_producer.IN_g,
-#         IN_d = energy_producer.IN_d,
-
-#         IC_g = energy_producer.IC_g,
-#         A_d = energy_producer.Aᵀ_d,
-#         em_d = energy_producer.emᵀ_d,
-#         c_d = energy_producer.c_d,
-
-#         emissions_total = climate.carbon_emissions,
-#         emissions_kp = climate.carbon_emissions_kp,
-#         emissions_cp = climate.carbon_emissions_cp,
-#         emissions_ep = energy_producer.emissions,
-#     )
-#     CSV.write(joinpath(@__DIR__, "results", "result_data", "climate_and_energy.csv"), df)
-# end
-
 
 # function save_household_quartiles(
 #     householddata::Array

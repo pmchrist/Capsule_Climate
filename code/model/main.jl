@@ -61,8 +61,6 @@ include("helpers/modeldata_storage.jl")
 
 ...
 """
-
-
 function initialize_model(
     T::Int64,
     t_warmup::Int64,
@@ -386,6 +384,7 @@ function model_step!(
     timer = model.g_param.timer
 
     # TODO incorporate this in all the functions
+    T = model.T
     t = model.t
     t_warmup = model.t_warmup
     globalparam = model.g_param 
@@ -749,7 +748,7 @@ function model_step!(
     )
 
     #Save houhehold data if necessary.
-    save_hh_shock_data(all_hh, model, t, t_warmup)
+    save_hh_shock_data(all_hh, model, t, t_warmup, T)
 
     # Increment time by one step
     model.t += 1
@@ -858,7 +857,7 @@ function run_simulation(;
 
     # Save agent dataframe and model dataframe to csv
     if savedata
-        save_simdata(agent_df, model_df, seed)
+        save_simdata(model_df, seed)
         save_final_dist(model.all_hh, model.all_cp, model.all_kp, model)
     end
 

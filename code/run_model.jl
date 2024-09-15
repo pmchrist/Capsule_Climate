@@ -2,14 +2,14 @@ using PyCall
 
 include("model/main.jl")
 
-seed = 1234
+seed = 7777
 
 run_simulation(
     T = 660;
     savedata = true,
     show_full_output = true,
     showprogress = true,
-    seed = 1234,
+    seed = seed,
     save_firmdata = true
 )
 

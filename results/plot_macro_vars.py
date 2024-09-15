@@ -4,10 +4,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
 import os
-PATH = os.path.join(os.path.curdir, 'results', 'data_saved', 'test_run', 'plots', 'macro')
+PATH = os.path.join(os.path.curdir, 'results', 'data_saved', 'Test_seed_7777', 'plots')      # Replace folder name here
 
 
-def plot_macro_vars(df):
+def plot_macro_vars(df:pd.DataFrame):
     """
     Plots macro statistics
     """
@@ -70,7 +70,7 @@ def plot_macro_vars(df):
     plt.savefig(os.path.join(PATH, 'macro_ts.png'), bbox_inches='tight')
 
 
-def plot_household_vars(df):
+def plot_household_vars(df:pd.DataFrame):
     """
     Plots household variables
 
@@ -122,7 +122,7 @@ def plot_household_vars(df):
     plt.savefig(os.path.join(PATH, 'household_ts.png'), bbox_inches='tight')
 
 
-def plot_producer_vars(df):
+def plot_producer_vars(df:pd.DataFrame):
     """
     Plots producer variables
 
@@ -243,7 +243,7 @@ def plot_government_vars(df:pd.DataFrame):
     plt.savefig(os.path.join(PATH, 'government.png'))
 
 
-def plot_cons_vars(df):
+def plot_cons_vars(df:pd.DataFrame):
     """
     Plots consumption figures
     """
@@ -358,13 +358,10 @@ def plot_cons_vars(df):
     plt.savefig(os.path.join(PATH, 'consumption.png'))
 
 
-def plot_income_dist():
+def plot_income_dist(df:pd.DataFrame):
     """
     Plots hh income, wage and wealth distributions at end of simulation
     """
-
-    df = pd.read_csv('../results/result_data/final_income_dists.csv')
-
     start_60 = round(20/100 * 2500)
     end_60 = round(80/100 * 2500)
 
@@ -408,14 +405,11 @@ def plot_income_dist():
     plt.savefig(os.path.join(PATH, 'final_income_dist.png'))
 
 
-def plot_sales_dist():
+def plot_sales_dist(df_cp:pd.DataFrame, df_kp:pd.DataFrame):
     """
     Plots cp and kp sales and profit distributions at end of simulation.
     """
     
-    df_cp = pd.read_csv('../results/result_data/final_profit_dists_cp.csv')
-    df_kp = pd.read_csv('../results/result_data/final_profit_dists_kp.csv')
-
     fig, ax = plt.subplots(5, 2, figsize=(8,12))
 
     ax[0,0].hist(df_cp.all_S_cp, bins=30)
@@ -522,54 +516,6 @@ def plot_energy(df:pd.DataFrame):
     plt.tight_layout()
     plt.savefig(os.path.join(PATH, 'energy.png'))
 
-
-def plot_climate(df_climate_energy, df_macro):
-
-    _, ax = plt.subplots(2, 2, figsize=(8,6))
-
-    T = range(len(df_climate_energy.emissions_total))
-
-    ax[0,0].plot(T, df_climate_energy.emissions_total, label='$c^{total}_t$')
-    ax[0,0].plot(T, df_climate_energy.emissions_kp, label='$c^{kp}_t$')
-    ax[0,0].plot(T, df_climate_energy.emissions_cp, label='$c^{cp}_t$')
-    ax[0,0].plot(T, df_climate_energy.emissions_ep, label='$c^{ep}_t$')
-    ax[0,0].set_title('CO$_2$ emissions')
-    ax[0,0].set_xlabel('time')
-    ax[0,0].set_ylabel('total CO$_2$ emission')
-    ax[0,0].legend()
-
-    real_GDP = 100 * df_macro.GDP / df_macro.CPI
-    ax[0,1].plot(T, df_climate_energy.emissions_total / real_GDP, label='total emissions')
-    ax[0,1].plot(T, df_climate_energy.emissions_kp / real_GDP, label='kp emissions')
-    ax[0,1].plot(T, df_climate_energy.emissions_cp / real_GDP, label='cp emissions')
-    ax[0,1].plot(T, df_climate_energy.emissions_ep / real_GDP, label='ep emissions')
-    ax[0,1].set_title('CO$_2$ emissions per unit of real GDP')
-    ax[0,1].set_xlabel('time')
-    ax[0,1].set_ylabel('CO$_2$ / GDP')
-    ax[0,1].legend()
-
-
-    # ax[1,0].plot(T, df_climate_energy.C_a, label='CO$_2$ in atmosphere')
-    # ax[1,0].plot(T, df_climate_energy.C_m, label='CO$_2$ in mixed ocean layer')
-    # ax[1,0].plot(T, df_climate_energy.C_d, label='CO$_2$ in deep ocean layer')
-    # # ax[1,0].plot(T, df_climate_energy.NPP, label='NPP$_t$')
-    # ax[1,0].set_title('CO$_2$ concentrations')
-    # ax[1,0].set_xlabel('time')
-    # ax[1,0].set_ylabel('Total CO$_2$ concentration')
-    # # ax[1,0].set_yscale('log')
-    # ax[1,0].legend()
-
-    # ax[1,1].plot(T, df_climate_energy.dT_m, label='$\delta T_{m,t}$')
-    # ax[1,1].plot(T, df_climate_energy.dT_d, label='$\delta T_{d,t}$')
-    # ax[1,1].set_title('Temperatures')
-    # ax[1,1].set_xlabel('time')
-    # ax[1,1].set_ylabel('Temperature anomaly')
-    # ax[1,1].legend()
-
-    plt.tight_layout()
-    plt.savefig(os.path.join(PATH, 'climate.png'))
-
-
 def get_indexnumbers(timeseries):
     return timeseries / timeseries[0] * 100
 
@@ -611,27 +557,75 @@ def plot_LIS(df_macro):
     plt.figure(figsize=(6,4))
     plt.plot(df_macro.LIS.iloc[300:])
     plt.xticks(x, years)
-    plt.show()
+    plt.savefig(os.path.join(PATH, 'LIS.png'))
 
-    
+# def plot_climate(df_climate_energy, df_macro):
+
+#     _, ax = plt.subplots(2, 2, figsize=(8,6))
+
+#     T = range(len(df_climate_energy.emissions_total))
+
+#     ax[0,0].plot(T, df_climate_energy.emissions_total, label='$c^{total}_t$')
+#     ax[0,0].plot(T, df_climate_energy.emissions_kp, label='$c^{kp}_t$')
+#     ax[0,0].plot(T, df_climate_energy.emissions_cp, label='$c^{cp}_t$')
+#     ax[0,0].plot(T, df_climate_energy.emissions_ep, label='$c^{ep}_t$')
+#     ax[0,0].set_title('CO$_2$ emissions')
+#     ax[0,0].set_xlabel('time')
+#     ax[0,0].set_ylabel('total CO$_2$ emission')
+#     ax[0,0].legend()
+
+#     real_GDP = 100 * df_macro.GDP / df_macro.CPI
+#     ax[0,1].plot(T, df_climate_energy.emissions_total / real_GDP, label='total emissions')
+#     ax[0,1].plot(T, df_climate_energy.emissions_kp / real_GDP, label='kp emissions')
+#     ax[0,1].plot(T, df_climate_energy.emissions_cp / real_GDP, label='cp emissions')
+#     ax[0,1].plot(T, df_climate_energy.emissions_ep / real_GDP, label='ep emissions')
+#     ax[0,1].set_title('CO$_2$ emissions per unit of real GDP')
+#     ax[0,1].set_xlabel('time')
+#     ax[0,1].set_ylabel('CO$_2$ / GDP')
+#     ax[0,1].legend()
+
+
+#     # ax[1,0].plot(T, df_climate_energy.C_a, label='CO$_2$ in atmosphere')
+#     # ax[1,0].plot(T, df_climate_energy.C_m, label='CO$_2$ in mixed ocean layer')
+#     # ax[1,0].plot(T, df_climate_energy.C_d, label='CO$_2$ in deep ocean layer')
+#     # # ax[1,0].plot(T, df_climate_energy.NPP, label='NPP$_t$')
+#     # ax[1,0].set_title('CO$_2$ concentrations')
+#     # ax[1,0].set_xlabel('time')
+#     # ax[1,0].set_ylabel('Total CO$_2$ concentration')
+#     # # ax[1,0].set_yscale('log')
+#     # ax[1,0].legend()
+
+#     # ax[1,1].plot(T, df_climate_energy.dT_m, label='$\delta T_{m,t}$')
+#     # ax[1,1].plot(T, df_climate_energy.dT_d, label='$\delta T_{d,t}$')
+#     # ax[1,1].set_title('Temperatures')
+#     # ax[1,1].set_xlabel('time')
+#     # ax[1,1].set_ylabel('Temperature anomaly')
+#     # ax[1,1].legend()
+
+#     plt.tight_layout()
+#     plt.savefig(os.path.join(PATH, 'climate.png'))
+
+
 if __name__=="__main__":
 
-    #df_macro = pd.read_csv('../results/result_data/model_data_1234.csv')
-    df_macro = pd.read_csv(os.path.join(os.path.join(os.path.curdir, 'results', 'data_saved', 'test_run'), '1234_model.csv'))
+    df_macro = pd.read_csv(os.path.join(os.path.join(os.path.curdir, 'results', 'data_saved', 'Test_seed_7777'), '7777_model.csv'))   # Replace folder name and model csv name here
 
     plot_macro_vars(df_macro)
     plot_household_vars(df_macro)
     plot_producer_vars(df_macro)
     plot_government_vars(df_macro)
-    # plot_cons_vars(df_macro)
+    plot_cons_vars(df_macro)
+    plot_energy(df_macro)
+    plot_emissions(df_macro)
+    plot_LIS(df_macro)
 
-    # plot_income_dist()
+    df_income_distr = pd.read_csv(os.path.join(os.path.join(os.path.curdir, 'results', 'data_saved', 'Test_seed_7777'), 'final_income_dists.csv'))   # Replace folder name and model csv name here
+    plot_income_dist(df_income_distr)
     plot_inequality(df_macro)
-    # plot_sales_dist()
+
+    df_profit_distr_cp = pd.read_csv(os.path.join(os.path.join(os.path.curdir, 'results', 'data_saved', 'Test_seed_7777'), 'final_profit_dists_cp.csv'))   # Replace folder name and model csv name here
+    df_profit_distr_kp = pd.read_csv(os.path.join(os.path.join(os.path.curdir, 'results', 'data_saved', 'Test_seed_7777'), 'final_profit_dists_kp.csv'))   # Replace folder name and model csv name here
+    plot_sales_dist(df_profit_distr_cp, df_profit_distr_kp)
 
     # df_climate_energy = pd.read_csv('../results/result_data/climate_and_energy.csv')
-    # plot_energy(df_macro)
     # plot_climate(df_climate_energy, df_macro)
-    plot_emissions(df_macro)
-
-    # plot_LIS(df_macro)

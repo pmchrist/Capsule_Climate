@@ -692,6 +692,13 @@ function produce_goods_cp!(
 
     # If the cp does not need to use its complete capital stock, only use most productive 
     # machines
+    # if isnan(cp.Qˢ)   # <- Is NaN
+    #     println("Q")
+    # end
+    # if isnan(globalparam.freq_per_machine)
+    #     println("freq")
+    # end
+    # println(cp.Qˢ / globalparam.freq_per_machine)
     n_machines_req = ceil(Int64, cp.Qˢ / globalparam.freq_per_machine)
     if n_machines_req < length(cp.Ξ)
         # Compute number of machines needed (machines already ordered on productivity, 
@@ -917,6 +924,7 @@ function update_Dᵉ_cp!(
     )
 
     cp.Dᵉ = cp.age > 1 ? ω * cp.Dᵉ + (1 - ω) * (cp.D[end] + cp.Dᵁ[end]) : cp.Dᵉ
+
 end
 
 
@@ -928,6 +936,12 @@ function update_Qˢ_cp!(
     )
 
     cp.Qˢ = max(cp.Dᵉ + cp.Nᵈ - cp.N_goods, 0.0)
+    if isnan(cp.Qˢ)
+        # println(cp.Dᵉ)
+        # println(cp.Nᵈ)
+        # println(cp.N_goods)
+        # println()
+    end
 end
 
 
