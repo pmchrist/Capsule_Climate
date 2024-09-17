@@ -844,19 +844,19 @@ function run_simulation(;
     # Get macro variables from macroeconomy struct
     model_df = get_mdata(model)
 
-    # Get dataframe for firm data
-    cp_firm_df = get_cp_mdata(model)
-    kp_firm_df = get_kp_mdata(model)
+    # Firm dataframes are updated in place
+    get_cp_mdata(model)
+    get_kp_mdata(model)
 
     #save firm dataframe to csv
     if save_firmdata
-        save_firm_data(model.firm_time_series.cp_data, seed) 
-        save_firm_data(model.firm_time_series.kp_data, seed)
+        save_simdata(model.firm_time_series.cp_data, seed, "_cp_firm.csv") 
+        save_simdata(model.firm_time_series.kp_data, seed, "_kp_firm.csv")
     end
 
     # Save agent dataframe and model dataframe to csv
     if savedata
-        save_simdata(model_df, seed)
+        save_simdata(model_df, seed, "_model.csv")
         save_final_dist(model.all_hh, model.all_cp, model.all_kp, model)
     end
 

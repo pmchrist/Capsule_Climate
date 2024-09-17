@@ -8,26 +8,11 @@ using CSV
 
 
 function save_simdata(
-    model_df::DataFrame,
-    seed::Int64,
-)
-    # NOTE: CONVERSION DF TO STRING IS TMP SOLUTION, SHOULD BE FIXED BACK WHEN PACKAGES ARE CONSISTENT AGAIN!
-    # (Seems to be working fine)
-    CSV.write(joinpath(@__DIR__, "data", string(seed, "_model.csv")), model_df)
-
-end
-
-function save_firm_data(
     firm_df::DataFrame,
     seed::Int64,
+    file_name::String
 )
-    #if first colum is named cp_i it is a Consumer Producer, otherwise it should be Kapital Producer
-    if "cp_i" in names(firm_df)
-        CSV.write(joinpath(@__DIR__, "data", string(seed, "_cp_firm.csv")), firm_df)
-    else
-        CSV.write(joinpath(@__DIR__, "data", string(seed, "_kp_firm.csv")), firm_df)
-    end
-
+    CSV.write(joinpath(@__DIR__, "data", string(seed, file_name)), firm_df)
 end
 
 function save_hh_shock_data(
@@ -77,12 +62,12 @@ function save_final_dist(
 
     # Save sales, profits and market share of cp
     df = DataFrame(
-        all_S_cp = map(cp_id -> model[cp_id].curracc.S, all_cp),
-        all_profit_cp = map(cp_id -> model[cp_id].Π[end], all_cp),
-        all_f_cp = map(cp_id -> model[cp_id].f[end], all_cp),
-        all_L_cp = map(cp_id -> model[cp_id].L, all_cp),
-        all_p_cp = map(cp_id -> model[cp_id].p[end], all_cp),
-        all_w_cp = map(cp_id -> model[cp_id].w̄[end], all_cp)
+        all_S_cp = map(cp_id -> model[cp_id].curracc.S, all_cp),        # Total Sales
+        all_profit_cp = map(cp_id -> model[cp_id].Π[end], all_cp),      # Profit
+        all_f_cp = map(cp_id -> model[cp_id].f[end], all_cp),           # Market Share
+        all_L_cp = map(cp_id -> model[cp_id].L, all_cp),                # Labor Units (Workers amount)
+        all_p_cp = map(cp_id -> model[cp_id].p[end], all_cp),           # Price of Good
+        all_w_cp = map(cp_id -> model[cp_id].w̄[end], all_cp),            # Wage Level
     )
     CSV.write(joinpath(@__DIR__, "data", "final_profit_dists_cp.csv"), df)
 

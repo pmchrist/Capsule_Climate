@@ -118,12 +118,20 @@ function get_cp_mdata(model::ABM)
     # Initialize an empty DataFrame with columns as properties
     cp_df = DataFrame(; Dict(prop => Float64[] for prop in model.cpdata_tosave)...)
     #add an additional colum named TCI and K
-    insertcols!(cp_df, :TCI => Float64[])
-    insertcols!(cp_df, :K => Float64[])
-    insertcols!(cp_df, :size=> Float64[])
-    
+    insertcols!(cp_df, :TCI => Float64[])           # Total cost of investment
+    insertcols!(cp_df, :K => Float64[])             # Kapital
+    insertcols!(cp_df, :size=> Float64[])           # Sales
+
+    insertcols!(cp_df, :TCL => Float64[])           # Total cost of Labor
+    insertcols!(cp_df, :TCE => Float64[])           # Total cost of Energy
+    insertcols!(cp_df, :Profits => Float64[])       # Profits
+    insertcols!(cp_df, :Good_Price_p => Float64[])       # Price
+    insertcols!(cp_df, :Good_Markup_mu => Float64[])     # MarkUp
+    insertcols!(cp_df, :Good_Prod_Q => Float64[])        # Production
+    insertcols!(cp_df, :Good_Emiss => Float64[])         # emissions_per_item
 
 
+    # ToDo: Definitely can be optimized
     # Populate the DataFrame by iterating through all_cp
     for cp_id in model.all_cp
         cp_agent = model[cp_id]  # Assuming model[id] retrieves the agent by id
@@ -132,6 +140,14 @@ function get_cp_mdata(model::ABM)
         row[:TCI] = model[cp_id].curracc.TCI
         row[:K] = model[cp_id].balance.K
         row[:size] = model[cp_id].curracc.S
+
+        row[:TCL] = model[cp_id].curracc.TCL
+        row[:TCE] = model[cp_id].curracc.TCE
+        row[:Profits] = model[cp_id].Π[end]
+        row[:Good_Price_p] = model[cp_id].p[end]
+        row[:Good_Markup_mu] = model[cp_id].μ[end]
+        row[:Good_Prod_Q] = model[cp_id].Q[end]
+        row[:Good_Emiss] = model[cp_id].emissions_per_item[end]
 
         push!(cp_df, row)
     end

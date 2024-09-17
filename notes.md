@@ -29,7 +29,7 @@ Initial calibration seems to take a lot of time.
     Energy prices become zero after burn-in period      -> Fixed, bug in init/update
     R&D budgets are also zero after burn-in period      -> Fixed, bug in init/update
 > Check if CP emissions change at all based on the consumer preferences    -> Yes, but influence is very small, only can tip balance if price on fossils is on the tip [0.41, 0.42], 0.413 fossil price is critical for the baseline
-> Previous point has been fixed by normalizing the emissions part. It is now quite influencial and moves market preferences. Next is to improve opinion dynamics and the initialization.
+> Previous point has been fixed by normalizing the emissions part + Changed from all stock into last production. It is now quite influencial and moves market preferences. Next is to improve opinion dynamics and the initialization.
 
 # ToDo Conceptual:
 1) Social Pillar integration into the Consumermarket process linear fomula presentation     -> Finalized
@@ -42,11 +42,12 @@ Initial calibration seems to take a lot of time.
     Problems with Green dominance:
         There is no R&D after some point?
         Energy prices go to zero?
-1) Create a graph which shows CP income and their Emissions dependency
+1) Create a graph which shows CP income and their Emissions dependency      -> Done
 2) Run simulation multiple times to see if it changes results
+3) Implement opinion dynamics with random initialization
 
 # ToDo Programming:
-1) These model parameter updaters are not consistent and logic of initialize_global_params() and changing_params for GlobalParam struct is ugly and works by magic
+1) These model parameter updaters are not consistent and logic of initialize_global_params() and changing_params for GlobalParam struct is ugly and works by "magic"
 
 
 

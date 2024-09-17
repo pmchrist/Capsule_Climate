@@ -8,6 +8,8 @@ import os
 PATH = os.path.join(os.path.curdir, 'results', 'data_saved', 'data', 'plots')      # Replace folder name here
 if not os.path.exists(PATH):
     os.makedirs(PATH)
+PERIOD_WARMUP = 500     # Used to show vertical line
+SEED = 7777             # Used to read file
 
 
 def plot_macro_vars(df:pd.DataFrame):
@@ -525,8 +527,7 @@ def get_indexnumbers(timeseries):
 def get_share(timeseries, tottimeseries, tot_index):
     return tot_index * timeseries / tottimeseries
 
-
-def plot_emissions(df:pd.DataFrame, t_warmup:int=300, t_cutoff:int=200):
+def plot_emissions(df:pd.DataFrame, t_warmup:0):
 
     T = range(len(df.em_index))
 
@@ -536,7 +537,6 @@ def plot_emissions(df:pd.DataFrame, t_warmup:int=300, t_cutoff:int=200):
     ax[0].set_title('CO$_2$ emissions index')
     ax[0].plot(T, df.em_index, label='$c^{total}_t$')
     ax[0].plot(T, df.em_index_cp, label='$c^{cp}_t$')
-    #ax[0].plot(T[t_cutoff:], df.em_index_kp[t_cutoff:], label='$c^{kp}_t$')
     ax[0].plot(T, df.em_index_ep, label='$c^{ep}_t$')
     ax[0].axvline(t_warmup, color='black', linestyle='dotted')
     ax[0].set_xlabel('time')
@@ -551,7 +551,6 @@ def plot_emissions(df:pd.DataFrame, t_warmup:int=300, t_cutoff:int=200):
     plt.tight_layout()
     plt.savefig(os.path.join(PATH, 'emissions.png'))
 
-
 def plot_LIS(df_macro):
 
     x = np.arange(300, 661, 60)
@@ -561,6 +560,185 @@ def plot_LIS(df_macro):
     plt.plot(df_macro.LIS.iloc[300:])
     plt.xticks(x, years)
     plt.savefig(os.path.join(PATH, 'LIS.png'))
+
+def plot_cp_emissions(df:pd.DataFrame):
+
+    # Create a copy of the DataFrame to avoid modifying the original
+    data = df
+
+    # Define quantile bins and labels
+    quantile_bins = [0, 0.1, 0.5, 0.9, 1.0]
+    quantile_labels = ['Q1: 0.0-0.1', 'Q2: 0.1-0.5', 'Q3: 0.5-0.9', 'Q4: 0.9-1.0']
+    # Smoothing Results for better visibility of trend
+    smooth_window = 50
+
+    _, ax = plt.subplots(6, 1, figsize=(10, 40))
+    for i, col in enumerate(["Good_Emiss", "Profits", "size", "Good_Prod_Q", "Good_Price_p", "Good_Markup_mu"]):
+        # Initialize a list to store results
+        results = []
+
+        # Group the data by 'timestamp'
+        grouped = data.groupby('timestamp')
+
+        # Process each group (timestamp)
+        for timestamp, group in grouped:
+            group = group.copy()  # To avoid SettingWithCopyWarning
+            
+            # Get the 'Good_Emiss' values
+            emiss = group['Good_Emiss']
+            
+            # Check if there are enough unique values to calculate quantiles
+            if emiss.nunique() >= len(quantile_bins) - 1:
+                # Assign quantiles within this timestamp
+                try:
+                    group['quantile'] = pd.qcut(
+                        emiss, q=quantile_bins, labels=quantile_labels, duplicates='drop'
+                    )
+                except ValueError:
+                    # Handle cases where quantiles cannot be assigned
+                    group['quantile'] = np.nan
+            else:
+                group['quantile'] = np.nan
+            
+            # Calculate statistics for each quantile
+            stats = group.groupby('quantile', observed=False)[col].agg(['mean', 'var', 'count'])
+            
+            # Reindex stats to include all quantiles
+            stats = stats.reindex(quantile_labels)
+            
+            # Calculate standard error and confidence intervals
+            stats['sem'] = np.sqrt(stats['var']) / np.sqrt(stats['count'])
+            stats['ci_lower'] = stats['mean'] - 1.96 * stats['sem']
+            stats['ci_upper'] = stats['mean'] + 1.96 * stats['sem']
+            
+            # Add timestamp to stats
+            stats['timestamp'] = timestamp
+            
+            # Reset index to turn 'quantile' into a column
+            stats = stats.reset_index()
+            
+            # Append stats to results
+            results.append(stats)
+            
+        # Concatenate all results into a single DataFrame
+        results_df = pd.concat(results, ignore_index=True)
+
+        # Map timestamps to time steps
+        results_df = results_df.sort_values(by='timestamp')
+        unique_timestamps = results_df['timestamp'].unique()
+        time_steps = np.arange(len(unique_timestamps))
+        timestamp_to_timestep = dict(zip(unique_timestamps, time_steps))
+        results_df['time_step'] = results_df['timestamp'].map(timestamp_to_timestep)
+
+        # Pivot the DataFrame for plotting
+        pivot_mean = results_df.pivot(index='time_step', columns='quantile', values='mean')
+        pivot_ci_lower = results_df.pivot(index='time_step', columns='quantile', values='ci_lower')
+        pivot_ci_upper = results_df.pivot(index='time_step', columns='quantile', values='ci_upper')
+        # Smoothing of values
+        pivot_mean = pivot_mean.rolling(window=smooth_window, min_periods=1, center=True).mean()
+        pivot_ci_lower = pivot_ci_lower.rolling(window=smooth_window, min_periods=1, center=True).mean()
+        pivot_ci_upper = pivot_ci_upper.rolling(window=smooth_window, min_periods=1, center=True).mean()
+
+        for quantile in quantile_labels:
+            if quantile in pivot_mean.columns:
+                
+                ax[i].plot(pivot_mean.index, pivot_mean[quantile], label=f'{quantile}')
+                ax[i].fill_between(pivot_mean.index,
+                                pivot_ci_lower[quantile],
+                                pivot_ci_upper[quantile],
+                                alpha=0.2)
+        ax[i].set_xlabel('Time Step')
+        ax[i].set_ylabel(col)
+        ax[i].set_title(col + ' by Quantiles of Emissions with CI (Smoothed)')
+        ax[i].legend(title='Quantiles')
+    plt.tight_layout()
+    plt.savefig(os.path.join(PATH, 'cp_dynamics_production_profits.png'))
+
+    _, ax = plt.subplots(4, 1, figsize=(10, 25))
+    for i, col in enumerate(["Good_Emiss", "TCI", "TCL", "TCE"]):
+
+        # Initialize a list to store results
+        results = []
+
+        # Group the data by 'timestamp'
+        grouped = data.groupby('timestamp')
+
+        # Process each group (timestamp)
+        for timestamp, group in grouped:
+            group = group.copy()  # To avoid SettingWithCopyWarning
+            
+            # Get the 'Good_Emiss' values
+            emiss = group['Good_Emiss']
+            
+            # Check if there are enough unique values to calculate quantiles
+            if emiss.nunique() >= len(quantile_bins) - 1:
+                # Assign quantiles within this timestamp
+                try:
+                    group['quantile'] = pd.qcut(
+                        emiss, q=quantile_bins, labels=quantile_labels, duplicates='drop'
+                    )
+                except ValueError:
+                    # Handle cases where quantiles cannot be assigned
+                    group['quantile'] = np.nan
+            else:
+                group['quantile'] = np.nan
+            
+            # Calculate statistics for each quantile
+            stats = group.groupby('quantile', observed=False)[col].agg(['mean', 'var', 'count'])
+            
+            # Reindex stats to include all quantiles
+            stats = stats.reindex(quantile_labels)
+            
+            # Calculate standard error and confidence intervals
+            stats['sem'] = np.sqrt(stats['var']) / np.sqrt(stats['count'])
+            stats['ci_lower'] = stats['mean'] - 1.96 * stats['sem']
+            stats['ci_upper'] = stats['mean'] + 1.96 * stats['sem']
+            
+            # Add timestamp to stats
+            stats['timestamp'] = timestamp
+            
+            # Reset index to turn 'quantile' into a column
+            stats = stats.reset_index()
+            
+            # Append stats to results
+            results.append(stats)
+            
+        # Concatenate all results into a single DataFrame
+        results_df = pd.concat(results, ignore_index=True)
+
+        # Map timestamps to time steps
+        results_df = results_df.sort_values(by='timestamp')
+        unique_timestamps = results_df['timestamp'].unique()
+        time_steps = np.arange(len(unique_timestamps))
+        timestamp_to_timestep = dict(zip(unique_timestamps, time_steps))
+        results_df['time_step'] = results_df['timestamp'].map(timestamp_to_timestep)
+
+        # Pivot the DataFrame for plotting
+        pivot_mean = results_df.pivot(index='time_step', columns='quantile', values='mean')
+        pivot_ci_lower = results_df.pivot(index='time_step', columns='quantile', values='ci_lower')
+        pivot_ci_upper = results_df.pivot(index='time_step', columns='quantile', values='ci_upper')
+        # Smoothing of values
+        pivot_mean = pivot_mean.rolling(window=smooth_window, min_periods=1, center=True).mean()
+        pivot_ci_lower = pivot_ci_lower.rolling(window=smooth_window, min_periods=1, center=True).mean()
+        pivot_ci_upper = pivot_ci_upper.rolling(window=smooth_window, min_periods=1, center=True).mean()
+
+        for quantile in quantile_labels:
+            if quantile in pivot_mean.columns:
+                
+                ax[i].plot(pivot_mean.index, pivot_mean[quantile], label=f'{quantile}')
+                ax[i].fill_between(pivot_mean.index,
+                                pivot_ci_lower[quantile],
+                                pivot_ci_upper[quantile],
+                                alpha=0.2)
+        ax[i].set_xlabel('Time Step')
+        ax[i].set_ylabel(col)
+        ax[i].set_title(col + ' by Quantiles of Emissions with CI (Smoothed)')
+        ax[i].legend(title='Quantiles')
+    plt.tight_layout()
+    plt.savefig(os.path.join(PATH, 'cp_dynamics_total_cost.png'))
+
+
+    return
 
 # def plot_climate(df_climate_energy, df_macro):
 
@@ -611,16 +789,18 @@ def plot_LIS(df_macro):
 
 if __name__=="__main__":
 
-    df_macro = pd.read_csv(os.path.join(os.path.join(os.path.curdir, 'results', 'data_saved', 'data'), '7777_model.csv'))   # Replace folder name and model csv name here
-
+    df_macro = pd.read_csv(os.path.join(os.path.join(os.path.curdir, 'results', 'data_saved', 'data'), str(SEED)+'_model.csv'))   # Replace folder name and model csv name here
     plot_macro_vars(df_macro)
     plot_household_vars(df_macro)
     plot_producer_vars(df_macro)
     plot_government_vars(df_macro)
     plot_cons_vars(df_macro)
     plot_energy(df_macro)
-    plot_emissions(df_macro)
+    plot_emissions(df_macro, PERIOD_WARMUP)
     plot_LIS(df_macro)
+
+    df_cp = pd.read_csv(os.path.join(os.path.join(os.path.curdir, 'results', 'data_saved', 'data'), str(SEED)+'_cp_firm.csv'))   # Replace folder name and model csv name here
+    plot_cp_emissions(df_cp)
 
     df_income_distr = pd.read_csv(os.path.join(os.path.join(os.path.curdir, 'results', 'data_saved', 'data'), 'final_income_dists.csv'))   # Replace folder name and model csv name here
     plot_income_dist(df_income_distr)
