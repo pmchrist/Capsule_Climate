@@ -4,7 +4,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
 import os
-PATH = os.path.join(os.path.curdir, 'results', 'data_saved', 'Test_seed_7777', 'plots')      # Replace folder name here
+
+PATH = os.path.join(os.path.curdir, 'results', 'data_saved', 'data', 'plots')      # Replace folder name here
+if not os.path.exists(PATH):
+    os.makedirs(PATH)
 
 
 def plot_macro_vars(df:pd.DataFrame):
@@ -608,7 +611,7 @@ def plot_LIS(df_macro):
 
 if __name__=="__main__":
 
-    df_macro = pd.read_csv(os.path.join(os.path.join(os.path.curdir, 'results', 'data_saved', 'Test_seed_7777'), '7777_model.csv'))   # Replace folder name and model csv name here
+    df_macro = pd.read_csv(os.path.join(os.path.join(os.path.curdir, 'results', 'data_saved', 'data'), '7777_model.csv'))   # Replace folder name and model csv name here
 
     plot_macro_vars(df_macro)
     plot_household_vars(df_macro)
@@ -619,12 +622,12 @@ if __name__=="__main__":
     plot_emissions(df_macro)
     plot_LIS(df_macro)
 
-    df_income_distr = pd.read_csv(os.path.join(os.path.join(os.path.curdir, 'results', 'data_saved', 'Test_seed_7777'), 'final_income_dists.csv'))   # Replace folder name and model csv name here
+    df_income_distr = pd.read_csv(os.path.join(os.path.join(os.path.curdir, 'results', 'data_saved', 'data'), 'final_income_dists.csv'))   # Replace folder name and model csv name here
     plot_income_dist(df_income_distr)
     plot_inequality(df_macro)
 
-    df_profit_distr_cp = pd.read_csv(os.path.join(os.path.join(os.path.curdir, 'results', 'data_saved', 'Test_seed_7777'), 'final_profit_dists_cp.csv'))   # Replace folder name and model csv name here
-    df_profit_distr_kp = pd.read_csv(os.path.join(os.path.join(os.path.curdir, 'results', 'data_saved', 'Test_seed_7777'), 'final_profit_dists_kp.csv'))   # Replace folder name and model csv name here
+    df_profit_distr_cp = pd.read_csv(os.path.join(os.path.join(os.path.curdir, 'results', 'data_saved', 'data'), 'final_profit_dists_cp.csv'))   # Replace folder name and model csv name here
+    df_profit_distr_kp = pd.read_csv(os.path.join(os.path.join(os.path.curdir, 'results', 'data_saved', 'data'), 'final_profit_dists_kp.csv'))   # Replace folder name and model csv name here
     plot_sales_dist(df_profit_distr_cp, df_profit_distr_kp)
 
     # df_climate_energy = pd.read_csv('../results/result_data/climate_and_energy.csv')

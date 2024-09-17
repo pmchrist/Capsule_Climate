@@ -45,11 +45,16 @@ function reset_matrices_cp!(
 
     # CP variables
     # Set to order of small to large id (minimum(all_cp):max(all_cp)
+    #println()
     all_p = map(cp_id -> model[cp_id].p[end], minimum(all_cp):maximum(all_cp))              # Last Price
     norm_p = all_p ./ maximum(all_p)                                                        # Normalized Prices (Maybe we need MINMAX? Not just percentage from top value)
+    #println(var(all_p) / mean(all_p))                                                       # Dispersion of prices
+
     all_N_goods = map(cp_id -> model[cp_id].N_goods, minimum(all_cp):maximum(all_cp))       # Inventory Size
-    all_emissions = map(cp_id -> model[cp_id].emissions, minimum(all_cp):maximum(all_cp))   # Emissions
-    emiss_per_good = all_emissions ./ all_N_goods                                           # Emission units per unt of good
+    # Emission aware value of good
+    emiss_per_good = map(cp_id -> model[cp_id].emissions_per_item[end], minimum(all_cp):maximum(all_cp))    # Last Emissions
+    #println(var(emiss_per_good) / mean(emiss_per_good))                                                    # Dispersion of emissions
+    norm_emiss_per_good = emiss_per_good ./ maximum(emiss_per_good)
 
     price_score = []
     env_score = []
@@ -79,7 +84,7 @@ function reset_matrices_cp!(
             # Linear Combination utility Price and Emissions
             # NOTE: For now we just use a Linear Combination
             price_part = norm_p[j] * (1-cmdata.all_Sust_Score[i])           # Normalized Price is used
-            emiss_part = emiss_per_good[j] * cmdata.all_Sust_Score[i]       # Normalized emissions produced per good is used
+            emiss_part = norm_emiss_per_good[j] * cmdata.all_Sust_Score[i]       # Normalized emissions produced per good is used
             cmdata.weights[i,j] = (price_part + emiss_part) ^ -1            # We return inverse, as these are weights for the decision process
             
             push!(price_score, price_part)

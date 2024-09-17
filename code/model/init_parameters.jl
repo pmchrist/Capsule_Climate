@@ -18,8 +18,8 @@
     B_EF_0::Float64 = 1.0                 # initial productivity level B_EF
 
     # Init params of cp
-    # n_init_emp_cp::Int = 10               # number of employees of cp at init
-    n_machines_init::Int64 = 40           # number of machines of cp at init
+    # n_init_emp_cp::Int = 10             # number of employees of cp at init
+    n_machines_init::Int64 = 40           # number of machines of cp at init        # Default = 40
 
     # Init params of hh
     n_cp_hh::Int64 = 25                   # number of cp of hh (also min amount)

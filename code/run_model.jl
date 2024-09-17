@@ -5,7 +5,7 @@ include("model/main.jl")
 seed = 7777
 
 run_simulation(
-    T = 660;
+    T = 1500;
     savedata = true,
     show_full_output = true,
     showprogress = true,
@@ -28,7 +28,7 @@ run_simulation(
 #     show_full_output = true,
 #     showprogress = true,
 #     seed = seed,
-#     changed_params=Dict([(:p_f, 0.2)]),
+#     changed_params=Dict([(:p_f, 0.8)]),
 # )
 
 nothing

@@ -397,15 +397,14 @@ function model_step!(
     climate = model.climate 
     cmdata = model.cmdata
 
-    #timer = global_thread_local_timer[] 
     # Check if any global params are changed in ofat experiment
     check_changed_ofatparams(globalparam, t)
 
     # Update tax rates
     update_taxrates!(government, t)
     # Update parameters
-    update_global_params!(Symbol("p_f"), globalparam , t_warmup, t)
-    #print("green_limit: ", globalparam.green_limit, "\n")
+    #update_global_params!(Symbol("p_f"), globalparam , t_warmup, t)    # Updates Fossil Fuel Price after warmup period
+
     # Update schedulers
     @timeit timer "schedule" all_hh, all_cp, all_kp, all_p = schedule_per_type(model)
 
@@ -775,7 +774,7 @@ end
 """
 function run_simulation(;
     T::Int64 = 660,
-    t_warmup::Int64 = 300,
+    t_warmup::Int64 = 500,      # 300 by default
     changed_params::Union{Dict,Nothing} = nothing,
     changed_params_ofat::Union{Dict,Nothing} = nothing,
     changed_taxrates::Union{Vector,Nothing} = nothing,

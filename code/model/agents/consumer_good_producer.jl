@@ -64,7 +64,10 @@ Defines struct for consumer good producer
     balance::Balance = Balance()              # balance sheet
     curracc::FirmCurrentAccount = FirmCurrentAccount() # current account
 
+    #emissions::Float64 = 0.0                 # carbon emissions in last period
     emissions::Float64 = 0.0                  # carbon emissions in last period
+    emissions_per_item::Vector{Float64}       # hist emissions per item
+
 end
 
 
@@ -92,7 +95,8 @@ function initialize_cp(
         Ξ = machines,                 
         L = 0,
         w̄ = fill(w, 3),
-        f = fill(f, 3)
+        f = fill(f, 3),
+        emissions_per_item = fill(1.0, 3)     # In the beginning machines are the same
     )
 
     cp.balance.NW = 1500.
@@ -690,26 +694,17 @@ function produce_goods_cp!(
     t::Int64
     )
 
-    # If the cp does not need to use its complete capital stock, only use most productive 
-    # machines
-    # if isnan(cp.Qˢ)   # <- Is NaN
-    #     println("Q")
-    # end
-    # if isnan(globalparam.freq_per_machine)
-    #     println("freq")
-    # end
-    # println(cp.Qˢ / globalparam.freq_per_machine)
+    # If the cp does not need to use its complete capital stock, only use most productive machines
     n_machines_req = ceil(Int64, cp.Qˢ / globalparam.freq_per_machine)
     if n_machines_req < length(cp.Ξ)
-        # Compute number of machines needed (machines already ordered on productivity, 
-        # least to most productive)
+        # Compute number of machines needed (machines already ordered on productivity, least to most productive
         req_machines = cp.Ξ[end-n_machines_req:end]
         actual_π_LP = mean(machine -> machine.A_LP, req_machines)
         actual_π_EE = mean(machine -> machine.A_EE, req_machines)
         actual_em = mean(machine -> machine.A_EF, req_machines)
     else
-        actual_π_LP = cp.π_LP[end]
-        actual_π_EE = cp.π_EE[end]
+        actual_π_LP = length(cp.Ξ) > 0 ? mean(machine -> machine.A_LP, cp.Ξ) : 0.0
+        actual_π_EE = length(cp.Ξ) > 0 ? mean(machine -> machine.A_EE, cp.Ξ) : 0.0
         actual_em = length(cp.Ξ) > 0 ? mean(machine -> machine.A_EF, cp.Ξ) : 0.0
     end
 
@@ -1108,6 +1103,13 @@ function update_emissions_cp!(
     )
 
     cp.emissions = actual_em * cp.EU
+    # If there was a production in this step, we need to save new emissions per item
+    if cp.Q[end] > 0
+        shift_and_append!(cp.emissions_per_item, cp.emissions / cp.Q[end])
+    else
+        # if no production in current step keep the last emissions value
+        shift_and_append!(cp.emissions_per_item, cp.emissions_per_item[end])
+    end
 end
 
 

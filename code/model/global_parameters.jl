@@ -64,7 +64,7 @@
     freq_per_machine::Int64 = 25    # capital units per machine
     freq_per_powerplant::Int64 = 10_000 # capital units per instance
 
-    p_f::Float64 = 0.2              # price of fossil fuels
+    p_f::Float64 = 0.2              # price of fossil fuels     # 0.2 was default, at 0.412 goes to dirty, at 0.415 goes to green
 
     n_cons_market_days::Int64 = 4   # number of days in the consumer market process
 
@@ -119,6 +119,7 @@ end
     #     print("param vector", param_vector)
     #     flush(stdout)
 
+# ToDo: MAKE UPDATERS CONSISTENT BY USING THIS FUNCTION
 function update_global_params!(
     paramname::Symbol,
     globalparam::GlobalParam,
@@ -127,15 +128,14 @@ function update_global_params!(
     )
     #check if in t is bigger than warmup period 
     if t > t_warmup && globalparam.changing_params[t] ≠ nothing
-        #print("paramname_", paramname, "_value_", globalparam.changing_params[t])
+        print("paramname_", paramname, "_value_", globalparam.changing_params[t])
         #change parameter value in changed_param to the value in the vector at index t
         setproperty!(globalparam, paramname, globalparam.changing_params[t])
-        #setproperty!(globalparam, changing_params, changed_param)
-        #print("paramname_", paramname, "_value_", globalparam.changing_params[t])
     end
 end
 
 
+# ToDo: THIS FUNCTION NEEDS IMPROVEMENT
 function initialize_global_params(
     changed_params::Union{Nothing, Dict},
     changed_params_ofat::Union{Nothing, Dict},
@@ -143,12 +143,10 @@ function initialize_global_params(
     t_warmup::Int64,
     timer::TimerOutput
     )
-    #print(changed_params)
-
 
     globalparam = GlobalParam(
         changed_params_ofat = changed_params_ofat, 
-        changing_params = zeros(T), 
+        changing_params = zeros(T),         # EVERYTHING IS BASED ON COMPARISON WITH NULL BUT WE SET IT TO ZEROS
         timer=timer
     )
 
@@ -159,6 +157,7 @@ function initialize_global_params(
 
    
     if !isnothing(changed_params)  #SHOCK EXPERIMENT
+        print("There is a shock")
         # Extract the first key-value pair from changed_params
         shock=20
         pair = first(changed_params)
