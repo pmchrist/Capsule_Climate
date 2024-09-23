@@ -11,9 +11,9 @@ Initial calibration seems to take a lot of time.
     1)  Add environmental awareness/opinion score into HH               ! Done
         Add environmental punishment into the Consumermarket process    ! Done
         Run tests                                                       ? What else test to run? Probably needs multiple simulations with random seeds (how to visualize though?) Maybe motivate dirty production? just to see it works/not
-        Add Initialization of environmental opinion
-        Add Opinion Dynamics
-    2)  Add these scores to CP and KP (not sure if viable, check structure of original model)
+        Add Initialization of environmental opinion                     <- In progress
+        Add Opinion Dynamics (Deffuant Model)                           <- In progress
+    2)  Add these scores to CP and KP (not sure if viable, check structure of original model)   -> Not sure if makes sense, but we can try
     3)  Create Job Market based on opinion too!
 
 
@@ -21,6 +21,8 @@ Initial calibration seems to take a lot of time.
 0) Why unemployed have highest savings rate???
 1) What is LIS in results visualization?
 2) Price of Fossils is fixed, which is problematic. As is a very sensitive parameter which defines on what energy producer will do, and it changes all the balances for producers. Should we address this? Is it worth it? Have you tried it already?
+3) I have incorporated E into the consumer's choice with a linear function. Should I also integrate a hard cut-off? Because there is a theory that we should just boycott high polluters, this should be a hard core solution.
+4) How to initialize opinions? I just do random bell shape on both opennes and opinion itself.
 
 # Performed Tests:
 > Re-run baseline to check for the strange behavior
@@ -32,8 +34,9 @@ Initial calibration seems to take a lot of time.
 > Previous point has been fixed by normalizing the emissions part + Changed from all stock into last production. It is now quite influencial and moves market preferences. Next is to improve opinion dynamics and the initialization.
 
 # ToDo Conceptual:
-1) Social Pillar integration into the Consumermarket process linear fomula presentation     -> Finalized
-2) Modify Isaak's Diagram to be in line with my Thesis
+1) Social Pillar integration into the Consumermarket process linear fomula presentation     -> Finalized, needs presentation
+2) Make presentation on how Opinion dynamics work
+3) Modify Isaak's Diagram to be in line with my Thesis
 
 # ToDo Research/Tests:
 0) Some Errors:
@@ -43,8 +46,8 @@ Initial calibration seems to take a lot of time.
         There is no R&D after some point?
         Energy prices go to zero?
 1) Create a graph which shows CP income and their Emissions dependency      -> Done
-2) Run simulation multiple times to see if it changes results
-3) Implement opinion dynamics with random initialization
+2) Run simulation multiple times to see if it changes results - Yes, by a lot   -> Done
+3) Implement opinion dynamics with random initialization - Finalized (Need to integrate into the model)
 
 # ToDo Programming:
 1) These model parameter updaters are not consistent and logic of initialize_global_params() and changing_params for GlobalParam struct is ugly and works by "magic"
