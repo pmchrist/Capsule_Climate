@@ -5,7 +5,7 @@ CairoMakie.activate!() # hide
 using Random # hide
 Random.seed!(42) # hide
 using Base.Iterators
-
+using Distributions
 
 # Agent Properties
 mutable struct hh <: AbstractAgent
@@ -25,8 +25,8 @@ function init_opinion_model(n_hh = 100, opinion_conversion_rate = 0.5, opinion_u
     properties = Properties(n_hh, opinion_conversion_rate)
     model = ABM(hh, scheduler = Schedulers.fastest, properties = properties)
     for i in 1:n_hh
-        o = rand(model.rng)
-        u = rand(model.rng)
+        o = rand(Beta(2, 2))
+        u = rand(Beta(2, 2))
         agent = hh(nextid(model), o, o, u)
         add_agent!(agent, model)
     end
@@ -71,13 +71,13 @@ function deffuant_model_step!(model)
         pair_discussion(model, ids[a_id], ids[a_id+1])
     end
 
-    # CHANGE SHOCK HERE
-    stoch_shock_threshold = 0.001
-    for a in allagents(model)
-        if rand(model.rng) < stoch_shock_threshold
-            a.opinion_uncertainty = rand(model.rng)
-        end
-    end
+    # # CHANGE SHOCK HERE
+    # stoch_shock_threshold = 0.001
+    # for a in allagents(model)
+    #     if rand(model.rng) < stoch_shock_threshold
+    #         a.opinion_uncertainty = rand(model.rng)
+    #     end
+    # end
 
 end
 
@@ -104,14 +104,14 @@ plotsim(ax, data) =
         lines!(ax, grp.step, grp.new_opinion, color = cmap[grp.id[1]/100])
     end
 # Params
-n_hh = 100
-steps = 500
-eps = [0.5000001, 0.5, 0.500000001]
+n_hh = 200
+steps = 1000
+conv_rates = [0.01, 0.05, 0.2]                  # 0.05
 figure = Figure(resolution = (600, 600))
-for (i, ϵ) in enumerate(eps)
-    ax = figure[i, 1] = Axis(figure; title = "epsilon = $ϵ")
+for (i, conv_rate) in enumerate(conv_rates)
+    ax = figure[i, 1] = Axis(figure; title = "Convergence Rate = $conv_rate")
     #e_data = model_hk_run(n_hh, steps, 1.0, ϵ)
-    e_data = model_deffuant_run(n_hh, steps, 0.5, ϵ)
+    e_data = model_deffuant_run(n_hh, steps, conv_rate, -1.0)
     plotsim(ax, e_data)
 end
 
