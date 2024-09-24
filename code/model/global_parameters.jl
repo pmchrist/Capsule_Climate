@@ -52,6 +52,7 @@
     α_maxdev::Float64 = 0.01        # maximum deviation household α can make in one time period
     ρ::Float64 = 0.3                # parameter governing utility function steepness
     # α_cp::Float64 = 0.75            # parameter controlling APC of consumers
+    sust_conv_rate::Float64 = 0.05  # HH rate of change of opinion on sustainability (lower is more stable but slower change)
 
     # Deterime extend of progresivity of government spending
     prog::Float64 = -0.5

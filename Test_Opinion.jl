@@ -6,6 +6,7 @@ using Random # hide
 Random.seed!(42) # hide
 using Base.Iterators
 using Distributions
+using Distributed
 
 # Agent Properties
 mutable struct hh <: AbstractAgent
@@ -25,9 +26,9 @@ function init_opinion_model(n_hh = 100, opinion_conversion_rate = 0.5, opinion_u
     properties = Properties(n_hh, opinion_conversion_rate)
     model = ABM(hh, scheduler = Schedulers.fastest, properties = properties)
     for i in 1:n_hh
-        o = rand(Beta(2, 2))
-        u = rand(Beta(2, 2))
-        agent = hh(nextid(model), o, o, u)
+        o1 = o2 = rand(Beta(2, 2))
+        u = rand(Beta(5, 5))
+        agent = hh(nextid(model), o1, o2, u)
         add_agent!(agent, model)
     end
     return model
@@ -104,7 +105,7 @@ plotsim(ax, data) =
         lines!(ax, grp.step, grp.new_opinion, color = cmap[grp.id[1]/100])
     end
 # Params
-n_hh = 200
+n_hh = 2500
 steps = 1000
 conv_rates = [0.01, 0.05, 0.2]                  # 0.05
 figure = Figure(resolution = (600, 600))

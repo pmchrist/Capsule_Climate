@@ -8,6 +8,7 @@ function schedule_per_type(
     shuffle_agents=true::Bool
     )
 
+    # This works for some reason, might be a problem when migrating to new version of Agents
     if shuffle_agents
         shuffle!(model.all_hh)
         shuffle!(model.all_cp)

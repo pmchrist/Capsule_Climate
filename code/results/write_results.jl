@@ -36,8 +36,10 @@ function save_hh_shock_data(
             #same with P̄
             real_I = map(hh_id -> model[hh_id].total_I/model[hh_id].P̄, all_hh),
             #same with hh.C 
-            all_C = map(hh_id -> model[hh_id].C, all_hh)
-        
+            all_C = map(hh_id -> model[hh_id].C, all_hh),
+            all_Sust_Score = map(hh_id -> model[hh_id].Sust_Score, all_hh),
+            all_Sust_Uncert = map(hh_id -> model[hh_id].Sust_Score_Uncertainty, all_hh)
+
         )
         full_path = joinpath(@__DIR__, "data", "x_hh", "household_$(t)_hh.csv")     # Each time has its own snapshot saved
         mkpath(dirname(full_path))      # Ensure the directory exists

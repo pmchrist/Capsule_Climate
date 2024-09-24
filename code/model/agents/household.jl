@@ -39,7 +39,11 @@
     P̄::Float64 = 1.0                           # weighted average price of bp
     P̄ᵉ::Float64 = 1.0                          # expected weighted average price of bp
     c_L::Float64 = 0.5                         # share of income used to buy luxury goods
-    Sust_Score::Float64 = 0.5                  # Opinion on how much environment is important [0-not important, 1-important]       ( TODO: INITIALIZE IT SOMEWHERE)
+    
+    Sust_Score::Float64                        # Opinion on how much environment is important [0-not important, 1-important]
+    Sust_Score_Old::Float64 = Sust_Score       # Opinion from a previous step (used in opinion dynamics model)
+    Sust_Score_Uncertainty::Float64            # Uncertainty in beliefs on how important sustainability is [0-not sur, 1-sure in his opinion] (used in opinion dynamics model, influences dynamics of change)
+
 end
 
 
@@ -398,6 +402,7 @@ function decide_switching_all_hh!(
     )
 
     for hh_id in all_hh
+
         # Check if demand was constrained and for chance of changing cp
         if length(model[hh_id].unsat_dem) > 0 && rand() < globalparam.ψ_Q
 
@@ -546,4 +551,35 @@ function resetincomes_hh!(
 
     # Capital income and social benefits from end of last period are counted in this period
     hh.total_I = hh.capital_I + hh.socben_I
+end
+
+
+"""
+Updates hh opinion on sustainability importance
+(is used in the consumption decision)
+"""
+function sust_opinion_exchange_all_hh!(
+    globalparam::GlobalParam,
+    all_hh::Vector{Int64},
+    model::ABM,
+    to
+    )
+
+    rate = globalparam.sust_conv_rate
+
+    for hh_id in collect(1:2:length(all_hh))
+        id_1 = all_hh[hh_id]
+        id_2 = all_hh[hh_id + 1]
+
+        # Update rules as per https://www.jasss.org/19/1/6.html
+        if abs(model[id_1].Sust_Score_Old - model[id_2].Sust_Score_Old) < model[id_1].Sust_Score_Uncertainty
+            model[id_1].Sust_Score = model[id_1].Sust_Score_Old + rate * (model[id_2].Sust_Score_Old - model[id_1].Sust_Score_Old)
+        elseif abs(model[id_1].Sust_Score_Old - model[id_2].Sust_Score_Old) < model[id_2].Sust_Score_Uncertainty
+            model[id_2].Sust_Score = model[id_2].Sust_Score_Old + rate * (model[id_1].Sust_Score_Old - model[id_2].Sust_Score_Old)
+        end
+        model[id_1].Sust_Score_Old = model[id_1].Sust_Score
+        model[id_2].Sust_Score_Old = model[id_2].Sust_Score
+        
+    end
+
 end

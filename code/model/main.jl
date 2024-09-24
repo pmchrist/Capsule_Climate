@@ -169,7 +169,9 @@ function initialize_model(
         hh = Household(
                         id = nextid(model), 
                         skill = rand(LogNormal(model.i_param.skill_mean, model.i_param.skill_var)),
-                        β = rand(Uniform(model.i_param.βmin, model.i_param.βmax))
+                        β = rand(Uniform(model.i_param.βmin, model.i_param.βmax)),
+                        Sust_Score = rand(Beta(model.i_param.sust_α, model.i_param.sust_β)),
+                        Sust_Score_Uncertainty = rand(Beta(model.i_param.sust_uncert_α, model.i_param.sust_uncert_β)),
                       )
         hh.wʳ = max(model.gov.w_min, hh.wʳ)
         add_agent!(hh, model)
@@ -405,7 +407,7 @@ function model_step!(
     # Update parameters
     #update_global_params!(Symbol("p_f"), globalparam , t_warmup, t)    # Updates Fossil Fuel Price after warmup period
 
-    # Update schedulers
+    # Update schedulers (returns shuffled agents)
     @timeit timer "schedule" all_hh, all_cp, all_kp, all_p = schedule_per_type(model)
 
     # Redistrubute remaining stock of dividents to households
@@ -587,7 +589,6 @@ function model_step!(
     ERt = t == 1 ? 0.07 : macroeconomy.returns_investments[t-1]
 
     # Households set consumption budget
-    
     for hh_id in all_hh
         # Update average price level of cp
         update_average_price_hh!(model[hh_id], globalparam.ω, model)
@@ -612,6 +613,14 @@ function model_step!(
             model
         )
     end
+
+    # Households decide to switch suppliers based on satisfied demand and prices
+    @timeit timer "sust opinion exchange hh" sust_opinion_exchange_all_hh!(
+        globalparam,
+        all_hh,
+        model,
+        timer
+    )
 
     # Consumer market process
     @timeit timer "consumermarket" consumermarket_process!(

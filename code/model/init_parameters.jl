@@ -27,6 +27,11 @@
     skill_var::Float64 = 0.75             # variance value for lognormal skill distribution
     βmin::Float64 = 0.7                   # minimum value discount factor
     βmax::Float64 = 1.0                   # maximum value discount factor
+    # Determine household sustainability
+    sust_α::Int64 = 2                       # Used in beta distribution for weight of sustainable decisions
+    sust_β::Int64 = 2                       # Used in beta distribution for weight of sustainable decisions
+    sust_uncert_α::Int64 = 5                # Used in beta distribution for uncertainty in importance of sustainability
+    sust_uncert_β::Int64 = 5                # Used in beta distribution for uncertainty in importance of sustainability
 
     # Init params of ep
     n_powerplants_init::Int64 = 300_000   # number of unit of power plants in ep
