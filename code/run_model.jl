@@ -5,7 +5,8 @@ include("model/main.jl")
 seed = 7777
 
 run_simulation(
-    T = 1500;
+    T = 500,
+    t_warmup = 100,
     savedata = true,
     show_full_output = true,
     showprogress = true,

@@ -22,29 +22,27 @@ function save_hh_shock_data(
     t_warmup::Int64,
     T::Int64
 )
-    if t > t_warmup - 5 && t < T - 50    # Just limits output, how much of warmup to show and how much of the last entries to show
-        df = DataFrame(
-            hh_id = map(hh_id -> hh_id, all_hh),
-            all_I = map(hh_id -> model[hh_id].total_I, all_hh),
-            C_actual = map(hh_id -> model[hh_id].C_actual, all_hh),
-            all_w = map(hh_id -> model[hh_id].w[end], all_hh),
-            all_labor = map(hh_id -> model[hh_id].labor_I, all_hh),
-            all_captial = map(hh_id -> model[hh_id].capital_I, all_hh),
-            all_UB_I = map(hh_id -> model[hh_id].UB_I, all_hh),
-            all_socben_I = map(hh_id -> model[hh_id].socben_I, all_hh),
-            all_W = map(hh_id -> model[hh_id].W, all_hh),
-            #same with P̄
-            real_I = map(hh_id -> model[hh_id].total_I/model[hh_id].P̄, all_hh),
-            #same with hh.C 
-            all_C = map(hh_id -> model[hh_id].C, all_hh),
-            all_Sust_Score = map(hh_id -> model[hh_id].Sust_Score, all_hh),
-            all_Sust_Uncert = map(hh_id -> model[hh_id].Sust_Score_Uncertainty, all_hh)
+    df = DataFrame(
+        hh_id = map(hh_id -> hh_id, all_hh),
+        all_I = map(hh_id -> model[hh_id].total_I, all_hh),
+        C_actual = map(hh_id -> model[hh_id].C_actual, all_hh),
+        all_w = map(hh_id -> model[hh_id].w[end], all_hh),
+        all_labor = map(hh_id -> model[hh_id].labor_I, all_hh),
+        all_captial = map(hh_id -> model[hh_id].capital_I, all_hh),
+        all_UB_I = map(hh_id -> model[hh_id].UB_I, all_hh),
+        all_socben_I = map(hh_id -> model[hh_id].socben_I, all_hh),
+        all_W = map(hh_id -> model[hh_id].W, all_hh),
+        #same with P̄
+        real_I = map(hh_id -> model[hh_id].total_I/model[hh_id].P̄, all_hh),
+        #same with hh.C 
+        all_C = map(hh_id -> model[hh_id].C, all_hh),
+        all_Sust_Score = map(hh_id -> model[hh_id].Sust_Score, all_hh),
+        all_Sust_Uncert = map(hh_id -> model[hh_id].Sust_Score_Uncertainty, all_hh)
 
-        )
-        full_path = joinpath(@__DIR__, "data", "x_hh", "household_$(t)_hh.csv")     # Each time has its own snapshot saved
-        mkpath(dirname(full_path))      # Ensure the directory exists
-        CSV.write(full_path, df)
-    end
+    )
+    full_path = joinpath(@__DIR__, "data", "x_hh", "household_$(t)_hh.csv")     # Each time has its own snapshot saved
+    mkpath(dirname(full_path))      # Ensure the directory exists
+    CSV.write(full_path, df)
 end
 
 function save_final_dist(

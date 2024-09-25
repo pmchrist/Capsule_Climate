@@ -8,9 +8,10 @@ import os
 PATH = os.path.join(os.path.curdir, 'results', 'data_saved', 'data', 'plots')      # Replace folder name here
 if not os.path.exists(PATH):
     os.makedirs(PATH)
-PERIOD_WARMUP = 500     # Used to show vertical line
+PERIOD_WARMUP = 100     # Used to show vertical line
 SEED = 7777             # Used to read file
-
+HH_STEP_START = 1
+HH_STEP_END = 500
 
 def plot_macro_vars(df:pd.DataFrame):
     """
@@ -527,7 +528,7 @@ def get_indexnumbers(timeseries):
 def get_share(timeseries, tottimeseries, tot_index):
     return tot_index * timeseries / tottimeseries
 
-def plot_emissions(df:pd.DataFrame, t_warmup:0):
+def plot_emissions(df:pd.DataFrame):
 
     T = range(len(df.em_index))
 
@@ -538,14 +539,13 @@ def plot_emissions(df:pd.DataFrame, t_warmup:0):
     ax[0].plot(T, df.em_index, label='$c^{total}_t$')
     ax[0].plot(T, df.em_index_cp, label='$c^{cp}_t$')
     ax[0].plot(T, df.em_index_ep, label='$c^{ep}_t$')
-    ax[0].axvline(t_warmup, color='black', linestyle='dotted')
+    ax[0].axvline(PERIOD_WARMUP, color='black', linestyle='dotted')
     ax[0].set_xlabel('time')
     ax[0].set_ylabel('index ($t_{warmup}=100$)')
     ax[0].legend()
 
     ax[1].set_title('percentage CO$_2$ emissions from CP')
     ax[1].plot(T, df.energy_percentage)
-    ax[1].axvline(t_warmup, color='black', linestyle='dotted')
     
 
     plt.tight_layout()
@@ -563,17 +563,31 @@ def plot_LIS(df_macro):
 
 def plot_cp_emissions(df:pd.DataFrame):
 
-    # Create a copy of the DataFrame to avoid modifying the original
-    data = df
+    plot_aggreg_quantiles(df, 'Good_Emiss', ["Good_Emiss", "Profits", "size", "Good_Prod_Q", "Good_Price_p", "Good_Markup_mu"], 'cp_dynamics_production_profits')
+    plot_aggreg_quantiles(df, 'Good_Emiss', ["Good_Emiss", "TCI", "TCL", "TCE"], 'cp_dynamics_total_cost')
+
+    return
+
+def plot_aggreg_quantiles(df:pd.DataFrame, col_aggregate, cols_to_compare, plot_name, quantile_bins = [0, 0.1, 0.5, 0.9, 1.0], smooth_window = 50):
+    """
+    This function saves a plot of cols_to_compare respected to the quantiles of col_aggregate. How value of another column changes aggregated by the quantiles of the another column
+
+    col_aggregate - str - name of the column which we aggregate in quantiles and group other values based on it
+    cols_to_compare - array str - array of strings where we say which columns we want to visualize
+    plot_name - str - a name of the image to be saved
+    quantile_bins - values on which we aggregate
+    smooth_window - Smoothing Results for better visibility of trend
+
+    """
+    data = df.copy()
 
     # Define quantile bins and labels
-    quantile_bins = [0, 0.1, 0.5, 0.9, 1.0]
-    quantile_labels = ['Q1: 0.0-0.1', 'Q2: 0.1-0.5', 'Q3: 0.5-0.9', 'Q4: 0.9-1.0']
-    # Smoothing Results for better visibility of trend
-    smooth_window = 50
+    quantile_labels = []
+    for i in range(len(quantile_bins)-1):
+        quantile_labels.append(str(quantile_bins[i]) + '-' + str(quantile_bins[i+1]))
 
-    _, ax = plt.subplots(6, 1, figsize=(10, 40))
-    for i, col in enumerate(["Good_Emiss", "Profits", "size", "Good_Prod_Q", "Good_Price_p", "Good_Markup_mu"]):
+    _, ax = plt.subplots(len(cols_to_compare), 1, figsize=(10, 10*int(len(cols_to_compare)*0.65)))
+    for i, col in enumerate(cols_to_compare):
         # Initialize a list to store results
         results = []
 
@@ -585,7 +599,7 @@ def plot_cp_emissions(df:pd.DataFrame):
             group = group.copy()  # To avoid SettingWithCopyWarning
             
             # Get the 'Good_Emiss' values
-            emiss = group['Good_Emiss']
+            emiss = group[col_aggregate]
             
             # Check if there are enough unique values to calculate quantiles
             if emiss.nunique() >= len(quantile_bins) - 1:
@@ -649,93 +663,11 @@ def plot_cp_emissions(df:pd.DataFrame):
                                 alpha=0.2)
         ax[i].set_xlabel('Time Step')
         ax[i].set_ylabel(col)
-        ax[i].set_title(col + ' by Quantiles of Emissions with CI (Smoothed)')
+        ax[i].set_title(col + ' by Quantiles of ' + col_aggregate + ' with CI (Smoothed)')
+        ax[i].axvline(PERIOD_WARMUP, color='black', linestyle='dotted')
         ax[i].legend(title='Quantiles')
     plt.tight_layout()
-    plt.savefig(os.path.join(PATH, 'cp_dynamics_production_profits.png'))
-
-    _, ax = plt.subplots(4, 1, figsize=(10, 25))
-    for i, col in enumerate(["Good_Emiss", "TCI", "TCL", "TCE"]):
-
-        # Initialize a list to store results
-        results = []
-
-        # Group the data by 'timestamp'
-        grouped = data.groupby('timestamp')
-
-        # Process each group (timestamp)
-        for timestamp, group in grouped:
-            group = group.copy()  # To avoid SettingWithCopyWarning
-            
-            # Get the 'Good_Emiss' values
-            emiss = group['Good_Emiss']
-            
-            # Check if there are enough unique values to calculate quantiles
-            if emiss.nunique() >= len(quantile_bins) - 1:
-                # Assign quantiles within this timestamp
-                try:
-                    group['quantile'] = pd.qcut(
-                        emiss, q=quantile_bins, labels=quantile_labels, duplicates='drop'
-                    )
-                except ValueError:
-                    # Handle cases where quantiles cannot be assigned
-                    group['quantile'] = np.nan
-            else:
-                group['quantile'] = np.nan
-            
-            # Calculate statistics for each quantile
-            stats = group.groupby('quantile', observed=False)[col].agg(['mean', 'var', 'count'])
-            
-            # Reindex stats to include all quantiles
-            stats = stats.reindex(quantile_labels)
-            
-            # Calculate standard error and confidence intervals
-            stats['sem'] = np.sqrt(stats['var']) / np.sqrt(stats['count'])
-            stats['ci_lower'] = stats['mean'] - 1.96 * stats['sem']
-            stats['ci_upper'] = stats['mean'] + 1.96 * stats['sem']
-            
-            # Add timestamp to stats
-            stats['timestamp'] = timestamp
-            
-            # Reset index to turn 'quantile' into a column
-            stats = stats.reset_index()
-            
-            # Append stats to results
-            results.append(stats)
-            
-        # Concatenate all results into a single DataFrame
-        results_df = pd.concat(results, ignore_index=True)
-
-        # Map timestamps to time steps
-        results_df = results_df.sort_values(by='timestamp')
-        unique_timestamps = results_df['timestamp'].unique()
-        time_steps = np.arange(len(unique_timestamps))
-        timestamp_to_timestep = dict(zip(unique_timestamps, time_steps))
-        results_df['time_step'] = results_df['timestamp'].map(timestamp_to_timestep)
-
-        # Pivot the DataFrame for plotting
-        pivot_mean = results_df.pivot(index='time_step', columns='quantile', values='mean')
-        pivot_ci_lower = results_df.pivot(index='time_step', columns='quantile', values='ci_lower')
-        pivot_ci_upper = results_df.pivot(index='time_step', columns='quantile', values='ci_upper')
-        # Smoothing of values
-        pivot_mean = pivot_mean.rolling(window=smooth_window, min_periods=1, center=True).mean()
-        pivot_ci_lower = pivot_ci_lower.rolling(window=smooth_window, min_periods=1, center=True).mean()
-        pivot_ci_upper = pivot_ci_upper.rolling(window=smooth_window, min_periods=1, center=True).mean()
-
-        for quantile in quantile_labels:
-            if quantile in pivot_mean.columns:
-                
-                ax[i].plot(pivot_mean.index, pivot_mean[quantile], label=f'{quantile}')
-                ax[i].fill_between(pivot_mean.index,
-                                pivot_ci_lower[quantile],
-                                pivot_ci_upper[quantile],
-                                alpha=0.2)
-        ax[i].set_xlabel('Time Step')
-        ax[i].set_ylabel(col)
-        ax[i].set_title(col + ' by Quantiles of Emissions with CI (Smoothed)')
-        ax[i].legend(title='Quantiles')
-    plt.tight_layout()
-    plt.savefig(os.path.join(PATH, 'cp_dynamics_total_cost.png'))
+    plt.savefig(os.path.join(PATH, plot_name + '.png'))
 
 
     return
@@ -787,6 +719,43 @@ def plot_cp_emissions(df:pd.DataFrame):
 #     plt.savefig(os.path.join(PATH, 'climate.png'))
 
 
+def plot_hh_opinion_dynamics(df:pd.DataFrame):
+
+    # Get the list of unique 'hh_id's
+    hh_ids = df['hh_id'].unique()
+
+    # Show Sustainability Score
+    plt.figure(figsize=(12, 6))
+    # Loop through each 'hh_id' and plot its data
+    for hh_id in hh_ids:
+        hh_data = df[df['hh_id'] == hh_id]
+        plt.plot(hh_data['timestamp'], hh_data['all_Sust_Score'], label=f'hh_id {hh_id}')
+    plt.xlabel('Step')
+    plt.ylabel('HH Sustainability Score')
+    plt.title('Sustainability Score Over Time by hh_id')
+    plt.tight_layout()
+    plt.axvline(PERIOD_WARMUP, color = 'b', linestyle='dotted')
+    plt.savefig(os.path.join(PATH, 'hh_sustainability_score.png'))
+
+    # Show Uncertainty in Sustainability
+    plt.figure(figsize=(12, 6))
+    # Loop through each 'hh_id' and plot its data
+    for hh_id in hh_ids:
+        hh_data = df[df['hh_id'] == hh_id]
+        plt.plot(hh_data['timestamp'], hh_data['all_Sust_Uncert'], label=f'hh_id {hh_id}')
+    plt.xlabel('Step')
+    plt.ylabel('HH Uncertainty in Sustainability Opinion')
+    plt.title('Uncertainty in Sustainability Over Time by hh_id')
+    plt.tight_layout()
+    plt.axvline(PERIOD_WARMUP, color = 'b', linestyle='dotted')
+    plt.savefig(os.path.join(PATH, 'hh_sustainability_uncertainty.png'))
+
+    # Aggregate of other parameter based on opinion quantile (same as with cp)
+    plot_aggreg_quantiles(df, 'all_Sust_Score', ['all_Sust_Score', 'all_W'], 'hh_W_to_Sustainability', smooth_window = 10)
+
+    return
+
+
 if __name__=="__main__":
 
     df_macro = pd.read_csv(os.path.join(os.path.join(os.path.curdir, 'results', 'data_saved', 'data'), str(SEED)+'_model.csv'))   # Replace folder name and model csv name here
@@ -796,7 +765,7 @@ if __name__=="__main__":
     plot_government_vars(df_macro)
     plot_cons_vars(df_macro)
     plot_energy(df_macro)
-    plot_emissions(df_macro, PERIOD_WARMUP)
+    plot_emissions(df_macro)
     plot_LIS(df_macro)
 
     df_cp = pd.read_csv(os.path.join(os.path.join(os.path.curdir, 'results', 'data_saved', 'data'), str(SEED)+'_cp_firm.csv'))   # Replace folder name and model csv name here
@@ -812,3 +781,12 @@ if __name__=="__main__":
 
     # df_climate_energy = pd.read_csv('../results/result_data/climate_and_energy.csv')
     # plot_climate(df_climate_energy, df_macro)
+
+    hh_fields = ['hh_id', 'all_Sust_Score', 'all_Sust_Uncert', 'all_W']     # We have to read only few columns to save time
+    df_hh = pd.DataFrame()
+    for timestamp in range(HH_STEP_START, HH_STEP_END):  # Change appropriately for the size of simulation range (as in the folder)
+        path = (os.path.join(os.path.join(os.path.curdir, 'results', 'data_saved', 'data', 'x_hh'), 'household_'+str(timestamp)+'_hh.csv'))
+        df = pd.read_csv(path, skipinitialspace=True, usecols=hh_fields)
+        df['timestamp'] = timestamp
+        df_hh = pd.concat([df_hh, df], ignore_index=True)
+    plot_hh_opinion_dynamics(df_hh)

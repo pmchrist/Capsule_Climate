@@ -11,8 +11,10 @@ Initial calibration seems to take a lot of time.
     1)  Add environmental awareness/opinion score into HH               ! Done
         Add environmental punishment into the Consumermarket process    ! Done
         Run tests                                                       ? What else test to run? Probably needs multiple simulations with random seeds (how to visualize though?) Maybe motivate dirty production? just to see it works/not
-        Add Initialization of environmental opinion                     <- In progress
-        Add Opinion Dynamics (Deffuant Model)                           <- In progress
+        Add Initialization of environmental opinion                     ! Done
+        Add Opinion Dynamics (Deffuant Model)                           ! Done
+        Add Visualization of opinion dynamics                           ! Done
+        Get Preliminary Results and Analyze them                        <- To Do and task is done!
     2)  Add these scores to CP and KP (not sure if viable, check structure of original model)   -> Not sure if makes sense, but we can try
     3)  Create Job Market based on opinion too!
 
