@@ -7,6 +7,10 @@ Random.seed!(42) # hide
 using Base.Iterators
 using Distributions
 using Distributed
+OPINION_ALPHA = 2
+OPINION_BETA = 2
+UNCERTAINTY_ALPHA = 5
+UNCERTAINRY_BETA = 15
 
 # Agent Properties
 mutable struct hh <: AbstractAgent
@@ -26,8 +30,8 @@ function init_opinion_model(n_hh = 100, opinion_conversion_rate = 0.5, opinion_u
     properties = Properties(n_hh, opinion_conversion_rate)
     model = ABM(hh, scheduler = Schedulers.fastest, properties = properties)
     for i in 1:n_hh
-        o1 = o2 = rand(Beta(2, 2))
-        u = rand(Beta(5, 5))
+        o1 = o2 = rand(Beta(OPINION_ALPHA, OPINION_BETA))
+        u = rand(Beta(UNCERTAINTY_ALPHA, UNCERTAINRY_BETA))
         agent = hh(nextid(model), o1, o2, u)
         add_agent!(agent, model)
     end
@@ -76,7 +80,7 @@ function deffuant_model_step!(model)
     # stoch_shock_threshold = 0.001
     # for a in allagents(model)
     #     if rand(model.rng) < stoch_shock_threshold
-    #         a.opinion_uncertainty = rand(model.rng)
+    #         a.opinion_uncertainty = rand(Beta(UNCERTAINTY_ALPHA, UNCERTAINRY_BETA))
     #     end
     # end
 
@@ -105,7 +109,7 @@ plotsim(ax, data) =
         lines!(ax, grp.step, grp.new_opinion, color = cmap[grp.id[1]/100])
     end
 # Params
-n_hh = 2500
+n_hh = 100
 steps = 1000
 conv_rates = [0.01, 0.05, 0.2]                  # 0.05
 figure = Figure(resolution = (600, 600))
