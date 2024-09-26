@@ -10,7 +10,7 @@ using Distributed
 OPINION_ALPHA = 2
 OPINION_BETA = 2
 UNCERTAINTY_ALPHA = 5
-UNCERTAINRY_BETA = 15
+UNCERTAINRY_BETA = 5
 
 # Agent Properties
 mutable struct hh <: AbstractAgent

@@ -41,8 +41,9 @@ Phase 2 - ???
 
 # ToDo Research/Tests:
 1) Problems with Green dominant economies: There is no R&D after some point? Energy prices go to zero? Are these two conected? They seemingly move together. INVESTIGATE!
-2) Check if there are more CP in the list of HH it might improve speed of convergence/stability.
-3) We have only one energy producer, which means that CP cannot decide which type of energy they will use. This seems like a crucial feture, needs more investigation on how it works currently. <- The issue is that when we have dirty production machines improve, meanwhile with green production they are not. So all these issues are connected. INVESTIGATE ASAP!
+2) We have only one energy producer, which means that CP cannot decide which type of energy they will use. This seems like a crucial feature, needs more investigation on how it works currently. <- The issue is that when we have dirty production machines improve, meanwhile with green production they are not. So all these issues are connected. INVESTIGATE ASAP!
+3) Emissions per product are non comparable between simulations, as it does not take into account the energy source, only machine's productivity. Is a conceptual issue, either change name or change the way it is calculated by incorporation the emissions of EP.
+4) Check if there are more CP in the list of HH it might improve speed of convergence/stability.
 
 
 
