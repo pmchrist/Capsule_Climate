@@ -24,7 +24,7 @@ Phase 2 - Creating Sustainable Employee
 
 # Current ToDo:
 1) Check how Energy Producers work in detail. Fix the emission calcualtions, it might not account for the energy source emissions. (In green economy emissions per good are higher than in brown economy, probably the energy source used is not used in calculations. If all energy is green there should be zero emissions. But won't it destroy the consumption process or will just amplify it?)
-    - Emissions per product are non comparable between simulations, as it does not take into account the energy source, only machine's productivity. Is a conceptual issue, either change name or change the way it is calculated by incorporating the emissions of EP. (Second)
+    - Emissions per product are non comparable between simulations, as it does not take into account the energy source, only machine's productivity. Is a conceptual issue, either change name or change the way it is calculated by incorporating the emissions of EP. <- Fixed by incorporating energy source emissions
     - There is no R&D after some point? Energy prices go to zero? Are these two connected? They seemingly move together. (It was found that there is no fixed costs for the grid, only production cost is passed to the consumers of the energy, does it change results?)
     - The issue is that when we have dirty production machines improve, meanwhile with green production they are not. So all these issues are connected.
     - We have only one energy producer, which means that CP cannot decide which type of energy they will use. This seems like a crucial feature, needs more investigation on how it works currently. (We will probably leave it as it is)
@@ -40,7 +40,7 @@ Phase 2 - Creating Sustainable Employee
 1) Migrate to the newer version of Agents.jl
 2) Modify Isaak's Diagram to be in line with my Thesis Research
 3) These model parameter updaters are not consistent and logic of initialize_global_params() and changing_params for GlobalParam struct is ugly and works kinda by "magic"
-
+4) There are some resizing of arrays, if we keep them fixed it might make code faster
 
 
 # Notes:

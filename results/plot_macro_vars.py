@@ -544,7 +544,7 @@ def plot_emissions(df:pd.DataFrame):
     ax[0].set_ylabel('index ($t_{warmup}=100$)')
     ax[0].legend()
 
-    ax[1].set_title('percentage CO$_2$ emissions from CP')
+    ax[1].set_title('percentage CO$_2$ emissions from EP')
     ax[1].plot(T, df.energy_percentage)
     
 

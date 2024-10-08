@@ -581,6 +581,15 @@ function model_step!(
         model
     )
     
+    # We need to touch CP and KP again to calculate accurate emissions (now that we know the EP production composition)
+    @timeit timer "CP emissions" for cp_id in all_cp
+        update_emissions_cp!(ep, model[cp_id], globalparam, t)
+    end
+
+    @timeit timer "KP emissions" for kp_id in all_kp
+        update_emissions_kp!(ep, model[kp_id], t)
+    end
+
     # (6) Transactions take place on consumer market
 
     # all_W = map(hh_id -> model[hh_id].W, all_hh)

@@ -54,7 +54,12 @@ function reset_matrices_cp!(
     # Emission aware value of good
     emiss_per_good = map(cp_id -> model[cp_id].emissions_per_item[end], minimum(all_cp):maximum(all_cp))    # Last Emissions
     #println(var(emiss_per_good) / mean(emiss_per_good))                                                    # Dispersion of emissions
-    norm_emiss_per_good = emiss_per_good ./ maximum(emiss_per_good)
+    if maximum(emiss_per_good) > 0      # If there were some emissions in the last step
+        norm_emiss_per_good = emiss_per_good ./ maximum(emiss_per_good)
+    else
+        println("WARNING: No Production or Clean Economy")
+        norm_emiss_per_good = emiss_per_good
+    end
 
     price_score = []
     env_score = []

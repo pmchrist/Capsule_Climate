@@ -717,11 +717,9 @@ function produce_goods_cp!(
         req_machines = cp.Ξ[end-n_machines_req:end]
         actual_π_LP = mean(machine -> machine.A_LP, req_machines)
         actual_π_EE = mean(machine -> machine.A_EE, req_machines)
-        actual_em = mean(machine -> machine.A_EF, req_machines)
     else
         actual_π_LP = length(cp.Ξ) > 0 ? mean(machine -> machine.A_LP, cp.Ξ) : 0.0
         actual_π_EE = length(cp.Ξ) > 0 ? mean(machine -> machine.A_EE, cp.Ξ) : 0.0
-        actual_em = length(cp.Ξ) > 0 ? mean(machine -> machine.A_EF, cp.Ξ) : 0.0
     end
 
     # Compute total production amount
@@ -730,7 +728,6 @@ function produce_goods_cp!(
 
     # Update energy use and carbon emissions from production
     update_EU_TCE_cp!(cp, actual_π_EE, ep.p_ep[t])
-    update_emissions_cp!(cp, actual_em)
     
     # Update rate of capital utilization
     if cp.n_machines > 0
@@ -1114,12 +1111,26 @@ end
 Updates carbon emissions during production
 """
 function update_emissions_cp!(
-    cp::ConsumerGoodProducer, 
-    actual_em::Float64
+    ep::AbstractAgent,
+    cp::ConsumerGoodProducer,
+    globalparam::GlobalParam,
+    t::Int64
     )
+    # If the cp does not need to use its complete capital stock, only use most productive machines
+    n_machines_req = ceil(Int64, cp.Qˢ / globalparam.freq_per_machine)
+    if n_machines_req < length(cp.Ξ)
+        # Compute number of machines needed (machines already ordered on productivity, least to most productive
+        req_machines = cp.Ξ[end-n_machines_req:end]
+        actual_em = mean(machine -> machine.A_EF, req_machines)
+    else
 
-    cp.emissions = actual_em * cp.EU
+        actual_em = length(cp.Ξ) > 0 ? mean(machine -> machine.A_EF, cp.Ξ) : 0.0
+    end
+
+    cp.emissions = actual_em * cp.EU * ep.emissions_per_energy[t]
+    #println(actual_em * cp.EU, " | ", cp.emissions, " | ", ep.emissions_per_energy[t])
     # If there was a production in this step, we need to save new emissions per item
+    #println(cp.emissions, "|", cp.Q[end])
     if cp.Q[end] > 0
         shift_and_append!(cp.emissions_per_item, cp.emissions / cp.Q[end])
     else

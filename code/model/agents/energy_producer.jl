@@ -1,8 +1,8 @@
 @with_kw mutable struct EnergyProducer <: AbstractAgent
     T::Int64=T                                    # Total number of iterations
 
-    D_ep::Vector{Float64} = zeros(Float64, T)     # Demand for energy units over time
-    Qmax_ep::Vector{Float64} = zeros(Float64, T)     # Maximum production of units over time
+    D_ep::Vector{Float64} = zeros(Float64, T)       # Demand for energy units over time
+    Qmax_ep::Vector{Float64} = zeros(Float64, T)    # Maximum production of units over time
 
 
     # Prices, cost and investments
@@ -28,16 +28,17 @@
     c_d::Vector{Float64} = zeros(Float64, T)    # Discounted production cost of the cheapest dirty plant 
 
     # Owned power plants
-    green_portfolio::Vector{PowerPlant}         # Portfolio of all green powerplants
-    green_capacity::Vector{Float64} = zeros(Float64, T) # capacity of set of green powerplants
-    dirty_portfolio::Vector{PowerPlant}         # Portfolio of all dirty powerplants
-    dirty_capacity::Vector{Float64} = zeros(Float64, T) # Capacity of set of dirty powerplants,
-    green_frac_prod::Vector{Float64} = zeros(Float64, T) # Green fraction of total production
-    infra_marg::Vector{PowerPlant} = PowerPlant[]   # Infra-marginal plants
-    pp_tb_replaced::Vector{PowerPlant} = PowerPlant[]   # Power plants to be replaced
-    pp_tb_retired::Vector{PowerPlant} = PowerPlant[]   # Power plants to be retired
+    green_portfolio::Vector{PowerPlant}                     # Portfolio of all green powerplants
+    green_capacity::Vector{Float64} = zeros(Float64, T)     # capacity of set of green powerplants
+    dirty_portfolio::Vector{PowerPlant}                     # Portfolio of all dirty powerplants
+    dirty_capacity::Vector{Float64} = zeros(Float64, T)     # Capacity of set of dirty powerplants,
+    green_frac_prod::Vector{Float64} = zeros(Float64, T)    # Green fraction of total production
+    infra_marg::Vector{PowerPlant} = PowerPlant[]           # Infra-marginal plants
+    pp_tb_replaced::Vector{PowerPlant} = PowerPlant[]       # Power plants to be replaced
+    pp_tb_retired::Vector{PowerPlant} = PowerPlant[]        # Power plants to be retired
 
     emissions::Vector{Float64} = zeros(Float64, T)
+    emissions_per_energy::Vector{Float64} = zeros(Float64, T)
 end
 
 
@@ -766,8 +767,11 @@ function compute_emissions_ep!(
             req_capacity -= pp.capacity
         end
     end
-
+    #println(total_emissions, " | ", ep.D_ep[t])
     ep.emissions[t] = total_emissions
+    ep.emissions_per_energy[t] = total_emissions / ep.D_ep[t]
+    #println(ep.emissions_per_energy[t])
+    #print("Emissions per Energy unit", ep.emissions_per_energy[t])
     #print("Emissions: ", ep.emissions[t], "\n")
     
 end

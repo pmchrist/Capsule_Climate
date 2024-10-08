@@ -485,7 +485,7 @@ Lets kp add goods to the production queue, based on available labor supply
 """
 function produce_goods_kp!(
     kp::CapitalGoodProducer,
-    ep,
+    ep::AbstractAgent,
     globalparam::GlobalParam,
     t::Int64
     )
@@ -540,8 +540,6 @@ function produce_goods_kp!(
     # Update energy use from production
     update_EU_TCE_kp!(kp, ep.p_ep[t])
 
-    update_emissions_kp!(kp)
-
     # Empty order queue
     for cp_id in keys(kp.orders)
         kp.orders[cp_id] = 0
@@ -566,10 +564,12 @@ end
 Update amount of emissions that result from energy usage EU. 
 """
 function update_emissions_kp!(
-    kp::CapitalGoodProducer
+    ep::AbstractAgent,
+    kp::CapitalGoodProducer,
+    t::Int64
     )
-
-    kp.emissions = kp.EU * kp.B_EF
+    #println(ep.emissions_per_energy)
+    kp.emissions = kp.B_EF * kp.EU * ep.emissions_per_energy[t]
 end
 
 
