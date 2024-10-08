@@ -65,7 +65,7 @@
     freq_per_machine::Int64 = 25    # capital units per machine
     freq_per_powerplant::Int64 = 10_000 # capital units per instance
 
-    p_f::Float64 = 0.4              # price of fossil fuels     # 0.2 was default, with Opinion 0.38 is a tiping point
+    p_f::Float64 = 0.5              # price of fossil fuels     # 0.2 was default, with Opinion 0.38 is a tiping point
 
     n_cons_market_days::Int64 = 4   # number of days in the consumer market process
 

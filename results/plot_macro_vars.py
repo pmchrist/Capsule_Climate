@@ -535,7 +535,7 @@ def plot_emissions(df:pd.DataFrame):
     fig, ax = plt.subplots(1, 2, figsize=(8,4))
     fig.suptitle('Carbon Emissions')
 
-    ax[0].set_title('CO$_2$ emissions index')
+    ax[0].set_title('CO$_2$ emissions index')       # These indexes use as baseline value at warmup's end
     ax[0].plot(T, df.em_index, label='$c^{total}_t$')
     ax[0].plot(T, df.em_index_cp, label='$c^{cp}_t$')
     ax[0].plot(T, df.em_index_ep, label='$c^{ep}_t$')

@@ -22,10 +22,10 @@
     carbontax::Vector{Float64} = zeros(Float64, T)# Paid carbon taxes
 
     # Technological parameters
-    IC_g::Vector{Float64}                       # Fixed investment cost of the cheapest new green power plant
-    A_therm_ep::Vector{Float64} = zeros(Float64, T)   # Thermal efficiency of new power plants
-    emnew_ep::Vector{Float64} = zeros(Float64, T)  # Emissions of new power plants
-    c_d::Vector{Float64} = zeros(Float64, T)    # Discounted production cost of the cheapest dirty plant 
+    IC_g::Vector{Float64}                           # Fixed investment cost of the cheapest new green power plant
+    A_therm_ep::Vector{Float64} = zeros(Float64, T) # Thermal efficiency of new power plants
+    emnew_ep::Vector{Float64} = zeros(Float64, T)   # Emissions of new power plants
+    c_d::Vector{Float64} = zeros(Float64, T)        # Discounted production cost of the cheapest dirty plant 
 
     # Owned power plants
     green_portfolio::Vector{PowerPlant}                     # Portfolio of all green powerplants
@@ -493,6 +493,7 @@ function innovate_ep!(
     t::Int64
     )
 
+    # Note: Because of lower ep.p_ep innovation is lower for the green economy. In real life it is mitigated by very high initial cost compared to the brown power.
     # Compute R&D spending (Lamperti et al (2018), eq 18)
     ep.RD_ep[t] = t > 1 ? globalparam.νₑ * ep.p_ep[t-1] * ep.D_ep[t-1] : 0.0
 
