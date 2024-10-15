@@ -2,11 +2,11 @@ using PyCall
 
 include("model/main.jl")
 
-seed = 7777
+seed = 100
 
 run_simulation(
-    T = 500,
-    t_warmup = 100,
+    T = 600,
+    t_warmup = 200,
     savedata = true,
     show_full_output = true,
     showprogress = true,

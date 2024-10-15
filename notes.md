@@ -28,12 +28,14 @@ Phase 2 - Creating Sustainable Employee
     - There is no R&D after some point? Energy prices go to zero? Are these two connected? They seemingly move together.  <- Parameter ξₑ controls the allocation of innovation budget. Innovation does not go to zero, after initial boost it hovers around 100-200 for green economy, while for brown economy it hovers around 600 from the beginning. This happens because the innovation spending is proportionate to the expected energy price, in green economy energy is cheaper, therefore it only needs an initial investment, just like in real life.
     - The issue is that when we have dirty production machines improve, meanwhile with green production they are not. So all these issues are connected. <- Yes, by design on conceptual level, according to Lamperti et al (2018) only price improves for green energy.
     - We have only one energy producer, which means that CP cannot decide which type of energy they will use. This seems like a crucial feature, needs more investigation on how it works currently. <- This will make model overcomplicated.
-2) Research on to how connect opinion dynamics with reality (people are mostly interested in the sustainability when things are going good. It was mostly answered, just formulate it for the model)
+2) Research on to how connect opinion dynamics with reality (people are mostly interested in the sustainability when things are going good. It was mostly answered, just formulate it for the model)    <- Done, proposed questions are in the More on Sustainability Opinion Dynamics.md
 3) Perform Experiments:
-    - Investigate the volatility of emission producers, with what is it connected?
-    - Check GDP Growth dynamics, how to maximize it? How economy scaling works in green vs brown?
+    - Check if there are more CP in the list of HH it might improve speed of convergence/stability.     <- No difference
+    - Investigate the volatility of emission producers, with what is it connected?      <- It happens when dominant energy source is changed, or one of them goes extinct. Plausible explanation is that it changes emissions, and as a result highly sutainably households start buying previously deemed unsustainable products from the old inventory. Another possible scenario is once energy source is settled CP start competing on machine productivity, thus growing expenses and increase in production/demand (probably first though). Additional finding, companies that postpone upgrade of machinery do it in cycles sometimes. (Check it again)
+    - Check GDP Growth dynamics, how to maximize it? How economy scaling works in green vs brown?       <- In general dynamics of the GDP are same, only that green is ending slightly higher, because of lower energy costs. However, we can see a slight drop in GDP at the same time points as the previous experiment.
     - Make a Plot of tipping point for the sustainability opinion for when society goes into green production vs brown - production. How to incorporate Fossils price?
-    - Check if there are more CP in the list of HH it might improve speed of convergence/stability.
+    - (New Idea) Visualize Bunkruptcies based on the emissions (Companies with Age=0/1)
+    - (New Idea) At the end, we can do scatter plots of emissions, for example emissions/market_Share for CP
 4) Integrate Sustainabiltiy Opinion into Job Market
 
 # Nice ToDo:
@@ -54,6 +56,9 @@ Phase 2 - Creating Sustainable Employee
 # Current Questions:
 1) What is LIS in results visualization?
 2) What is the appropriate horizon for the simulation? How to choose it?
+
+3) When we change size of simulation, or some parameters are increased alone it produces very strange results some times. How were initial parameters chosen? Should just a recalibration solve this?
+4) How should we implement features and perform tests? For example should I first integrate sustainability in job market or first should I integrate everything for the opinion dynamics and perform experiments with it alone?
 
 
 # Answered Questions:
