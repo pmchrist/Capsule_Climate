@@ -76,6 +76,7 @@
     changing_params::Union{Vector, Dict}   # Parameters that are changed at the end of the warmup period
 
     timer::TimerOutput
+    folder_name::String                     # A folder where to save outputs (very ugly temporary solution (hh have to be saves each step))
 end
 
 function init_changed_params(
@@ -142,13 +143,15 @@ function initialize_global_params(
     changed_params_ofat::Union{Nothing, Dict},
     T::Int64,
     t_warmup::Int64,
-    timer::TimerOutput
+    timer::TimerOutput,
+    folder_name::String
     )
 
     globalparam = GlobalParam(
         changed_params_ofat = changed_params_ofat, 
         changing_params = zeros(T),         # EVERYTHING IS BASED ON COMPARISON WITH NULL BUT WE SET IT TO ZEROS
-        timer=timer
+        timer=timer,
+        folder_name = folder_name
     )
 
     # if isnothing(changed_params)

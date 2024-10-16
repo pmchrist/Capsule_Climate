@@ -57,7 +57,7 @@ function reset_matrices_cp!(
     if maximum(emiss_per_good) > 0      # If there were some emissions in the last step
         norm_emiss_per_good = emiss_per_good ./ maximum(emiss_per_good)
     else
-        println("WARNING: No Production or Clean Economy")
+        #println("WARNING: No Production or Clean Economy")
         norm_emiss_per_good = emiss_per_good
     end
 

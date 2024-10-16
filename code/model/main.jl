@@ -67,7 +67,9 @@ function initialize_model(
     timer::TimerOutput;
     changed_params::Union{Dict, Nothing},
     changed_params_ofat::Union{Dict, Nothing},
-    changed_taxrates::Union{Vector, Nothing}
+    changed_taxrates::Union{Vector, Nothing},
+    changed_params_init,
+    folder_name::String
     )::ABM
 
     # Initialize scheduler
@@ -75,8 +77,13 @@ function initialize_model(
 
     # Initialize struct that holds global params and initial parameters
     #print(changed_params)
-    globalparam  = initialize_global_params(changed_params, changed_params_ofat, T, t_warmup, timer)
+    globalparam  = initialize_global_params(changed_params, changed_params_ofat, T, t_warmup, timer, folder_name)
     initparam = InitParam()
+    if !isnothing(changed_params_init)      # Update struct if another value was provided 
+        for (field, value) in changed_params_init
+            setfield!(initparam, field, value)
+        end
+    end
 
     # Initialize struct that holds macro variables
     macroeconomy = MacroEconomy(T=T)
@@ -398,6 +405,8 @@ function model_step!(
     indexfund = model.idxf 
     climate = model.climate 
     cmdata = model.cmdata
+    
+    folder_name = globalparam.folder_name
 
     # Check if any global params are changed in ofat experiment
     check_changed_ofatparams(globalparam, t)
@@ -765,7 +774,7 @@ function model_step!(
     )
 
     #Save houhehold data if necessary.
-    save_hh_shock_data(all_hh, model, t, t_warmup, T)
+    save_hh_shock_data(all_hh, model, t, t_warmup, T, folder_name)
 
     # Increment time by one step
     model.t += 1
@@ -796,24 +805,24 @@ function run_simulation(;
     changed_params::Union{Dict,Nothing} = nothing,
     changed_params_ofat::Union{Dict,Nothing} = nothing,
     changed_taxrates::Union{Vector,Nothing} = nothing,
+    changed_params_init = nothing,        # Just to change the parameters for parallel run
     show_full_output::Bool = false,
-    thread_nr::Int64 = 1,
     sim_nr::Int64 = 0,
     showprogress::Bool = false,
     savedata::Bool = true,
     save_firmdata::Bool = false,
-    seed::Int64 = Random.rand(1000:9999)
+    seed::Int64 = Random.rand(1000:9999),
+    folder_name::String
     )
 
     # Set seed of simulation
     Random.seed!(seed)
 
-    println("thread $(Threads.threadid()), sim $sim_nr has started on $(Dates.format(now(), "HH:MM"))")
+    println("sim $sim_nr has started on $(Dates.format(now(), "HH:MM"))")
     #print(changed_params)
     
-    
 
-    timer = TimerOutput() #MULTITHREADING #TODO #once global variable
+    timer = TimerOutput()
 
     # Initialize model
     @timeit timer "init" model = initialize_model(
@@ -822,7 +831,9 @@ function run_simulation(;
         timer; 
         changed_params = changed_params,
         changed_params_ofat = changed_params_ofat, 
-        changed_taxrates = changed_taxrates
+        changed_taxrates = changed_taxrates,
+        changed_params_init = changed_params_init,
+        folder_name = folder_name
     )
     #initialize firm data category
     # Check for Nothing and provide empty vectors if needed
@@ -866,16 +877,17 @@ function run_simulation(;
     get_cp_mdata(model)
     get_kp_mdata(model)
 
-    #save firm dataframe to csv
-    if save_firmdata
-        save_simdata(model.firm_time_series.cp_data, seed, "_cp_firm.csv") 
-        save_simdata(model.firm_time_series.kp_data, seed, "_kp_firm.csv")
-    end
 
     # Save agent dataframe and model dataframe to csv
     if savedata
-        save_simdata(model_df, seed, "_model.csv")
-        save_final_dist(model.all_hh, model.all_cp, model.all_kp, model)
+        save_init_params(model.g_param , model.i_param , seed, folder_name)          # Just save init params
+        save_simdata(model_df, seed, "_model.csv", folder_name)
+        save_final_dist(model.all_hh, model.all_cp, model.all_kp, model, folder_name)
+        #save firm dataframe to csv
+        if save_firmdata
+            save_simdata(model.firm_time_series.cp_data, seed, "_cp_firm.csv", folder_name) 
+            save_simdata(model.firm_time_series.kp_data, seed, "_kp_firm.csv", folder_name)
+        end
     end
 
     # Show profiling output
@@ -884,7 +896,7 @@ function run_simulation(;
         println()
     end
 
-    println("thread $thread_nr, sim $sim_nr has finished on $(Dates.format(now(), "HH:MM"))")
+    println("sim $sim_nr has finished on $(Dates.format(now(), "HH:MM"))")
 
     return agent_df, model_df
 end

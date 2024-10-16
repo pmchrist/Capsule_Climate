@@ -9,7 +9,7 @@ PATH = os.path.join(os.path.curdir, 'results', 'data_saved', 'data', 'plots')   
 if not os.path.exists(PATH):
     os.makedirs(PATH)
 PERIOD_WARMUP = 100     # Used to show vertical line
-SEED = 100             # Used to read file
+SEED = 7777             # Used to read file
 HH_STEP_START = 1
 HH_STEP_END = 500
 
@@ -563,7 +563,7 @@ def plot_LIS(df_macro):
 
 def plot_cp_emissions(df:pd.DataFrame):
 
-    plot_aggreg_quantiles(df, 'Good_Emiss', ["Good_Emiss", "Profits", "size", "Good_Prod_Q", "Good_Price_p", "Good_Markup_mu"], 'cp_dynamics_production_profits')
+    plot_aggreg_quantiles(df, 'Good_Emiss', ["Good_Emiss", "Profits", "size", "Good_Prod_Q", "Good_Price_p", "Good_Markup_mu", "age"], 'cp_dynamics_production_profits')
     plot_aggreg_quantiles(df, 'Good_Emiss', ["Good_Emiss", "TCI", "TCL", "TCE"], 'cp_dynamics_total_cost')
 
     return

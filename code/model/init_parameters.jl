@@ -1,4 +1,4 @@
-@with_kw struct InitParam
+@with_kw mutable struct InitParam
     
     # Agent counts
     n_kp::Int64 = 20                      # number of (k)capital producers

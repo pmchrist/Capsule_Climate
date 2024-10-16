@@ -33,9 +33,11 @@ Phase 2 - Creating Sustainable Employee
     - Check if there are more CP in the list of HH it might improve speed of convergence/stability.     <- No difference
     - Investigate the volatility of emission producers, with what is it connected?      <- It happens when dominant energy source is changed, or one of them goes extinct. Plausible explanation is that it changes emissions, and as a result highly sutainably households start buying previously deemed unsustainable products from the old inventory. Another possible scenario is once energy source is settled CP start competing on machine productivity, thus growing expenses and increase in production/demand (probably first though). Additional finding, companies that postpone upgrade of machinery do it in cycles sometimes. (Check it again)
     - Check GDP Growth dynamics, how to maximize it? How economy scaling works in green vs brown?       <- In general dynamics of the GDP are same, only that green is ending slightly higher, because of lower energy costs. However, we can see a slight drop in GDP at the same time points as the previous experiment.
-    - Make a Plot of tipping point for the sustainability opinion for when society goes into green production vs brown - production. How to incorporate Fossils price?
-    - (New Idea) Visualize Bunkruptcies based on the emissions (Companies with Age=0/1)
-    - (New Idea) At the end, we can do scatter plots of emissions, for example emissions/market_Share for CP
+    - Visualize Bunkruptcies based on the emissions (Companies with Age=0/1) <- Done! Good idea, it now shows average age and once there is deviance, we know who is bunkrupt and why. We can see clearer first point.
+    - Experiment with sizes of economy to see improvement in the CI     <- No difference
+    - At the end, we can do scatter plots of emissions, for example emissions/market_Share for CP       <- Pointless as we are losing the dynamics and we can deduce same information from the existent plots for CP
+    - Add logger for the critical parameters so that we can re use experiments and organize them easier     <- Done! Hopefully helps
+    - Make a Plot of tipping point for the sustainability opinion for when society goes into green production vs brown - production. How to incorporate Fossils price? <- We need to keep a track of CP emissions overall, EP green share, HH opinions. best way is to just save them and show side by side. First, added parallelization, which took some time
 4) Integrate Sustainabiltiy Opinion into Job Market
 
 # Nice ToDo:
@@ -59,6 +61,7 @@ Phase 2 - Creating Sustainable Employee
 
 3) When we change size of simulation, or some parameters are increased alone it produces very strange results some times. How were initial parameters chosen? Should just a recalibration solve this?
 4) How should we implement features and perform tests? For example should I first integrate sustainability in job market or first should I integrate everything for the opinion dynamics and perform experiments with it alone?
+5) Should I start comparing to the model with no opinion? Or should we do it at all?
 
 
 # Answered Questions:
