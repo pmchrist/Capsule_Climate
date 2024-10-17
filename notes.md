@@ -37,7 +37,7 @@ Phase 2 - Creating Sustainable Employee
     - Experiment with sizes of economy to see improvement in the CI     <- No difference
     - At the end, we can do scatter plots of emissions, for example emissions/market_Share for CP       <- Pointless as we are losing the dynamics and we can deduce same information from the existent plots for CP
     - Add logger for the critical parameters so that we can re use experiments and organize them easier     <- Done! Hopefully helps
-    - Make a Plot of tipping point for the sustainability opinion for when society goes into green production vs brown - production. How to incorporate Fossils price? <- We need to keep a track of CP emissions overall, EP green share, HH opinions. best way is to just save them and show side by side. First, added parallelization, which took some time
+    - Make a Plot of tipping point for the sustainability opinion for when society goes into green production vs brown - production. How to incorporate Fossils price? <- We need to keep a track of CP emissions overall, EP green share, HH opinions. best way is to just save them and show side by side. First, added parallelization, which took some time. And finally we visualzie it all on a 2d grid with the different opinion initializations. Done!
 4) Integrate Sustainabiltiy Opinion into Job Market
 
 # Nice ToDo:
