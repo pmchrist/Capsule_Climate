@@ -8,8 +8,8 @@ import os
 PATH = os.path.join(os.path.curdir, 'results', 'data_saved', 'data', 'plots')      # Replace folder name here
 if not os.path.exists(PATH):
     os.makedirs(PATH)
-PERIOD_WARMUP = 100     # Used to show vertical line
-SEED = 7777             # Used to read file
+PERIOD_WARMUP = 100     # To show vertical line
+SEED = 7777             # To read proper file
 HH_STEP_START = 1
 HH_STEP_END = 500
 
