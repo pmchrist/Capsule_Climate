@@ -18,8 +18,6 @@
 # switch_rate           # Work place changes
 
 
-
-
 import os
 import pandas as pd
 import numpy as np
@@ -106,7 +104,8 @@ def visualize_2d_graph(num_rows, num_cols, column_name, dataframes):
             axes[row, col].set_title(f"{folder}")
             axes[row, col].set_xlabel('Timestamp')
             axes[row, col].set_ylabel('Mean')
-
+            if column_name == "all_Sust_Score" or column_name == "all_Sust_Uncert":
+                axes[row, col].set_ylim([0, 1])
             plot_index += 1
 
     # Adjust layout
@@ -119,7 +118,7 @@ def visualize_2d_graph(num_rows, num_cols, column_name, dataframes):
 
 
 # Combine HH dataframes into one with only necessary information
-#combine_and_save_dataframes_hh(main_folder)
+#combine_and_save_dataframes_hh(main_folder)        # Make it to check if file exists, instead of manual change
 
 # Read all the dataframes of interest - HH
 dataframes = read_csv_files_in_folders(main_folder, "simple_hh.csv")
