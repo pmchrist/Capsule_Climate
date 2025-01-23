@@ -28,12 +28,12 @@ include("objects/accounting_govt.jl")
 include("objects/machine.jl")
 include("objects/powerplant.jl")
 include("objects/climate.jl")
+include("objects/opinions.jl")
 
 include("agents/government.jl")
 include("agents/indexfund.jl")
 include("macro_markets/macro.jl")
 include("agents/household.jl")
-#include("macro_markets/sust_opinion.jl")
 include("agents/consumer_good_producer.jl")
 include("agents/capital_good_producer.jl")
 include("agents/general_producer.jl")
@@ -66,10 +66,10 @@ function initialize_model(
     T::Int64,
     t_warmup::Int64,
     timer::TimerOutput;
-    changed_params::Union{Dict, Nothing},
-    changed_params_ofat::Union{Dict, Nothing},
+    changed_params::Union{Dict, Nothing},               # This one is for shocks            (more in global_parameters.jl)
+    changed_params_ofat::Union{Dict, Nothing},          # This one for sensitivity analysis
     changed_taxrates::Union{Vector, Nothing},
-    changed_params_init,
+    changed_params_init,                                # This one is for initial
     folder_name::String,
     seed::Int64
     )::ABM
@@ -81,9 +81,18 @@ function initialize_model(
     #print(changed_params)
     globalparam  = initialize_global_params(changed_params, changed_params_ofat, T, t_warmup, timer, folder_name, seed)
     initparam = InitParam()
+
     if !isnothing(changed_params_init)      # Update struct if another value was provided 
         for (field, value) in changed_params_init
-            setfield!(initparam, field, value)
+            if hasfield(typeof(initparam), field)       # First check if parameter is in initial struct
+                setfield!(initparam, field, value)
+            else
+                if hasfield(typeof(globalparam), field)   # Next check if it is in global struct
+                    setfield!(globalparam, field, value)
+                else
+                    println("Field '$field' does not exist in the model structs.")
+                end
+            end
         end
     end
 
@@ -113,6 +122,8 @@ function initialize_model(
     # Initialize climate struct
     climate = Climate(T=T)
 
+    # Initialize opinions of hh struct
+    opinions = Opinions(T=T)
 
     # Initialize data structures for consumer- and capital market
     cmdata = CMData(
@@ -141,12 +152,14 @@ function initialize_model(
                                 ep,
                                 indexfund,
                                 climate,
+                                opinions,
                                 
                                 all_hh,
                                 all_cp, 
                                 all_kp,
                                 all_p,
 
+                                nothing,
                                 nothing,
                                 nothing,
                                 nothing,
@@ -358,6 +371,12 @@ function initialize_datacategories(
             :energy_percentage, :carbon_emissions
         ]
 
+        # 
+        model.opinionsdata_tosave = [
+            :sust_mean_all, :sust_mean_10, :sust_mean_50, :sust_mean_90,
+            :sust_mean_100
+        ]
+
         # Define data of government to save
         model.governmentdata_tosave = [
             :τᴵ_ts, :τᴷ_ts, :τˢ_ts, :τᴾ_ts, :τᴱ_ts, :τᶜ_ts,
@@ -406,6 +425,7 @@ function model_step!(
     labormarket = model.labormarket 
     indexfund = model.idxf 
     climate = model.climate 
+    opinions = model.opinions
     cmdata = model.cmdata
     
     folder_name = globalparam.folder_name
@@ -642,6 +662,9 @@ function model_step!(
         model,
         timer
     )
+
+    # Gather opinions to save into the model
+    collect_opinions(all_hh, t, model)
 
     # Consumer market process
     @timeit timer "consumermarket" consumermarket_process!(

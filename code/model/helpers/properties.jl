@@ -26,6 +26,7 @@ mutable struct Properties
     ep::EnergyProducer
     idxf::IndexFund
     climate::Climate
+    opinions::Opinions
 
 
     """*******************************************************
@@ -44,6 +45,7 @@ mutable struct Properties
     epdata_tosave::Union{Nothing, Vector{Symbol}}
     climatedata_tosave::Union{Nothing, Vector{Symbol}}
     governmentdata_tosave::Union{Nothing, Vector{Symbol}}
+    opinionsdata_tosave::Union{Nothing, Vector{Symbol}}
     #indexfunddata_tosave::Union{Nothing, Vector{Symbol}} #INDEX
     kpdata_tosave::Union{Nothing, Vector{Symbol}}
     cpdata_tosave::Union{Nothing, Vector{Symbol}}

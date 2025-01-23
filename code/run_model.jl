@@ -15,14 +15,16 @@ addprocs(n_proc_main)
     include("model/main.jl")
     seeds = $all_seeds
 
-    alphas = [2, 8, 24]
-    betas = [2, 8, 24]
-    sust_opinion_a_b = [(a, b) for a in alphas, b in betas]     # Getting all the possible permutations
+    # here we declare parameters for change
+    alphas = [2, 24]
+    betas = [2, 24]
+    prices_fossils = [0.2, 0.4, 0.6]
+    combined_params = [(a, b, pf) for a in alphas, b in betas, pf in prices_fossils]     # Getting all the possible permutations
 end
 
-sims_n = length(sust_opinion_a_b)       # We parallelyze for each set of unique parameters
+sims_n = length(combined_params)       # We parallelyze for each set of unique parameters
 @distributed for idx=1:sims_n
-    (a, b) = sust_opinion_a_b[idx]      # Unpacking values
+    (a, b, pf) = combined_params[idx]      # Unpacking values
     sim_id = idx
     for s in seeds                      # For each target seed run the model
         run_simulation(
@@ -33,8 +35,8 @@ sims_n = length(sust_opinion_a_b)       # We parallelyze for each set of unique 
             seed = s,
             save_firmdata = true,
             sim_nr = sim_id,
-            changed_params_init = [(:sust_α, a), (:sust_β, b)],
-            folder_name = "alpha=$a beta=$b id=$sim_id"
+            changed_params_init = [(:sust_α, a), (:sust_β, b), (:p_f, pf)],
+            folder_name = "alpha=$a beta=$b p_f=$pf id=$sim_id"
         )
     end
 end

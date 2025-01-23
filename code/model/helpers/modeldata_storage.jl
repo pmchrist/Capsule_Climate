@@ -387,10 +387,10 @@ function get_mdata(
 
     #indexfund_dict = Dict(cat => getproperty(model.indexfund, cat) for cat in model.indexfunddata_tosave)
     
-    #sust_opinion_dict = Dict(cat => getproperty(model.sust_opinion, cat) for cat in model.sust_opinion_tosave)
+    opinions_dict = Dict(cat => getproperty(model.opinions, cat) for cat in model.opinionsdata_tosave)
 
     # Merge all dicts and convert and return as dataframe
-    model_dict = merge(macro_dict, ep_dict, climate_dict, government_dict) #, indexfund_dict
+    model_dict = merge(macro_dict, ep_dict, climate_dict, government_dict, opinions_dict) #, indexfund_dict
 
     # Gather firm data and convert and return as dataframe
     

@@ -80,34 +80,35 @@
     seed::Int64                             # <- new
 end
 
-function init_changed_params(
-    globalparam::GlobalParam,
-    param_range::Tuple{Symbol, Float64, Float64},
-    T::Int64,
-    t_warmup::Int64
-    )
-    #print("nothing happens")
-    if param_range[3]==100.0
-        print("No parameter range given")
-        #define a vector of length T-t_warmup that is filled with the initial parameter value
+# Is not used!
+# function init_changed_params(
+#     globalparam::GlobalParam,
+#     param_range::Tuple{Symbol, Float64, Float64},
+#     T::Int64,
+#     t_warmup::Int64
+#     )
+#     #print("nothing happens")
+#     if param_range[3]==100.0
+#         print("No parameter range given")
+#         #define a vector of length T-t_warmup that is filled with the initial parameter value
         
-        value = getfield(globalparam, Symbol(param_range[1]))
-        param_vector = fill(value, T-t_warmup)
-        warmup_vector = fill(value, t_warmup)
-        param_vector = vcat(warmup_vector, param_vector)
+#         value = getfield(globalparam, Symbol(param_range[1]))
+#         param_vector = fill(value, T-t_warmup)
+#         warmup_vector = fill(value, t_warmup)
+#         param_vector = vcat(warmup_vector, param_vector)
 
-    else 
-        #define a vector that is filled with a linspace of the parameter range but 
-        param_vector = LinRange(param_range[2], param_range[3], T-t_warmup)
-        #create a vector with initial parameter value for the warmup period
-        warmup_vector = fill(param_range[2], t_warmup)
-        #concatenate the two vectors
-        param_vector = vcat(warmup_vector, param_vector)
-        #return vector and parameter name
-        #return Dict([param_range[1] => param_vector])
-    end
-    setproperty!(globalparam, :changing_params, param_vector)
-end
+#     else 
+#         #define a vector that is filled with a linspace of the parameter range but 
+#         param_vector = LinRange(param_range[2], param_range[3], T-t_warmup)
+#         #create a vector with initial parameter value for the warmup period
+#         warmup_vector = fill(param_range[2], t_warmup)
+#         #concatenate the two vectors
+#         param_vector = vcat(warmup_vector, param_vector)
+#         #return vector and parameter name
+#         #return Dict([param_range[1] => param_vector])
+#     end
+#     setproperty!(globalparam, :changing_params, param_vector)
+# end
 
     # elseif param_range[3] == 99.0
     #     value = getfield(globalparam, Symbol(param_range[1]))
@@ -122,20 +123,21 @@ end
     #     print("param vector", param_vector)
     #     flush(stdout)
 
+# Is not used!
 # ToDo: MAKE UPDATERS CONSISTENT BY USING THIS FUNCTION
-function update_global_params!(
-    paramname::Symbol,
-    globalparam::GlobalParam,
-    t_warmup::Int64,
-    t::Int64,
-    )
-    #check if in t is bigger than warmup period 
-    if t > t_warmup && globalparam.changing_params[t] ≠ nothing
-        print("paramname_", paramname, "_value_", globalparam.changing_params[t])
-        #change parameter value in changed_param to the value in the vector at index t
-        setproperty!(globalparam, paramname, globalparam.changing_params[t])
-    end
-end
+# function update_global_params!(
+#     paramname::Symbol,
+#     globalparam::GlobalParam,
+#     t_warmup::Int64,
+#     t::Int64,
+#     )
+#     #check if in t is bigger than warmup period 
+#     if t > t_warmup && globalparam.changing_params[t] ≠ nothing
+#         print("paramname_", paramname, "_value_", globalparam.changing_params[t])
+#         #change parameter value in changed_param to the value in the vector at index t
+#         setproperty!(globalparam, paramname, globalparam.changing_params[t])
+#     end
+# end
 
 
 # ToDo: THIS FUNCTION NEEDS IMPROVEMENT
