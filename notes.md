@@ -36,18 +36,18 @@ Phase 2 - Creating Sustainable Employee (Integrate Sustainabiltiy Opinion into J
 2) Change visualization of Bunkruptcies from age to the global counter from model       ! Done
 3) Make main HH variables duplicated in the model for easier access                     ! Done
 
-5) We now must have 3 types of visualizations: one sim same seed (Granular - Done), multiple sims same seed (Comparative - Done), multiple sims multiple seeds (Aggregate of the previous one - To Do)                                                  ! Done
-6) Provided plots make sense but it seems there is a chaos region introduced. To quantify it we should expand plot to a phase plot, Heatmap for Opinion vs p_f, check size of chaotic region. Heatmaps can be probabiltiies of green adoption based on initial parameters.      ! Technical Support Exist. ADD MORE INDICATORS FOR THE ANALYSIS (aggregate cp data), run it more and show preliminary results to professor.
+4) We now must have 3 types of visualizations: one sim same seed (Granular - Done), multiple sims same seed (Comparative - Done), multiple sims multiple seeds (Aggregate of the previous one - To Do)                                                  ! Done
+5) Provided plots make sense but it seems there is a chaos region introduced. To quantify it we should expand plot to a phase plot, Heatmap for Opinion vs p_f, check size of chaotic region. Heatmaps can be probabiltiies of green adoption based on initial parameters.      ! Technical Support Exist. ADD MORE INDICATORS FOR THE ANALYSIS (aggregate cp data), run it more and show preliminary results to professor.
 	- Quantify stochasticity in the simulation with multiple runs.
 	- Check without opinion how smaller the chaos regions is.
     - Create a heatmap of initial opinion and probability of getting green economy.
 
-7) Add dynamic opinions. Make mapping for opinions and how they change function, the mapping can be based on all proposed metrics. But first we should try wealth, unemployment can be a sub case of low wealth, so it should cover the research.
+6) Add dynamic opinions. Make mapping for opinions and how they change function, the mapping can be based on all proposed metrics. But first we should try wealth, unemployment can be a sub case of low wealth, so it should cover the research.
 	- Try Cubic polynomial approximation - hysterisis for opinion change dynamics.
 	- Try sigmoid functions to be maping of different regions, for examples in EU discrepancy in opinions is lower than in US.
 	- Other ideas can be used for initialization of the model (political vs scientific)
 
-4) Find out why brown energy is always persistent in the economy and why it goes to 0 and bounces back in the green economy. 
+7) Find out why brown energy is always persistent in the economy and why it goes to 0 and bounces back in the green economy. 
 8) Perform test on taxation of CP with high Emissions, progressive tax should work and introduce feeding loops.
     
 
@@ -58,6 +58,7 @@ Phase 2 - Creating Sustainable Employee (Integrate Sustainabiltiy Opinion into J
 3) These model parameter updaters are not consistent and logic of initialize_global_params() and changing_params for GlobalParam struct is ugly and works kinda by "magic"
 4) There are some resizing of arrays, if we keep them fixed it might make code faster
 5) Move all visualizations to Julia for speed improvements
+6) Data analysis pipeline is incosistent! Some stuff is dumped per each time step, some are aggregated inside of the model and saved into the model output. For example cp/kp production or amount of owned machines is mostly aggregated and saved into the model output as macroeconomy, which it isnt. Meanwhile for hh Income and Wealth is aggregated on the model level, but in parallel everything is dumped too. That is why we have two solutions for opinion, in one we aggregate it through the dumped files and through other we aggregate it in the model. It is definitely better to divide tasks and first run model and dump everything and analyze it later. For now most of the stuff is cramped in the model output. Better to reorganize it for consistency.
 
 
 
