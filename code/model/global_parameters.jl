@@ -52,7 +52,7 @@
     α_maxdev::Float64 = 0.01        # maximum deviation household α can make in one time period
     ρ::Float64 = 0.3                # parameter governing utility function steepness
     # α_cp::Float64 = 0.75            # parameter controlling APC of consumers
-    sust_conv_rate::Float64 = 0.05  # HH rate of change of opinion on sustainability (lower is more stable but slower change)
+    sust_conv_rate::Float64 = 0.1  # HH rate of change of opinion on sustainability (lower is more stable but slower change)   <- new      (SET IT TO MATCH WARMUP PERIOD)
 
     # Deterime extend of progresivity of government spending
     prog::Float64 = -0.5
@@ -65,18 +65,19 @@
     freq_per_machine::Int64 = 25            # capital units per machine
     freq_per_powerplant::Int64 = 10_000     # capital units per instance
 
-    p_f::Float64 = 0.42             # price of fossil fuels     # 0.2 was default, with Opinion 0.38 is a tiping point
+    p_f::Float64 = 0.2             # price of fossil fuels     # 0.2 was default, with Opinion 0.38 is a tiping point (around-ish)
 
     n_cons_market_days::Int64 = 4   # number of days in the consumer market process
 
-    t_warmup::Int64 = 200           # time period warmup of the model
+    t_warmup::Int64 = 300           # time period warmup of the model
     t_wait::Int64 = 4               # number of time periods new producers are not allowed to go bankrupt
 
     changed_params_ofat::Union{Nothing, Dict} # Parameters that are changed at the end of the warmup period
     changing_params::Union{Vector, Dict}   # Parameters that are changed at the end of the warmup period
 
     timer::TimerOutput
-    folder_name::String                     # A folder where to save outputs (very ugly temporary solution (hh have to be saves each step))
+    folder_name::String                     # A folder where to save outputs (very ugly temporary solution (hh have to be saved each step))     <- new
+    seed::Int64                             # <- new
 end
 
 function init_changed_params(
@@ -144,14 +145,16 @@ function initialize_global_params(
     T::Int64,
     t_warmup::Int64,
     timer::TimerOutput,
-    folder_name::String
+    folder_name::String,
+    seed::Int64
     )
 
     globalparam = GlobalParam(
         changed_params_ofat = changed_params_ofat, 
         changing_params = zeros(T),         # EVERYTHING IS BASED ON COMPARISON WITH NULL BUT WE SET IT TO ZEROS
         timer=timer,
-        folder_name = folder_name
+        folder_name = folder_name,
+        seed = seed
     )
 
     # if isnothing(changed_params)

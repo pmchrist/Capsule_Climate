@@ -32,19 +32,22 @@ Phase 2 - Creating Sustainable Employee (Integrate Sustainabiltiy Opinion into J
 
 
 # Current ToDo:
-1) Make sure that everything is calibrated to the initial original parameters
-2) Change visualization of Bunkruptcies from age to the global counter from model
-3) Make main HH variables duplicated in the model for easier access
-4) Find out why brown energy is always persistent in the economy and why it goes to 0 and bounces back in the green economy. 
-5) We now must have 3 types of visualizations: one sim same seed (Granular - Done), multiple sims same seed (Comparative - Done), multiple sims multiple seeds (Aggregate of the previous one - To Do)
-6) Provided plots make sense but it seems there is a chaos region introduced. To quantify it we should expand plot to a phase plot, Heatmap for Opinion vs p_f, check size of chaotic region. Heatmaps can be probabiltiies of green adoption based on initial parameters.
+1) Make sure that everything is calibrated to the initial original parameters           ! Done
+2) Change visualization of Bunkruptcies from age to the global counter from model       ! Done
+3) Make main HH variables duplicated in the model for easier access                     ! We can save Systainability Opinion and Uncertainty as it is done with Wealth and Income (it saves quantiles "W_20" etc.), but is it enough? And is it necessary at all? How would visualizations work? SEEMS MUCH HARDER THAN EXPECTED BROKE IT ALL DOWN, CANT FIND A PROPER PLACE TO ADD ADITIONAL DATA KEEPER
+
+5) We now must have 3 types of visualizations: one sim same seed (Granular - Done), multiple sims same seed (Comparative - Done), multiple sims multiple seeds (Aggregate of the previous one - To Do)                                                  ! Done
+6) Provided plots make sense but it seems there is a chaos region introduced. To quantify it we should expand plot to a phase plot, Heatmap for Opinion vs p_f, check size of chaotic region. Heatmaps can be probabiltiies of green adoption based on initial parameters.  (Based on the previous point)
 	- Quantify stochasticity in the simulation with multiple runs.
 	- Check without opinion how smaller the chaos regions is.
     - Create a heatmap of initial opinion and probability of getting green economy.
+
 7) Add dynamic opinions. Make mapping for opinions and how they change function, the mapping can be based on all proposed metrics. But first we should try wealth, unemployment can be a sub case of low wealth, so it should cover the research.
 	- Try Cubic polynomial approximation - hysterisis for opinion change dynamics.
 	- Try sigmoid functions to be maping of different regions, for examples in EU discrepancy in opinions is lower than in US.
 	- Other ideas can be used for initialization of the model (political vs scientific)
+
+4) Find out why brown energy is always persistent in the economy and why it goes to 0 and bounces back in the green economy. 
 8) Perform test on taxation of CP with high Emissions, progressive tax should work and introduce feeding loops.
     
 

@@ -1,41 +1,48 @@
 using PyCall
 using Distributed
+using Random
 
-seed = 100
-n_proc = 12
-addprocs(n_proc)
+#num_sim_ci = 20
+#all_seeds = rand(1:1_000_000, num_sim_ci)
+all_seeds = [0, 17233, 378620, 692243, 938730]
+n_proc_main = 12
+addprocs(n_proc_main)
 
+
+# Experiment alpha vs beta for opinion (how initial opinion influences the model)
+# We first distribute all the variables
 @everywhere begin
     include("model/main.jl")
-    seed = 100
-    n_proc = 12
+    seeds = $all_seeds
 
     alphas = [2, 8, 24]
     betas = [2, 8, 24]
-    pairs = [(a, b) for a in alphas, b in betas]
+    sust_opinion_a_b = [(a, b) for a in alphas, b in betas]     # Getting all the possible permutations
 end
 
-sims_n = length(pairs)
+sims_n = length(sust_opinion_a_b)       # We parallelyze for each set of unique parameters
 @distributed for idx=1:sims_n
-    (a, b) = pairs[idx]
+    (a, b) = sust_opinion_a_b[idx]      # Unpacking values
     sim_id = idx
-    run_simulation(
-        T = 900,
-        t_warmup = 300,
-        savedata = true,
-        show_full_output = false,
-        showprogress = false,
-        seed = seed,
-        save_firmdata = true,
-        sim_nr = sim_id,
-        changed_params_init = [(:sust_α, a), (:sust_β, b)],
-        folder_name = "seed $seed alpha=$a beta=$b id=$sim_id"
-    )
+    for s in seeds                      # For each target seed run the model
+        run_simulation(
+            T = 660,
+            savedata = true,
+            show_full_output = false,
+            showprogress = false,
+            seed = s,
+            save_firmdata = true,
+            sim_nr = sim_id,
+            changed_params_init = [(:sust_α, a), (:sust_β, b)],
+            folder_name = "alpha=$a beta=$b id=$sim_id"
+        )
+    end
 end
+
+println("Seeds: ", all_seeds)
 
 # run_simulation(
-#     T = 900,
-#     t_warmup = 300,
+#     T = 660,
 #     savedata = true,
 #     show_full_output = true,
 #     showprogress = true,

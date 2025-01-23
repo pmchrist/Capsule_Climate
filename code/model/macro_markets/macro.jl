@@ -134,42 +134,6 @@
 end
 
 
-# TODO: MOVE TO WRITEDATA
-function get_mdata(
-    model::ABM
-)::DataFrame
-
-    # If mdata to save is not specified, save all data in macro struct
-    macro_categories = fieldnames(typeof(model.macroeconomy))[2:end-1]
-    if !isnothing(model.mdata_tosave)
-        macro_categories = model.mdata_tosave
-    end
-
-    # Gather macro data in dict
-    macro_dict = Dict(cat => getproperty(model.macroeconomy, cat) 
-                      for cat in macro_categories)
-
-    # Gather energy producer data in dict
-    ep_dict = Dict(cat => getproperty(model.ep, cat) for cat in model.epdata_tosave)
-
-    # Gather climate data in dict
-    climate_dict = Dict(cat => getproperty(model.climate, cat) for cat in model.climatedata_tosave)
-
-    # Gather government tax revenue and expenditure data
-    government_dict = Dict(cat => getproperty(model.gov, cat) for cat in model.governmentdata_tosave)
-
-    #indexfund_dict = Dict(cat => getproperty(model.indexfund, cat) for cat in model.indexfunddata_tosave)
-
-    # Merge all dicts and convert and return as dataframe
-    model_dict = merge(macro_dict, ep_dict, climate_dict, government_dict) #, indexfund_dict
-
-    # Gather firm data and convert and return as dataframe
-    
-
-    return DataFrame(model_dict)
-end
-
-
 """
 Updates macro stats after each time step
 """

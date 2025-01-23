@@ -9,11 +9,9 @@ using CSV
 function save_init_params(
     globalparam,
     initparam,
-    seed::Int64,
     folder_name::String
 )
     # Economy Size
-    
     initparam.n_cp
     initparam.n_hh
     initparam.n_cp_hh
@@ -25,23 +23,24 @@ function save_init_params(
     # Other Params
     globalparam.p_f
     globalparam.t_warmup
+    globalparam.seed
 
     par = ["n_kp", "n_cp", "n_hh", "n_cp_hh", "sust_α", "sust_β", "sust_uncert_α", "sust_uncert_β", "p_f", "t_warmup", "seed"]
     val = [initparam.n_kp, initparam.n_cp, initparam.n_hh, initparam.n_cp_hh,
             initparam.sust_α, initparam.sust_β, initparam.sust_uncert_α, initparam.sust_uncert_β,
-            globalparam.p_f, globalparam.t_warmup, seed]
+            globalparam.p_f, globalparam.t_warmup, globalparam.seed]
     df = DataFrame(Parameters = par, Values= val)
 
-    CSV.write(joinpath(@__DIR__, "data", folder_name, "_Sim_Init_Parameters.csv"), df)
+    seed = globalparam.seed
+    CSV.write(joinpath(@__DIR__, "data", folder_name, "$seed Sim_Init_Parameters.csv"), df)
 end
 
 function save_simdata(
     firm_df::DataFrame,
-    seed::Int64,
     file_name::String,
     folder_name::String
 )
-    CSV.write(joinpath(@__DIR__, "data", folder_name, string(seed, file_name)), firm_df)
+    CSV.write(joinpath(@__DIR__, "data", folder_name, file_name), firm_df)
 end
 
 function save_hh_shock_data(
@@ -50,6 +49,7 @@ function save_hh_shock_data(
     t::Int64,
     t_warmup::Int64,
     T::Int64,
+    seed::Int64,
     folder_name::String
 )
     df = DataFrame(
@@ -70,7 +70,7 @@ function save_hh_shock_data(
         all_Sust_Uncert = map(hh_id -> model[hh_id].Sust_Score_Uncertainty, all_hh)
 
     )
-    full_path = joinpath(@__DIR__, "data", folder_name, "x_hh", "household_$(t)_hh.csv")     # Each time has its own snapshot saved
+    full_path = joinpath(@__DIR__, "data", folder_name, "$seed x_hh", "household_$(t)_hh.csv")     # Each time has its own snapshot saved
     mkpath(dirname(full_path))      # Ensure the directory exists
     CSV.write(full_path, df)
 end
@@ -78,7 +78,8 @@ end
 function save_final_dist(
     all_hh::Vector{Int},
     all_cp::Vector{Int},
-    all_kp::Vector{Int}, 
+    all_kp::Vector{Int},
+    seed::Int64, 
     model::ABM,
     folder_name::String
 )
@@ -89,7 +90,7 @@ function save_final_dist(
         all_W = map(hh_id -> model[hh_id].W, all_hh),
         skills = map(hh_id -> model[hh_id].skill, all_hh)
     )
-    CSV.write(joinpath(@__DIR__, "data", folder_name, "final_income_dists.csv"), df)
+    CSV.write(joinpath(@__DIR__, "data", folder_name, "$seed final_income_dists.csv"), df)
 
     # Save sales, profits and market share of cp
     df = DataFrame(
@@ -100,7 +101,7 @@ function save_final_dist(
         all_p_cp = map(cp_id -> model[cp_id].p[end], all_cp),           # Price of Good
         all_w_cp = map(cp_id -> model[cp_id].w̄[end], all_cp),            # Wage Level
     )
-    CSV.write(joinpath(@__DIR__, "data", folder_name, "final_profit_dists_cp.csv"), df)
+    CSV.write(joinpath(@__DIR__, "data", folder_name, "$seed final_profit_dists_cp.csv"), df)
 
     # Save sales, profits and market share of kp
     df = DataFrame(
@@ -109,7 +110,7 @@ function save_final_dist(
         all_f_kp = map(kp_id -> model[kp_id].f[end], all_kp),
         all_L_kp = map(kp_id -> model[kp_id].L, all_kp)
     )
-    CSV.write(joinpath(@__DIR__, "data", folder_name, "final_profit_dists_kp.csv"), df)
+    CSV.write(joinpath(@__DIR__, "data", folder_name, "$seed final_profit_dists_kp.csv"), df)
 
 end
 

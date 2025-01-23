@@ -33,6 +33,7 @@ include("agents/government.jl")
 include("agents/indexfund.jl")
 include("macro_markets/macro.jl")
 include("agents/household.jl")
+#include("macro_markets/sust_opinion.jl")
 include("agents/consumer_good_producer.jl")
 include("agents/capital_good_producer.jl")
 include("agents/general_producer.jl")
@@ -69,7 +70,8 @@ function initialize_model(
     changed_params_ofat::Union{Dict, Nothing},
     changed_taxrates::Union{Vector, Nothing},
     changed_params_init,
-    folder_name::String
+    folder_name::String,
+    seed::Int64
     )::ABM
 
     # Initialize scheduler
@@ -77,7 +79,7 @@ function initialize_model(
 
     # Initialize struct that holds global params and initial parameters
     #print(changed_params)
-    globalparam  = initialize_global_params(changed_params, changed_params_ofat, T, t_warmup, timer, folder_name)
+    globalparam  = initialize_global_params(changed_params, changed_params_ofat, T, t_warmup, timer, folder_name, seed)
     initparam = InitParam()
     if !isnothing(changed_params_init)      # Update struct if another value was provided 
         for (field, value) in changed_params_init
@@ -87,7 +89,7 @@ function initialize_model(
 
     # Initialize struct that holds macro variables
     macroeconomy = MacroEconomy(T=T)
-
+    
 
     # Initialize empty DataFrames for cp_data (consumer producer) and kp_data (kapital producer)
     cp_data = DataFrame()  # Define appropriate columns if needed
@@ -407,6 +409,7 @@ function model_step!(
     cmdata = model.cmdata
     
     folder_name = globalparam.folder_name
+    seed = globalparam.seed
 
     # Check if any global params are changed in ofat experiment
     check_changed_ofatparams(globalparam, t)
@@ -773,8 +776,8 @@ function model_step!(
         model
     )
 
-    #Save houhehold data if necessary.
-    save_hh_shock_data(all_hh, model, t, t_warmup, T, folder_name)
+    #Save houhehold data if necessary.  - ToDo : it should have its own big df which is later dumped like with cp and kp (it will break the current data analysis structure tho)
+    save_hh_shock_data(all_hh, model, t, t_warmup, T, globalparam.seed, folder_name)
 
     # Increment time by one step
     model.t += 1
@@ -833,7 +836,8 @@ function run_simulation(;
         changed_params_ofat = changed_params_ofat, 
         changed_taxrates = changed_taxrates,
         changed_params_init = changed_params_init,
-        folder_name = folder_name
+        folder_name = folder_name,
+        seed = seed
     )
     #initialize firm data category
     # Check for Nothing and provide empty vectors if needed
@@ -870,7 +874,7 @@ function run_simulation(;
         showprogress = showprogress
     )
 
-    # Get macro variables from macroeconomy struct
+    # Get macro variables
     model_df = get_mdata(model)
 
     # Firm dataframes are updated in place
@@ -880,13 +884,13 @@ function run_simulation(;
 
     # Save agent dataframe and model dataframe to csv
     if savedata
-        save_init_params(model.g_param , model.i_param , seed, folder_name)          # Just save init params
-        save_simdata(model_df, seed, "_model.csv", folder_name)
-        save_final_dist(model.all_hh, model.all_cp, model.all_kp, model, folder_name)
+        save_init_params(model.g_param , model.i_param , folder_name)          # Just save init params
+        save_simdata(model_df, "$seed model.csv", folder_name)
+        save_final_dist(model.all_hh, model.all_cp, model.all_kp, seed, model, folder_name)
         #save firm dataframe to csv
         if save_firmdata
-            save_simdata(model.firm_time_series.cp_data, seed, "_cp_firm.csv", folder_name) 
-            save_simdata(model.firm_time_series.kp_data, seed, "_kp_firm.csv", folder_name)
+            save_simdata(model.firm_time_series.cp_data, "$seed cp_firm.csv", folder_name) 
+            save_simdata(model.firm_time_series.kp_data, "$seed kp_firm.csv", folder_name)
         end
     end
 

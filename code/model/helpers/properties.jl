@@ -47,7 +47,7 @@ mutable struct Properties
     #indexfunddata_tosave::Union{Nothing, Vector{Symbol}} #INDEX
     kpdata_tosave::Union{Nothing, Vector{Symbol}}
     cpdata_tosave::Union{Nothing, Vector{Symbol}}
-    
+
     firm_time_series::FirmTimeSeries
     macroeconomy::MacroEconomy
     labormarket::LaborMarket
