@@ -188,6 +188,7 @@ function initialize_model(
     # Initialize households
     for _ in 1:model.i_param.n_hh
 
+        # HH with opinion
         hh = Household(
                         id = nextid(model), 
                         skill = rand(LogNormal(model.i_param.skill_mean, model.i_param.skill_var)),
@@ -195,6 +196,14 @@ function initialize_model(
                         Sust_Score = rand(Beta(model.i_param.sust_α, model.i_param.sust_β)),
                         Sust_Score_Uncertainty = rand(Beta(model.i_param.sust_uncert_α, model.i_param.sust_uncert_β)),
                       )
+        # # HH without opinion
+        # hh = Household(
+        #                 id = nextid(model), 
+        #                 skill = rand(LogNormal(model.i_param.skill_mean, model.i_param.skill_var)),
+        #                 β = rand(Uniform(model.i_param.βmin, model.i_param.βmax)),
+        #                 Sust_Score = 0.0,
+        #                 Sust_Score_Uncertainty = 0.0,
+        #               )
         hh.wʳ = max(model.gov.w_min, hh.wʳ)
         add_agent!(hh, model)
     end
