@@ -37,7 +37,7 @@ Phase 2 - Creating Sustainable Employee (Integrate Sustainabiltiy Opinion into J
 3) Make main HH variables duplicated in the model for easier access                     ! Done
 
 5) We now must have 3 types of visualizations: one sim same seed (Granular - Done), multiple sims same seed (Comparative - Done), multiple sims multiple seeds (Aggregate of the previous one - To Do)                                                  ! Done
-6) Provided plots make sense but it seems there is a chaos region introduced. To quantify it we should expand plot to a phase plot, Heatmap for Opinion vs p_f, check size of chaotic region. Heatmaps can be probabiltiies of green adoption based on initial parameters.      ! Technical Support Exist. ADD MORE INDICATORS FOR THE ANALYSIS (aggregate cp data), run it more and show preliminary results to professor.
+6) Provided plots make sense but it seems there is a chaos region introduced. To quantify it we should expand plot to a phase plot, Heatmap for Opinion vs p_f, check size of chaotic region. Heatmaps can be probabiltiies of green adoption based on initial parameters.      ! Run it more and analyze results further. Show results to the professor
 	- Quantify stochasticity in the simulation with multiple runs.
 	- Check without opinion how smaller the chaos regions is.
     - Create a heatmap of initial opinion and probability of getting green economy.

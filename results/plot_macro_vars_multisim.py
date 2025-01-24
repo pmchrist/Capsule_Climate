@@ -170,7 +170,7 @@ def get_df_seed_for_ci_model(main_folder, looking_for):
                 df = pd.read_csv(file_path)
 
                 # Model csv output does not have timesteps, so we have to add timestep manually (each line is a timestep)
-                if looking_for == "model.csv":
+                if looking_for == "model.csv":                                  # We can only look for this one in this case
                     df['timestamp'] = pd.Series(range(1, len(df) + 1))
 
                 df_models_experiment.append(df)
@@ -180,7 +180,7 @@ def get_df_seed_for_ci_model(main_folder, looking_for):
     return dataframes
 
 
-def get_df_seed_for_ci_producer(main_folder, looking_for):
+def get_df_seed_for_ci_producer(main_folder, looking_for, column_name):
 
     # Just like the same as ci_model
 
@@ -189,8 +189,55 @@ def get_df_seed_for_ci_producer(main_folder, looking_for):
     # Get aggregate stats (mean of emiss per product for each timestep across all companies) and save into new df ->
     # aggregate all dfs and return dfs the same way as for ci_model for vuisualization
 
-    return
+    dataframes = {}     # All the Dataframes for the target type of Agent (or whole Model) per experiment with each seed
 
+    # Walk through all directories and look for proper files
+    for folder in FOLDERS:
+        for folder_name, _, _ in os.walk(main_folder):      # just tries all the folders until a target one for the experiment is found
+
+            if folder_name != os.path.join(main_folder, folder):
+                continue
+
+            df_models_experiment = []
+            for seed in SEEDS:
+                file_path = os.path.join(folder_name, str(seed) + ' ' + looking_for)
+                
+                # Skip if the file doesn't exist
+                if not os.path.exists(file_path):
+                    continue
+
+                # Read the CSV file into a DataFrame and assign it to the folder name in the dictionary
+                df = pd.read_csv(file_path)
+
+
+                # Here we aggregate data in the new dataframe for the meta variables
+
+                # Group by timestamp and aggregate the column
+                grouped_overall = (
+                    df.groupby("timestamp")[column_name]
+                    .agg(overall_mean='mean', overall_std='std')
+                )
+                # Group by timestamp and calculate the desired statistics for upper and lower 10th quantiles
+                grouped_lower = (
+                    df.groupby("timestamp")[column_name]
+                    .apply(lambda group: group[group <= group.quantile(0.1)])           # QUANTILES ARE HARDCODED FOR NOW
+                    .groupby("timestamp")
+                    .agg(lower_mean=('mean'))
+                )
+                grouped_upper = (
+                    df.groupby("timestamp")[column_name]
+                    .apply(lambda group: group[group >= group.quantile(0.9)])
+                    .groupby("timestamp")
+                    .agg(upper_mean=('mean'))
+                )
+
+                combined_stats = pd.concat([grouped_overall, grouped_lower, grouped_upper], axis=1).reset_index()
+
+                df_models_experiment.append(combined_stats)
+            
+        dataframes[folder] = pd.concat(df_models_experiment, ignore_index=True)
+
+    return dataframes
 
 
 def visualize_2d_graph(num_rows, num_cols, column_name, dataframes, name, no_subfolder=False):
@@ -244,77 +291,90 @@ def visualize_2d_graph(num_rows, num_cols, column_name, dataframes, name, no_sub
     # Optionally, close the plot to free up memory
     plt.close()
 
+    return
 
 
 
-# Combine HH dataframes into one with only necessary information
 
-if COMBINE_HH_TIMESERIES: combine_and_save_dataframes_hh(main_folder)        # Make it to check if file exists, instead of manual change
-
-
-# Compare different parameters and use seeds for CI
-dataframes = get_df_seed_for_ci_model(main_folder, "model.csv")
-visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "green_capacity", dataframes, "model ci green_capacity", no_subfolder=True)
-visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "GDP", dataframes, "model ci GDP", no_subfolder=True)
-visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "s_unemp", dataframes, "model ci s_unemp", no_subfolder=True)
-visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "bankrupt_cp", dataframes, "model ci bankrupt_cp", no_subfolder=True)     # <- explicit bankr rate
-visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "bankrupt_kp", dataframes, "model ci bankrupt_kp", no_subfolder=True)     # <- explicit bankr rateer)
-
-visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "sust_mean_all", dataframes, "sust opinion mean overall", no_subfolder=True)
-visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "sust_mean_90", dataframes, "sust opinion mean lower 10th q", no_subfolder=True)
-visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "sust_mean_100", dataframes, "sust opinion mean upper 10th q", no_subfolder=True)
+# # Combine HH dataframes into one with only necessary information
+# if COMBINE_HH_TIMESERIES: combine_and_save_dataframes_hh(main_folder)        # Make it to check if file exists, instead of manual change
 
 
+# # Compare different parameters and use seeds for CI
 
-# Compare Different Parameters, same Seed
+# HH
+# dataframes = get_df_seed_for_ci_model(main_folder, "model.csv")
+# visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "green_capacity", dataframes, "model ci green_capacity", no_subfolder=True)
+# visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "GDP", dataframes, "model ci GDP", no_subfolder=True)
+# visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "s_unemp", dataframes, "model ci s_unemp", no_subfolder=True)
+# visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "bankrupt_cp", dataframes, "model ci bankrupt_cp", no_subfolder=True)     # <- explicit bankr rate
+# visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "bankrupt_kp", dataframes, "model ci bankrupt_kp", no_subfolder=True)     # <- explicit bankr rateer)
+# visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "sust_mean_all", dataframes, "sust opinion mean overall", no_subfolder=True)
+# visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "sust_mean_90", dataframes, "sust opinion mean lower 10th q", no_subfolder=True)
+# visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "sust_mean_100", dataframes, "sust opinion mean upper 10th q", no_subfolder=True)
 
-# Read all the dataframes of interest - HH
-if PROCESS_HH_TIMESERIES:
-    for seed in SEEDS:
-        dataframes = get_df_same_seed(main_folder, "simple_hh.csv", seed)
-        visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "all_Sust_Score", dataframes, str(seed))
-        visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "all_Sust_Uncert", dataframes, str(seed))
-
-# Read all the dataframes of interest - CP
-for seed in SEEDS:
-    dataframes = get_df_same_seed(main_folder, "cp_firm.csv", seed)
-    visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "Good_Emiss", dataframes, str(seed))
-    visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "Good_Prod_Q", dataframes, str(seed))
-    visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "Profits", dataframes, str(seed))
-    #visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "age", dataframes, seed)
-
-# Read all the dataframes of interest - Model
-for seed in SEEDS:
-    dataframes = get_df_same_seed(main_folder, "model.csv", seed)
-    visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "green_capacity", dataframes, str(seed))
-    visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "GDP", dataframes, str(seed))
-    visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "s_unemp", dataframes, str(seed))
-    visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "bankrupt_cp", dataframes, str(seed))     # <- explicit bankr rate
-    visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "bankrupt_kp", dataframes, str(seed))     # <- explicit bankr rate
-
-
-# Compare Different Seeds, same Parameters
-
-if PROCESS_HH_TIMESERIES:
-    for folder in FOLDERS:
-        dataframes = get_df_diff_seed(main_folder, "simple_hh.csv", folder)
-        visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "all_Sust_Score", dataframes, folder)
-        visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "all_Sust_Uncert", dataframes, folder)
-
-for folder in FOLDERS:
-    dataframes = get_df_diff_seed(main_folder, "cp_firm.csv", folder)
-    visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "Good_Emiss", dataframes, folder)
-    visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "Good_Prod_Q", dataframes, folder)
-    visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "Profits", dataframes, folder)
-    #visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], folder, "age", dataframes, seed)
-
-for folder in FOLDERS:
-    dataframes = get_df_diff_seed(main_folder, "model.csv", folder)
-    visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "green_capacity", dataframes, folder)
-    visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "GDP", dataframes, folder)
-    visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "s_unemp", dataframes, folder)
-    visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "bankrupt_cp", dataframes, folder)     # <- explicit bankr rate
-    visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "bankrupt_kp", dataframes, folder)     # <- explicit bankr rate
+# CP
+# For now we are not loking for KP, only CP: Good_Markup_mu, Good_Prod_Q, Good_Emiss (markup and prod_q is also avaialable in model)
+dataframes = get_df_seed_for_ci_producer(main_folder, "cp_firm.csv", "Good_Emiss")
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "overall_mean", dataframes, "cp ci Good_Emiss", no_subfolder=True)
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "lower_mean", dataframes, "cp ci Good_Emiss", no_subfolder=True)
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "upper_mean", dataframes, "cp ci Good_Emiss", no_subfolder=True)
+dataframes = get_df_seed_for_ci_producer(main_folder, "cp_firm.csv", "Good_Markup_mu")
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "overall_mean", dataframes, "cp ci Good_Markup_mu", no_subfolder=True)
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "lower_mean", dataframes, "cp ci Good_Markup_mu", no_subfolder=True)
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "upper_mean", dataframes, "cp ci Good_Markup_mu", no_subfolder=True)
+dataframes = get_df_seed_for_ci_producer(main_folder, "cp_firm.csv", "Good_Prod_Q")
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "overall_mean", dataframes, "cp ci Good_Prod_Q", no_subfolder=True)
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "lower_mean", dataframes, "cp ci Good_Prod_Q", no_subfolder=True)
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "upper_mean", dataframes, "cp ci Good_Prod_Q", no_subfolder=True)
 
 
-# -> add opinion and uncertainty of the hh into the model values output (like wages probably)
+# # Compare Different Parameters, same Seed
+
+# # Read all the dataframes of interest - HH
+# if PROCESS_HH_TIMESERIES:
+#     for seed in SEEDS:
+#         dataframes = get_df_same_seed(main_folder, "simple_hh.csv", seed)
+#         visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "all_Sust_Score", dataframes, str(seed))
+#         visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "all_Sust_Uncert", dataframes, str(seed))
+
+# # Read all the dataframes of interest - CP
+# for seed in SEEDS:
+#     dataframes = get_df_same_seed(main_folder, "cp_firm.csv", seed)
+#     visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "Good_Emiss", dataframes, str(seed))
+#     visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "Good_Prod_Q", dataframes, str(seed))
+#     visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "Profits", dataframes, str(seed))
+#     #visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "age", dataframes, seed)
+
+# # Read all the dataframes of interest - Model
+# for seed in SEEDS:
+#     dataframes = get_df_same_seed(main_folder, "model.csv", seed)
+#     visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "green_capacity", dataframes, str(seed))
+#     visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "GDP", dataframes, str(seed))
+#     visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "s_unemp", dataframes, str(seed))
+#     visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "bankrupt_cp", dataframes, str(seed))     # <- explicit bankr rate
+#     visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "bankrupt_kp", dataframes, str(seed))     # <- explicit bankr rate
+
+
+# # Compare Different Seeds, same Parameters
+
+# if PROCESS_HH_TIMESERIES:
+#     for folder in FOLDERS:
+#         dataframes = get_df_diff_seed(main_folder, "simple_hh.csv", folder)
+#         visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "all_Sust_Score", dataframes, folder)
+#         visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "all_Sust_Uncert", dataframes, folder)
+
+# for folder in FOLDERS:
+#     dataframes = get_df_diff_seed(main_folder, "cp_firm.csv", folder)
+#     visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "Good_Emiss", dataframes, folder)
+#     visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "Good_Prod_Q", dataframes, folder)
+#     visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "Profits", dataframes, folder)
+#     #visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], folder, "age", dataframes, seed)
+
+# for folder in FOLDERS:
+#     dataframes = get_df_diff_seed(main_folder, "model.csv", folder)
+#     visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "green_capacity", dataframes, folder)
+#     visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "GDP", dataframes, folder)
+#     visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "s_unemp", dataframes, folder)
+#     visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "bankrupt_cp", dataframes, folder)     # <- explicit bankr rate
+#     visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "bankrupt_kp", dataframes, folder)     # <- explicit bankr rate
