@@ -1,3 +1,4 @@
+
 # HH
 # all_Sust_Score
 # all_Sust_Uncert
@@ -27,7 +28,7 @@ PATH = os.path.join(os.path.curdir, 'results', 'data_saved', 'data')      # Repl
 main_folder = PATH
 PROCESS_HH_TIMESERIES = False
 COMBINE_HH_TIMESERIES = False
-HH_STEP_START = 1
+HH_STEP_START = 500
 HH_STEP_END = 660
 SEEDS = [47816, 933015, 321434, 447288, 153725, 260147, 589087, 108127, 159454, 176074, 426699, 46634, 822959, 514704, 9694, 673314, 257546, 798460, 413516, 550286]
 #SEEDS = [0, 17233, 378620, 692243, 938730]
@@ -182,6 +183,7 @@ def get_df_seed_for_ci_model(main_folder, looking_for):
                 # Model csv output does not have timesteps, so we have to add timestep manually (each line is a timestep)
                 if looking_for == "model.csv":                                  # We can only look for this one in this case
                     df['timestamp'] = pd.Series(range(1, len(df) + 1))
+                df = df[(df['timestamp'] >= HH_STEP_START) & (df['timestamp'] <= HH_STEP_END)]
 
                 df_models_experiment.append(df)
             
@@ -190,7 +192,7 @@ def get_df_seed_for_ci_model(main_folder, looking_for):
     return dataframes
 
 
-def get_df_seed_for_ci_producer(main_folder, looking_for, column_name):
+def get_df_seed_for_ci_producer(main_folder, looking_for, column_names):
 
     # Just like the same as ci_model
 
@@ -218,31 +220,40 @@ def get_df_seed_for_ci_producer(main_folder, looking_for, column_name):
 
                 # Read the CSV file into a DataFrame and assign it to the folder name in the dictionary
                 df = pd.read_csv(file_path)
-
+                df = df[(df['timestamp'] >= HH_STEP_START) & (df['timestamp'] <= HH_STEP_END)]
 
                 # Here we aggregate data in the new dataframe for the meta variables
 
-                # Group by timestamp and aggregate the column
-                grouped_overall = (
-                    df.groupby("timestamp")[column_name]
-                    .agg(overall_mean='mean', overall_std='std')
-                )
-                # Group by timestamp and calculate the desired statistics for upper and lower 10th quantiles
-                grouped_lower = (
-                    df.groupby("timestamp")[column_name]
-                    .apply(lambda group: group[group <= group.quantile(0.1)])           # QUANTILES ARE HARDCODED FOR NOW
-                    .groupby("timestamp")
-                    .agg(lower_mean=('mean'))
-                )
-                grouped_upper = (
-                    df.groupby("timestamp")[column_name]
-                    .apply(lambda group: group[group >= group.quantile(0.9)])
-                    .groupby("timestamp")
-                    .agg(upper_mean=('mean'))
-                )
+                combined_stats = pd.DataFrame()
+                for column_name in column_names:
+                    # Group by timestamp and aggregate the column
+                    grouped_overall = (
+                        df.groupby("timestamp")[column_name]
+                        .agg(overall_mean='mean', overall_std='std')
+                        .rename(columns={'overall_mean': f'{column_name}_overall_mean', 'overall_std': f'{column_name}_overall_std'})
+                    )
+                    # Group by timestamp and calculate the desired statistics for upper and lower 10th quantiles
+                    grouped_lower = (
+                        df.groupby("timestamp")[column_name]
+                        .apply(lambda group: group[group <= group.quantile(0.1)])           # QUANTILES ARE HARDCODED FOR NOW
+                        .groupby("timestamp")
+                        .agg(lower_mean=('mean'))
+                        .rename(columns={'lower_mean': f'{column_name}_lower_mean'})
+                    )
+                    grouped_upper = (
+                        df.groupby("timestamp")[column_name]
+                        .apply(lambda group: group[group >= group.quantile(0.9)])
+                        .groupby("timestamp")
+                        .agg(upper_mean=('mean'))
+                        .rename(columns={'upper_mean': f'{column_name}_upper_mean'})
+                    )
+                    # Concatenate the stats for the current column along the columns axis
+                    stats_for_column = pd.concat([grouped_overall, grouped_lower, grouped_upper], axis=1)
 
-                combined_stats = pd.concat([grouped_overall, grouped_lower, grouped_upper], axis=1).reset_index()
+                    # Concatenate into the combined_stats dataframe, aligning on the index
+                    combined_stats = pd.concat([combined_stats, stats_for_column], axis=1)        
 
+                combined_stats = combined_stats.reset_index()
                 df_models_experiment.append(combined_stats)
             
         dataframes[folder] = pd.concat(df_models_experiment, ignore_index=True)
@@ -280,6 +291,7 @@ def visualize_2d_graph(num_rows, num_cols, column_name, dataframes, name, no_sub
             folder, df = dataframe_items[plot_index]
 
             # Group by timestamp and aggregate the column
+            df = df[(df['timestamp'] >= HH_STEP_START) & (df['timestamp'] <= HH_STEP_END)]
             grouped = df.groupby("timestamp")[column_name].agg(['mean', 'count', 'std'])
 
             # Calculate confidence interval
@@ -343,21 +355,50 @@ visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "sust_mea
 visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "sust_mean_100", dataframes, "sust opinion mean upper 10th q", no_subfolder=True)
 visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "GINI_I", dataframes, "model ci GINI_I", no_subfolder=True)
 visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "GINI_W", dataframes, "model ci GINI_W", no_subfolder=True)
+# More for debugging
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "LIS", dataframes, "model ci LIS", no_subfolder=True)
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "M", dataframes, "model ci M", no_subfolder=True)
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "M_gov", dataframes, "model ci M_gov", no_subfolder=True)
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "M_hh", dataframes, "model ci M_hh", no_subfolder=True)
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "M_cp", dataframes, "model ci M_cp", no_subfolder=True)
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "N_goods", dataframes, "model ci N_goods", no_subfolder=True)
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "avg_N_goods", dataframes, "model ci avg_N_goods", no_subfolder=True)
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "unspend_C", dataframes, "model ci unspend_C", no_subfolder=True)
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "unsat_L_demand", dataframes, "model ci unsat_L_demand", no_subfolder=True)
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "unsat_invest", dataframes, "model ci unsat_invest", no_subfolder=True)
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "unsat_demand", dataframes, "model ci unsat_demand", no_subfolder=True)
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "CPI_cp", dataframes, "model ci CPI_cp", no_subfolder=True)
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "CPI_kp", dataframes, "model ci CPI_kp", no_subfolder=True)
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "markup_cp", dataframes, "model ci markup_cp", no_subfolder=True)
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "p_avg_cp", dataframes, "model ci p_avg_cp", no_subfolder=True)
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "returns_investments", dataframes, "model ci returns_investments", no_subfolder=True)
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "total_C", dataframes, "model ci total_C", no_subfolder=True)
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "total_C_actual", dataframes, "model ci total_C_actual", no_subfolder=True)
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "total_I", dataframes, "model ci total_I", no_subfolder=True)
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "total_w", dataframes, "model ci total_w", no_subfolder=True)
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "debt_tot", dataframes, "model ci debt_tot", no_subfolder=True)
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "debt_cp", dataframes, "model ci debt_cp", no_subfolder=True)
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "debt_unpaid_cp", dataframes, "model ci debt_unpaid_cp", no_subfolder=True)
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "RD_total", dataframes, "model ci RD_total", no_subfolder=True)
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "EI_avg", dataframes, "model ci EI_avg", no_subfolder=True)
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "RS_avg", dataframes, "model ci RS_avg", no_subfolder=True)
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "avg_pi_LP", dataframes, "model ci avg_pi_LP", no_subfolder=True)
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "avg_pi_EE", dataframes, "model ci avg_pi_EE", no_subfolder=True)
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "avg_pi_EF", dataframes, "model ci avg_pi_EF", no_subfolder=True)
+
 
 # CP
 # For now we are not loking for KP, only CP: Good_Markup_mu, Good_Prod_Q, Good_Emiss (markup and prod_q is also avaialable in model)
-dataframes = get_df_seed_for_ci_producer(main_folder, "cp_firm.csv", "Good_Emiss")
-visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "overall_mean", dataframes, "cp ci Good_Emiss", no_subfolder=True)
-visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "lower_mean", dataframes, "cp ci Good_Emiss", no_subfolder=True)
-visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "upper_mean", dataframes, "cp ci Good_Emiss", no_subfolder=True)
-dataframes = get_df_seed_for_ci_producer(main_folder, "cp_firm.csv", "Good_Markup_mu")
-visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "overall_mean", dataframes, "cp ci Good_Markup_mu", no_subfolder=True)
-visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "lower_mean", dataframes, "cp ci Good_Markup_mu", no_subfolder=True)
-visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "upper_mean", dataframes, "cp ci Good_Markup_mu", no_subfolder=True)
-dataframes = get_df_seed_for_ci_producer(main_folder, "cp_firm.csv", "Good_Prod_Q")
-visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "overall_mean", dataframes, "cp ci Good_Prod_Q", no_subfolder=True)
-visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "lower_mean", dataframes, "cp ci Good_Prod_Q", no_subfolder=True)
-visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "upper_mean", dataframes, "cp ci Good_Prod_Q", no_subfolder=True)
+dataframes = get_df_seed_for_ci_producer(main_folder, "cp_firm.csv", ["Good_Emiss", "Good_Markup_mu", "Good_Prod_Q"])
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "Good_Emiss_overall_mean", dataframes, "cp ci Good_Emiss", no_subfolder=True)
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "Good_Emiss_lower_mean", dataframes, "cp ci Good_Emiss", no_subfolder=True)
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "Good_Emiss_upper_mean", dataframes, "cp ci Good_Emiss", no_subfolder=True)
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "Good_Markup_mu_overall_mean", dataframes, "cp ci Good_Markup_mu", no_subfolder=True)
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "Good_Markup_mu_lower_mean", dataframes, "cp ci Good_Markup_mu", no_subfolder=True)
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "Good_Markup_mu_upper_mean", dataframes, "cp ci Good_Markup_mu", no_subfolder=True)
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "Good_Prod_Q_overall_mean", dataframes, "cp ci Good_Prod_Q", no_subfolder=True)
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "Good_Prod_Q_lower_mean", dataframes, "cp ci Good_Prod_Q", no_subfolder=True)
+visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "Good_Prod_Q_upper_mean", dataframes, "cp ci Good_Prod_Q", no_subfolder=True)
 
 
 # Compare Different Parameters, same Seed
@@ -387,6 +428,36 @@ for seed in SEEDS:
     visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "bankrupt_kp", dataframes, str(seed))
     visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "W_20", dataframes, str(seed))
     visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "W_80", dataframes, str(seed))
+    # More for debugging
+    visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "LIS", dataframes, str(seed))
+    visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "M", dataframes, str(seed))
+    visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "M_gov", dataframes, str(seed))
+    visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "M_hh", dataframes, str(seed))
+    visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "M_cp", dataframes, str(seed))
+    visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "N_goods", dataframes, str(seed))
+    visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "avg_N_goods", dataframes, str(seed))
+    visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "unspend_C", dataframes, str(seed))
+    visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "unsat_L_demand", dataframes, str(seed))
+    visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "unsat_invest", dataframes, str(seed))
+    visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "unsat_demand", dataframes, str(seed))
+    visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "CPI_cp", dataframes, str(seed))
+    visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "CPI_kp", dataframes, str(seed))
+    visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "markup_cp", dataframes, str(seed))
+    visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "p_avg_cp", dataframes, str(seed))
+    visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "returns_investments", dataframes, str(seed))
+    visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "total_C", dataframes, str(seed))
+    visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "total_C_actual", dataframes, str(seed))
+    visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "total_I", dataframes, str(seed))
+    visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "total_w", dataframes, str(seed))
+    visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "debt_tot", dataframes, str(seed))
+    visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "debt_cp", dataframes, str(seed))
+    visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "debt_unpaid_cp", dataframes, str(seed))
+    visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "RD_total", dataframes, str(seed))
+    visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "EI_avg", dataframes, str(seed))
+    visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "RS_avg", dataframes, str(seed))
+    visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "avg_pi_LP", dataframes, str(seed))
+    visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "avg_pi_EE", dataframes, str(seed))
+    visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[0], GRAPH_SIZE_DIFF_PARAM[1], "avg_pi_EF", dataframes, str(seed))
 
 
 # Compare Different Seeds, same Parameters
@@ -413,3 +484,33 @@ for folder in FOLDERS:
     visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "bankrupt_kp", dataframes, folder)
     visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "W_20", dataframes, folder)
     visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "W_80", dataframes, folder)
+    # More for debugging
+    visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "LIS", dataframes, folder)
+    visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "M", dataframes, folder)
+    visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "M_gov", dataframes, folder)
+    visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "M_hh", dataframes, folder)
+    visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "M_cp", dataframes, folder)
+    visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "N_goods", dataframes, folder)
+    visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "avg_N_goods", dataframes, folder)
+    visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "unspend_C", dataframes, folder)
+    visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "unsat_L_demand", dataframes, folder)
+    visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "unsat_invest", dataframes, folder)
+    visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "unsat_demand", dataframes, folder)
+    visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "CPI_cp", dataframes, folder)
+    visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "CPI_kp", dataframes, folder)
+    visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "markup_cp", dataframes, folder)
+    visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "p_avg_cp", dataframes, folder)
+    visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "returns_investments", dataframes, folder)
+    visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "total_C", dataframes, folder)
+    visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "total_C_actual", dataframes, folder)
+    visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "total_I", dataframes, folder)
+    visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "total_w", dataframes, folder)
+    visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "debt_tot", dataframes, folder)
+    visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "debt_cp", dataframes, folder)
+    visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "debt_unpaid_cp", dataframes, folder)
+    visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "RD_total", dataframes, folder)
+    visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "EI_avg", dataframes, folder)
+    visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "RS_avg", dataframes, folder)
+    visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "avg_pi_LP", dataframes, folder)
+    visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "avg_pi_EE", dataframes, folder)
+    visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[0], GRAPH_SIZE_DIFF_SEED[1], "avg_pi_EF", dataframes, folder)
