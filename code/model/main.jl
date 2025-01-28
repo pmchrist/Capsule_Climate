@@ -809,7 +809,7 @@ function model_step!(
     )
 
     #Save houhehold data if necessary.  - ToDo : it should have its own big df which is later dumped like with cp and kp (it will break the current data analysis structure tho)
-    save_hh_shock_data(all_hh, model, t, t_warmup, T, globalparam.seed, folder_name)
+    #save_hh_shock_data(all_hh, model, t, t_warmup, T, globalparam.seed, folder_name)
 
     # Increment time by one step
     model.t += 1
@@ -856,7 +856,6 @@ function run_simulation(;
     println("sim $sim_nr has started on $(Dates.format(now(), "HH:MM"))")
     #print(changed_params)
     
-
     timer = TimerOutput()
 
     # Initialize model
@@ -913,7 +912,6 @@ function run_simulation(;
     get_cp_mdata(model)
     get_kp_mdata(model)
 
-
     # Save agent dataframe and model dataframe to csv
     if savedata
         save_init_params(model.g_param , model.i_param , folder_name)          # Just save init params
@@ -934,5 +932,4 @@ function run_simulation(;
 
     println("sim $sim_nr has finished on $(Dates.format(now(), "HH:MM"))")
 
-    return agent_df, model_df
 end

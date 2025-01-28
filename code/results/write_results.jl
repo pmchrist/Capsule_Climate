@@ -32,7 +32,11 @@ function save_init_params(
     df = DataFrame(Parameters = par, Values= val)
 
     seed = globalparam.seed
-    CSV.write(joinpath(@__DIR__, "data", folder_name, "$seed Sim_Init_Parameters.csv"), df)
+
+    full_path = joinpath(@__DIR__, "data", folder_name, "$seed Sim_Init_Parameters.csv")     # Each time has its own snapshot saved
+    mkpath(dirname(full_path))      # Ensure the directory exists
+    CSV.write(full_path, df)
+
 end
 
 function save_simdata(
@@ -40,7 +44,10 @@ function save_simdata(
     file_name::String,
     folder_name::String
 )
-    CSV.write(joinpath(@__DIR__, "data", folder_name, file_name), firm_df)
+    full_path = joinpath(@__DIR__, "data", folder_name, file_name)     # Each time has its own snapshot saved
+    mkpath(dirname(full_path))      # Ensure the directory exists
+    CSV.write(full_path, firm_df)
+
 end
 
 function save_hh_shock_data(
@@ -90,7 +97,10 @@ function save_final_dist(
         all_W = map(hh_id -> model[hh_id].W, all_hh),
         skills = map(hh_id -> model[hh_id].skill, all_hh)
     )
-    CSV.write(joinpath(@__DIR__, "data", folder_name, "$seed final_income_dists.csv"), df)
+
+    full_path = joinpath(@__DIR__, "data", folder_name, "$seed final_income_dists.csv")     # Each time has its own snapshot saved
+    mkpath(dirname(full_path))      # Ensure the directory exists
+    CSV.write(full_path, df)
 
     # Save sales, profits and market share of cp
     df = DataFrame(
@@ -101,7 +111,9 @@ function save_final_dist(
         all_p_cp = map(cp_id -> model[cp_id].p[end], all_cp),           # Price of Good
         all_w_cp = map(cp_id -> model[cp_id].w̄[end], all_cp),            # Wage Level
     )
-    CSV.write(joinpath(@__DIR__, "data", folder_name, "$seed final_profit_dists_cp.csv"), df)
+    full_path = joinpath(@__DIR__, "data", folder_name, "$seed final_profit_dists_cp.csv")     # Each time has its own snapshot saved
+    mkpath(dirname(full_path))      # Ensure the directory exists
+    CSV.write(full_path, df)
 
     # Save sales, profits and market share of kp
     df = DataFrame(
@@ -110,7 +122,9 @@ function save_final_dist(
         all_f_kp = map(kp_id -> model[kp_id].f[end], all_kp),
         all_L_kp = map(kp_id -> model[kp_id].L, all_kp)
     )
-    CSV.write(joinpath(@__DIR__, "data", folder_name, "$seed final_profit_dists_kp.csv"), df)
+    full_path = joinpath(@__DIR__, "data", folder_name, "$seed final_profit_dists_kp.csv")     # Each time has its own snapshot saved
+    mkpath(dirname(full_path))      # Ensure the directory exists
+    CSV.write(full_path, df)
 
 end
 

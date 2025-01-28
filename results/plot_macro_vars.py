@@ -5,11 +5,12 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 import os
 
-PATH = os.path.join(os.path.curdir, 'results', 'data_saved', 'data', 'plots')      # Replace folder name here
+folder = "alpha=18 beta=2 p_f=0.45 id=22"
+SEED = "4492958"
+PATH = os.path.join(os.path.curdir, 'results', 'data_saved', 'data', 'plots', folder, SEED)      # Replace folder name here
 if not os.path.exists(PATH):
     os.makedirs(PATH)
 PERIOD_WARMUP = 100     # To show vertical line
-SEED = 7777             # To read proper file
 HH_STEP_START = 1
 HH_STEP_END = 500
 
@@ -758,7 +759,8 @@ def plot_hh_opinion_dynamics(df:pd.DataFrame):
 
 if __name__=="__main__":
 
-    df_macro = pd.read_csv(os.path.join(os.path.join(os.path.curdir, 'results', 'data_saved', 'data'), str(SEED)+'_model.csv'))   # Replace folder name and model csv name here
+
+    df_macro = pd.read_csv(os.path.join(os.path.join(os.path.curdir, 'results', 'data_saved', 'data', folder), str(SEED)+' model.csv'))   # Replace folder name and model csv name here
     plot_macro_vars(df_macro)
     plot_household_vars(df_macro)
     plot_producer_vars(df_macro)
@@ -768,25 +770,25 @@ if __name__=="__main__":
     plot_emissions(df_macro)
     plot_LIS(df_macro)
 
-    df_cp = pd.read_csv(os.path.join(os.path.join(os.path.curdir, 'results', 'data_saved', 'data'), str(SEED)+'_cp_firm.csv'))   # Replace folder name and model csv name here
+    df_cp = pd.read_csv(os.path.join(os.path.join(os.path.curdir, 'results', 'data_saved', 'data', folder), str(SEED)+' cp_firm.csv'))   # Replace folder name and model csv name here
     plot_cp_emissions(df_cp)
 
-    df_income_distr = pd.read_csv(os.path.join(os.path.join(os.path.curdir, 'results', 'data_saved', 'data'), 'final_income_dists.csv'))   # Replace folder name and model csv name here
+    df_income_distr = pd.read_csv(os.path.join(os.path.join(os.path.curdir, 'results', 'data_saved', 'data', folder), str(SEED)+' final_income_dists.csv'))   # Replace folder name and model csv name here
     plot_income_dist(df_income_distr)
     plot_inequality(df_macro)
 
-    df_profit_distr_cp = pd.read_csv(os.path.join(os.path.join(os.path.curdir, 'results', 'data_saved', 'data'), 'final_profit_dists_cp.csv'))   # Replace folder name and model csv name here
-    df_profit_distr_kp = pd.read_csv(os.path.join(os.path.join(os.path.curdir, 'results', 'data_saved', 'data'), 'final_profit_dists_kp.csv'))   # Replace folder name and model csv name here
+    df_profit_distr_cp = pd.read_csv(os.path.join(os.path.join(os.path.curdir, 'results', 'data_saved', 'data', folder), str(SEED)+' final_profit_dists_cp.csv'))   # Replace folder name and model csv name here
+    df_profit_distr_kp = pd.read_csv(os.path.join(os.path.join(os.path.curdir, 'results', 'data_saved', 'data', folder), str(SEED)+' final_profit_dists_kp.csv'))   # Replace folder name and model csv name here
     plot_sales_dist(df_profit_distr_cp, df_profit_distr_kp)
 
     # df_climate_energy = pd.read_csv('../results/result_data/climate_and_energy.csv')
     # plot_climate(df_climate_energy, df_macro)
 
-    hh_fields = ['hh_id', 'all_Sust_Score', 'all_Sust_Uncert', 'all_W']     # We have to read only few columns to save time
-    df_hh = pd.DataFrame()
-    for timestamp in range(HH_STEP_START, HH_STEP_END):  # Change appropriately for the size of simulation range (as in the folder)
-        path = (os.path.join(os.path.join(os.path.curdir, 'results', 'data_saved', 'data', 'x_hh'), 'household_'+str(timestamp)+'_hh.csv'))
-        df = pd.read_csv(path, skipinitialspace=True, usecols=hh_fields)
-        df['timestamp'] = timestamp
-        df_hh = pd.concat([df_hh, df], ignore_index=True)
-    plot_hh_opinion_dynamics(df_hh)
+    # hh_fields = ['hh_id', 'all_Sust_Score', 'all_Sust_Uncert', 'all_W']     # We have to read only few columns to save time
+    # df_hh = pd.DataFrame()
+    # for timestamp in range(HH_STEP_START, HH_STEP_END):  # Change appropriately for the size of simulation range (as in the folder)
+    #     path = (os.path.join(os.path.join(os.path.curdir, 'results', 'data_saved', 'data', 'x_hh'), 'household_'+str(timestamp)+'_hh.csv'))
+    #     df = pd.read_csv(path, skipinitialspace=True, usecols=hh_fields)
+    #     df['timestamp'] = timestamp
+    #     df_hh = pd.concat([df_hh, df], ignore_index=True)
+    # plot_hh_opinion_dynamics(df_hh)

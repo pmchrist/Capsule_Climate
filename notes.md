@@ -53,6 +53,7 @@ Phase 2 - Creating Sustainable Employee (Integrate Sustainabiltiy Opinion into J
 
 
 # Nice ToDo:
+0) FIX GRAPHS
 1) Migrate to the newer version of Agents.jl
 2) Modify Isaak's Diagram to be in line with my Thesis Research
 3) These model parameter updaters are not consistent and logic of initialize_global_params() and changing_params for GlobalParam struct is ugly and works kinda by "magic"
@@ -67,6 +68,7 @@ Phase 2 - Creating Sustainable Employee (Integrate Sustainabiltiy Opinion into J
 - When money market/index funds start balooning it means that something is going off in the economy. Keep an eye on it!
 - Stability of the system can be measured with the Coefficient of Variation
 - GitHubs: debraj001, vallematteo
+- Agents@5.6.5 is used
 
 - Check if there are more CP in the list of HH it might improve speed of convergence/stability.     <- No difference
 - Experiment with sizes of economy to see improvement in the CI                                     <- No difference

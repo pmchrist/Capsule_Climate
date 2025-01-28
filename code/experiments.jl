@@ -212,7 +212,7 @@ function OFAT_globalparam(
                 println("   thr $(Threads.threadid()), param $(paramtype)=$(newparamval), sim_nr $(sim_nr)")
 
                 # Run the model with changed tax rate
-                agent_df, model_df = run_simulation(
+                agent_df, model_df = run_simulation(            # WE NO LONGER RETURN
                     changed_params=Dict(changed_params),
                     show_full_output=false,
                     thread_nr=Threads.threadid(),
