@@ -93,7 +93,7 @@ using Distributed
 using Random
 
 # Launch workers
-n_proc_main = 16
+n_proc_main = 8
 addprocs(n_proc_main)
 
 # Make sure all needed packages and code are loaded on every worker
@@ -105,7 +105,7 @@ addprocs(n_proc_main)
     # Declare any necessary parameters or global arrays
     alphas = [2, 18]
     betas  = [2, 18]
-    prices_fossils = [0.3, 0.35, 0.375, 0.4, 0.425, 0.45, 0.5]
+    prices_fossils = [0.35, 0.37, 0.39, 0.4, 0.41, 0.43, 0.45]
     combined_params = [(a, b, pf) for a in alphas, b in betas, pf in prices_fossils]
     const sims_n = length(combined_params)
 
@@ -116,7 +116,7 @@ addprocs(n_proc_main)
 
             # Call your simulation (replace with your real function signature)
             run_simulation(
-                T = 1000,
+                T = 1200,
                 savedata = true,
                 show_full_output = false,
                 showprogress = false,
@@ -132,15 +132,13 @@ addprocs(n_proc_main)
 end
 
 # Define your list of seeds on the master process
-# num_sim_ci = 32
-# all_seeds = rand(1:1_000_000, num_sim_ci)
-all_seeds = [7107009, 8968977, 5151600, 2436546, 4269460, 9251552, 4492958, 
-             6003441, 6033899, 4562678, 7698139, 1975977, 3042982, 5269969, 
-             719027, 2813374, 3262187, 5391091, 7641139, 1712837, 5129247, 
-             5540958, 7546105, 605019, 8978662, 6912409, 4380751, 8423068, 
-             9589324, 5062262, 5798093, 5996428]
+num_sim_ci = 100
+all_seeds = rand(1:10_000_000, num_sim_ci)
+# println("Simulation started for seeds: ", all_seeds)
 
+# all_seeds = [9130837, 6306863]
+# all_seeds = [9079431, 4572842, 7686122, 2684853]
 # Distribute seeds using pmap (one seed at a time per worker)
 pmap(run_sim_for_seed, all_seeds)
 
-println("Simulation finished for seeds: ", all_seeds)
+println("Simulation finished")

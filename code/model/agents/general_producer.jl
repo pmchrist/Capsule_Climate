@@ -7,8 +7,13 @@ function cop(
     τᶜ::Float64,
     π_EF::Float64
     )
+    temp = w / π_LP + (τᴱ + pₑ) / π_EE + τᶜ * π_EF
 
-    return w / π_LP + (τᴱ + pₑ) / π_EE + τᶜ * π_EF
+    if isnan(temp)
+        println("cop is nan aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+    end
+    
+    return temp
 end
 
 
@@ -322,7 +327,7 @@ function check_if_bankrupt_p!(
 
 
     if (typeof(p) == ConsumerGoodProducer && p.age > t_wait 
-        && (p.f[end] <= 0.0001 || p.balance.EQ < 0))
+        && (p.f[end] <= 1e-4 || p.balance.EQ < 1e-4))
         return true
     elseif (typeof(p) == CapitalGoodProducer && p.age > t_wait 
             &&  p.balance.EQ < 0)

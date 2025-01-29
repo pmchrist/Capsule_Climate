@@ -66,7 +66,7 @@ Defines struct for consumer good producer
 
     #emissions::Float64 = 0.0                 # carbon emissions in last period
     emissions::Float64 = 0.0                  # carbon emissions in last period
-    emissions_per_item::Vector{Float64}       # hist emissions per item
+    emissions_per_item::Vector{Float64} = zeros(Float64, 3)       # hist emissions per item
 
 end
 
@@ -96,7 +96,6 @@ function initialize_cp(
         L = 0,
         w̄ = fill(w, 3),
         f = fill(f, 3),
-        emissions_per_item = fill(1.0, 3)     # In the beginning machines are the same
     )
 
     cp.balance.NW = 1500.
@@ -129,6 +128,8 @@ function get_cp_mdata(model::ABM)
     insertcols!(cp_df, :Good_Markup_mu => Float64[])     # MarkUp
     insertcols!(cp_df, :Good_Prod_Q => Float64[])        # Production
     insertcols!(cp_df, :Good_Emiss => Float64[])         # emissions_per_item
+    insertcols!(cp_df, :market_share => Float64[])         # emissions_per_item
+    insertcols!(cp_df, :profits => Float64[])         # emissions_per_item
 
 
     # ToDo: Definitely can be optimized
@@ -148,6 +149,8 @@ function get_cp_mdata(model::ABM)
         row[:Good_Markup_mu] = model[cp_id].μ[end]
         row[:Good_Prod_Q] = model[cp_id].Q[end]
         row[:Good_Emiss] = model[cp_id].emissions_per_item[end]
+        row[:market_share] = model[cp_id].Π[end]
+        row[:profits] = model[cp_id].f[end]
 
         push!(cp_df, row)
     end
@@ -876,8 +879,7 @@ function replace_bankrupt_cp!(
         # Sample what the size of the capital stock will be
         D = macro_struct.cu[t] * all_n_machines[cp_i] * globalparam.freq_per_machine
 
-        # In the first period, the cp has no machines yet, these are delivered at the end
-        # of the first period
+        # In the first period, the cp has no machines yet, these are delivered at the end of the first period
         new_cp = initialize_cp(
                     cp_id,
                     cp_i,
@@ -932,7 +934,15 @@ function update_Dᵉ_cp!(
     )
 
     cp.Dᵉ = cp.age > 1 ? ω * cp.Dᵉ + (1 - ω) * (cp.D[end] + cp.Dᵁ[end]) : cp.Dᵉ
-
+    if isnan(cp.Dᵉ)
+        println("Demand Part: Expected, Unsatisfied Before, Historical")
+        println(cp.Dᵉ)
+        println(cp.D[end])
+        println(cp.Dᵁ[end])
+    end
+    if (cp.Dᵉ == 0)
+        println("Oh no, market is fucked")
+    end
 end
 
 
@@ -945,10 +955,14 @@ function update_Qˢ_cp!(
 
     cp.Qˢ = max(cp.Dᵉ + cp.Nᵈ - cp.N_goods, 0.0)
     if isnan(cp.Qˢ)
-        # println(cp.Dᵉ)
-        # println(cp.Nᵈ)
-        # println(cp.N_goods)
-        # println()
+        println("Qs is NaN")
+        println(cp.Dᵉ)
+        println(cp.Nᵈ)
+        println(cp.N_goods)
+        println(cp.age)
+        println(cp.emissions)
+        #cp.Qˢ = 0
+        println()
     end
 end
 
@@ -1131,12 +1145,23 @@ function update_emissions_cp!(
     #println(actual_em * cp.EU, " | ", cp.emissions, " | ", ep.emissions_per_energy[t])
     # If there was a production in this step, we need to save new emissions per item
     #println(cp.emissions, "|", cp.Q[end])
+
+
+
+    # This is unstable for the consumer market process. Let's change it the average
+    # if cp.Q[end] > 0
+    #     shift_and_append!(cp.emissions_per_item, cp.emissions / cp.Q[end])
+    # else
+    #     # if no production in current step keep the last emissions value
+    #     # Note: We are not using zero, as there was still emission earlier and we do not want to give advantage to the existing stock
+    #     #shift_and_append!(cp.emissions_per_item, cp.emissions_per_item[end])
+    # end
     if cp.Q[end] > 0
         shift_and_append!(cp.emissions_per_item, cp.emissions / cp.Q[end])
     else
-        # if no production in current step keep the last emissions value
-        shift_and_append!(cp.emissions_per_item, cp.emissions_per_item[end])
+        shift_and_append!(cp.emissions_per_item, mean(cp.emissions_per_item))       # Use last average for score
     end
+
 end
 
 

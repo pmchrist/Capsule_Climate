@@ -43,10 +43,30 @@ function cpmarket_matching_cp!(
     #     println("after")
     # end
 
-    sold_out = Int64[]
+    # YO, IF THERE IS NO INVENTORY, SET WEIGHT TO ZERO
+
+    # println()
+    # println(cmdata.weights)
+    # println()
+    
     #display(cmdata.weights)
 
-    for i in 1:3
+    # First find the ideal distribution if no constraints are there
+    cmdata.C_spread .= cmdata.all_C     # <- cmdata.all_C Is NaN with the new Utility Function
+    cmdata.C_spread .*= cmdata.weights
+    cmdata.true_D .= cmdata.C_spread
+
+
+    # Now we can clear up weights for the producers that have zero stock and cannot participate
+    sold_out = findall(cmdata.all_N .<= 1e-1)
+    cmdata.weights[:, sold_out] .= 0.0
+    sold_out = Int64[]  # For new additions into the no stock group
+    prev_inventory = sum(cmdata.all_N)      # Early break out if necessary from matching process
+    # Matching process
+    counter = 0
+
+    while true
+    #for i in 1:5
 
         # Spread consumption budget according to weights (no allocs)
         cmdata.C_spread .= cmdata.all_C     # <- cmdata.all_C Is NaN with the new Utility Function
@@ -64,12 +84,8 @@ function cpmarket_matching_cp!(
         #     end
         # end
 
-        # Compute the first choice of hh for the products (2 allocs)
-        if i == 1
-            cmdata.true_D .= cmdata.C_spread
-        end
-
-        # Compute demand per cp and find which cp is sold out
+        
+        # Compute demand per cp and find which cp is sold out and how much demand it can cover
         sum!(cmdata.demand_per_cp, cmdata.C_spread')
 
         cmdata.demand_per_cp .= max.(floor.(cmdata.demand_per_cp, digits=8), 0.0)
@@ -115,8 +131,33 @@ function cpmarket_matching_cp!(
 
         cmdata.sold_per_hh_round .= 0.0
         cmdata.sold_per_cp_round .= 0.0
-    end
+    
 
+        # Check convergence
+        # println("Total: $total_inventory")
+        # println("Prev: $prev_inventory")
+        # println("Diff: $(abs(total_inventory - prev_inventory) / max(prev_inventory, total_inventory))")
+        # println()
+        counter += 1
+        total_inventory = sum(cmdata.all_N)
+        if (abs(total_inventory - prev_inventory) / max(total_inventory, prev_inventory)) < 1e-2
+            break
+        end
+        prev_inventory = total_inventory
+        if (total_inventory == 0)
+            # println("EMPTY Inventories")
+            break
+        end 
+        # if (isnan(prev_inventory) || isnan(total_inventory))
+        #     # println("Incorrect Inventories")
+        #     break
+        # end 
+        if counter > 100
+            # Does not happen
+            println("WARNING: Consumer Market is not Converging")
+            break
+        end
+    end
 end
 
 
@@ -174,6 +215,11 @@ function process_transactions_cm!(
         model[cp_id].curracc.S = model[cp_id].curracc.S * (1 / (1 + government.τˢ))
 
         N_goods_sold = model[cp_id].curracc.S / model[cp_id].p[end]
+        if isnan(N_goods_sold)
+            println("Goods Sold Nan")
+            println(model[cp_id].p[end])
+            #N_goods_sold = 0
+        end
         shift_and_append!(model[cp_id].D, N_goods_sold)
         shift_and_append!(model[cp_id].Dᵁ, sum(unsat_demand))
         model[cp_id].N_goods = abs(model[cp_id].N_goods - N_goods_sold) > 1e-1 ? model[cp_id].N_goods - N_goods_sold : 0.0

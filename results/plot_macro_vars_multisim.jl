@@ -4,7 +4,7 @@
 
 # Launch workers
 using Distributed
-n_proc_main = 12
+n_proc_main = 8
 addprocs(n_proc_main)
 
 # PARAMETERS AND FUNCTIONS ARE SHARED
@@ -26,18 +26,24 @@ addprocs(n_proc_main)
     ###############################################################################
     # Adjust these as needed
     const PATH                = joinpath(pwd(), "results", "data_saved", "data") # Folder structure root
-    const HH_STEP_START       = 300
-    const HH_STEP_END         = 1000
+    const HH_STEP_START       = 1
+    const HH_STEP_END         = 1500
     # SEEDS = [7107009, 8968977, 5151600, 2436546, 4269460, 9251552, 4492958, 
     #         6003441, 6033899, 4562678, 7698139, 1975977, 3042982, 5269969, 
     #         719027, 2813374, 3262187, 5391091, 7641139, 1712837, 5129247, 
     #         5540958, 7546105, 605019, 8978662, 6912409, 4380751, 8423068, 
     #         9589324, 5062262, 5798093, 5996428]
-    SEEDS = [5996428, 5062262, 5798093, 8423068, 9589324, 4380751, 6912409, 8978662, 5129247, 7641139, 7546105, 5540958, 1712837, 605019, 5391091, 3262187, 2813374, 719027, 5269969, 3042982, 4492958,
-            7698139, 7107009, 8968977, 6003441, 1975977, 4269460, 5151600, 9251552, 2436546, 4562678, 6033899]
+    # SEEDS = [
+    #     597034, 40963, 227168, 254022, 104365, 607798, 178061, 767353,
+    #     859796, 175636, 594185, 461760, 455169, 895040, 731265, 733169
+    # ]
+    # SEEDS = [
+    #     5023843, 607798, 9869555, 767353, 1235468, 903001, 7751986, 5118706
+    #     ]
+    SEEDS = [9130837, 6306863]
     SEEDS = string.(SEEDS)
 
-    # without opinion
+    # # without opinion
     # const FOLDERS = [
     #         "alpha=1 beta=1 p_f=0.3 id=1",
     #         "alpha=1 beta=1 p_f=0.35 id=2",
@@ -49,38 +55,12 @@ addprocs(n_proc_main)
     # ]
     # with opinion
     const FOLDERS = [
-            "alpha=2 beta=2 p_f=0.3 id=1",
-            "alpha=2 beta=2 p_f=0.35 id=5",
-            "alpha=2 beta=2 p_f=0.375 id=9",
-            "alpha=2 beta=2 p_f=0.4 id=13",
-            "alpha=2 beta=2 p_f=0.425 id=17",
-            "alpha=2 beta=2 p_f=0.45 id=21",
-            "alpha=2 beta=2 p_f=0.5 id=25",
-            "alpha=2 beta=18 p_f=0.3 id=3",
-            "alpha=2 beta=18 p_f=0.35 id=7",
-            "alpha=2 beta=18 p_f=0.375 id=11",
-            "alpha=2 beta=18 p_f=0.4 id=15",
-            "alpha=2 beta=18 p_f=0.425 id=19",
-            "alpha=2 beta=18 p_f=0.45 id=23",
-            "alpha=2 beta=18 p_f=0.5 id=27",
-            "alpha=18 beta=2 p_f=0.3 id=2",
-            "alpha=18 beta=2 p_f=0.35 id=6",
-            "alpha=18 beta=2 p_f=0.375 id=10",
-            "alpha=18 beta=2 p_f=0.4 id=14",
-            "alpha=18 beta=2 p_f=0.425 id=18",
-            "alpha=18 beta=2 p_f=0.45 id=22",
-            "alpha=18 beta=2 p_f=0.5 id=26",
-            "alpha=18 beta=18 p_f=0.3 id=4",
-            "alpha=18 beta=18 p_f=0.35 id=8",
-            "alpha=18 beta=18 p_f=0.375 id=12",
-            "alpha=18 beta=18 p_f=0.4 id=16",
-            "alpha=18 beta=18 p_f=0.425 id=20",
-            "alpha=18 beta=18 p_f=0.45 id=24",
-            "alpha=18 beta=18 p_f=0.5 id=28"
+            "alpha=18 beta=2 p_f=0.425 id=2",
+            "alpha=18 beta=2 p_f=0.45 id=1"
     ]
     # Subplot grid sizes
-    const GRAPH_SIZE_DIFF_PARAM = (Int(length(FOLDERS)/7), 7)        # by default we have 7 values for p_f (used to compare results for same seed)
-    const GRAPH_SIZE_DIFF_SEED  = (Int(length(SEEDS)/8), 8)          # By default 32 values for seeds
+    const GRAPH_SIZE_DIFF_PARAM = (Int(length(FOLDERS)/2), 2)        # by default we have 7 values for p_f (used to compare results for same seed)
+    const GRAPH_SIZE_DIFF_SEED  = (Int(length(SEEDS)/2), 2)          # By default 32 values for seeds
 
     # Parameters of the model to visualize
     MODEL_LEVEL_COLS = [
@@ -129,18 +109,31 @@ addprocs(n_proc_main)
     colnames_cp =   [
         "Good_Emiss",
         "Good_Markup_mu",
-        "Good_Prod_Q"
+        "Good_Prod_Q",
+        "market_share",
+        "profits"
     ]
     colnames_cp_agg =   [
         "Good_Emiss_overall_mean",
+        "Good_Emiss_overall_std",
         "Good_Emiss_lower_mean",
         "Good_Emiss_upper_mean",
         "Good_Markup_mu_overall_mean",
+        "Good_Markup_mu_overall_std",
         "Good_Markup_mu_lower_mean",
         "Good_Markup_mu_upper_mean",
         "Good_Prod_Q_overall_mean",
+        "Good_Prod_Q_overall_std",
         "Good_Prod_Q_lower_mean",
-        "Good_Prod_Q_upper_mean"
+        "Good_Prod_Q_upper_mean",
+        "market_share_overall_mean",
+        "market_share_overall_std",
+        "market_share_lower_mean",
+        "market_share_upper_mean",
+        "profits_overall_mean",
+        "profits_overall_std",
+        "profits_lower_mean",
+        "profits_upper_mean",
     ]
 
 
