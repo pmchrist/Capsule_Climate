@@ -429,7 +429,7 @@ function decide_switching_all_hh!(
 
                     # Ugly way to avoid inf loop, will change later
                     count += 1
-                    if count == 100
+                    if count == 500
                         break
                     end
                 end
@@ -463,7 +463,7 @@ function decide_switching_all_hh!(
 
                     # Ugly way to avoid inf loop, will change later
                     count += 1
-                    if count == 100
+                    if count == 500
                         break
                     end
                 end

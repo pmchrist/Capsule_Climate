@@ -26,38 +26,51 @@ addprocs(n_proc_main)
     ###############################################################################
     # Adjust these as needed
     const PATH                = joinpath(pwd(), "results", "data_saved", "data") # Folder structure root
-    const HH_STEP_START       = 1
-    const HH_STEP_END         = 1500
-    # SEEDS = [7107009, 8968977, 5151600, 2436546, 4269460, 9251552, 4492958, 
-    #         6003441, 6033899, 4562678, 7698139, 1975977, 3042982, 5269969, 
-    #         719027, 2813374, 3262187, 5391091, 7641139, 1712837, 5129247, 
-    #         5540958, 7546105, 605019, 8978662, 6912409, 4380751, 8423068, 
-    #         9589324, 5062262, 5798093, 5996428]
-    # SEEDS = [
-    #     597034, 40963, 227168, 254022, 104365, 607798, 178061, 767353,
-    #     859796, 175636, 594185, 461760, 455169, 895040, 731265, 733169
-    # ]
-    # SEEDS = [
-    #     5023843, 607798, 9869555, 767353, 1235468, 903001, 7751986, 5118706
-    #     ]
+    const HH_STEP_START       = 300
+    const HH_STEP_END         = 1300
+
     SEEDS = [9130837, 6306863]
     SEEDS = string.(SEEDS)
 
-    # # without opinion
-    # const FOLDERS = [
-    #         "alpha=1 beta=1 p_f=0.3 id=1",
-    #         "alpha=1 beta=1 p_f=0.35 id=2",
-    #         "alpha=1 beta=1 p_f=0.375 id=3",
-    #         "alpha=1 beta=1 p_f=0.4 id=4",
-    #         "alpha=1 beta=1 p_f=0.425 id=5",
-    #         "alpha=1 beta=1 p_f=0.45 id=6",
-    #         "alpha=1 beta=1 p_f=0.5 id=7"
-    # ]
+    alphas = [2, 18]
+    betas  = [2, 18]
+    prices_fossils = [0.35, 0.37, 0.39, 0.40, 0.41, 0.43, 0.45]
     # with opinion
     const FOLDERS = [
-            "alpha=18 beta=2 p_f=0.425 id=2",
-            "alpha=18 beta=2 p_f=0.45 id=1"
+            "alpha=2 beta=2 p_f=0.35",
+            "alpha=2 beta=2 p_f=0.37",
+            "alpha=2 beta=2 p_f=0.39",
+            "alpha=2 beta=2 p_f=0.40",
+            "alpha=2 beta=2 p_f=0.41",
+            "alpha=2 beta=2 p_f=0.43",
+            "alpha=2 beta=2 p_f=0.45",
+            "alpha=2 beta=18 p_f=0.35",
+            "alpha=2 beta=18 p_f=0.37",
+            "alpha=2 beta=18 p_f=0.39",
+            "alpha=2 beta=18 p_f=0.40",
+            "alpha=2 beta=18 p_f=0.41",
+            "alpha=2 beta=18 p_f=0.43",
+            "alpha=2 beta=18 p_f=0.45",
+            "alpha=18 beta=2 p_f=0.35",
+            "alpha=18 beta=2 p_f=0.37",
+            "alpha=18 beta=2 p_f=0.39",
+            "alpha=18 beta=2 p_f=0.40",
+            "alpha=18 beta=2 p_f=0.41",
+            "alpha=18 beta=2 p_f=0.43",
+            "alpha=18 beta=2 p_f=0.45",
+            "alpha=18 beta=18 p_f=0.35",
+            "alpha=18 beta=18 p_f=0.37",
+            "alpha=18 beta=18 p_f=0.39",
+            "alpha=18 beta=18 p_f=0.40",
+            "alpha=18 beta=18 p_f=0.41",
+            "alpha=18 beta=18 p_f=0.43",
+            "alpha=18 beta=18 p_f=0.45",
     ]
+    # # without opinion
+    # const FOLDERS = [
+    #         "alpha=18 beta=2 p_f=0.425 id=2",
+    #         "alpha=18 beta=2 p_f=0.45 id=1"
+    # ]
     # Subplot grid sizes
     const GRAPH_SIZE_DIFF_PARAM = (Int(length(FOLDERS)/2), 2)        # by default we have 7 values for p_f (used to compare results for same seed)
     const GRAPH_SIZE_DIFF_SEED  = (Int(length(SEEDS)/2), 2)          # By default 32 values for seeds

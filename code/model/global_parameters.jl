@@ -70,7 +70,7 @@
     n_cons_market_days::Int64 = 4   # number of days in the consumer market process
 
     t_warmup::Int64 = 300           # time period warmup of the model
-    t_wait::Int64 = 4               # number of time periods new producers are not allowed to go bankrupt
+    t_wait::Int64 = 5               # number of time periods new producers are not allowed to go bankrupt       # Was 4, may improve stabiltiy 
 
     changed_params_ofat::Union{Nothing, Dict} # Parameters that are changed at the end of the warmup period
     changing_params::Union{Vector, Dict}   # Parameters that are changed at the end of the warmup period
