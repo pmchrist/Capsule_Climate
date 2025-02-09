@@ -60,7 +60,7 @@
     # Determine household switching
     ψ_E::Float64 = 0.15             # chance of employed worker looking for a better paying job
     ψ_Q::Float64 = 0.05             # chance of household switching away from cp when demand constrained
-    ψ_P::Float64 = 0.05             # chance of household switching to cp with better price
+    ψ_P::Float64 = 0.05             # chance of household switching to cp with better price - score
 
     freq_per_machine::Int64 = 25            # capital units per machine
     freq_per_powerplant::Int64 = 10_000     # capital units per instance
@@ -70,7 +70,7 @@
     n_cons_market_days::Int64 = 4   # number of days in the consumer market process
 
     t_warmup::Int64 = 300           # time period warmup of the model
-    t_wait::Int64 = 5               # number of time periods new producers are not allowed to go bankrupt       # Was 4, may improve stabiltiy 
+    t_wait::Int64 = 4               # number of time periods new producers are not allowed to go bankrupt       # Was 4, may improve stabiltiy 
 
     changed_params_ofat::Union{Nothing, Dict} # Parameters that are changed at the end of the warmup period
     changing_params::Union{Vector, Dict}   # Parameters that are changed at the end of the warmup period

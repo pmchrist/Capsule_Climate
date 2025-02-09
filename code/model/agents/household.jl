@@ -38,7 +38,7 @@
     unsat_dem::Dict{Int64, Float64} = Dict()   # unsatisfied demands
     P̄::Float64 = 1.0                           # weighted average price of bp
     P̄ᵉ::Float64 = 1.0                          # expected weighted average price of bp
-    c_L::Float64 = 0.5                         # share of income used to buy luxury goods
+    #c_L::Float64 = 0.5                         # share of income used to buy luxury goods      # Never implemented
     
     Sust_Score::Float64                        # Opinion on how much environment is important [0-not important, 1-important]
     Sust_Score_Old::Float64 = Sust_Score       # Opinion from a previous step (used in opinion dynamics model)
@@ -401,20 +401,35 @@ function decide_switching_all_hh!(
     to
     )
 
+    # Getting values for futue calculations
+    # Normalized prices
+    all_p = map(cp_id -> model[cp_id].p[end], minimum(all_cp):maximum(all_cp))
+    norm_p = all_p ./ maximum(all_p)  
+    
+    # Normalized Emissions
+    emiss_per_good = map(cp_id -> model[cp_id].emissions_per_item[end], minimum(all_cp):maximum(all_cp))    # Last Emissions
+    if maximum(emiss_per_good) > 0      # There is a case when we have a green economy and no emissions are present
+        norm_emiss_per_good = emiss_per_good ./ maximum(emiss_per_good)
+    else
+        norm_emiss_per_good = fill(0.5, length(emiss_per_good))         # Nobody gets a low emission benefit in the clean economy
+    end
+
+
     for hh_id in all_hh
+
+        # Replace producers that did not provide goods to the HH
 
         # Check if demand was constrained and for chance of changing cp
         if length(model[hh_id].unsat_dem) > 0 && rand() < globalparam.ψ_Q
 
-            # Pick a supplier to change, first set up weights inversely proportional
-            # to supplied share of goods
+            # Pick a supplier to change
 
+            # First set up weights inversely proportional to supplied share of goods
             create_weights(hh::Household, cp_id::Int64)::Float64 = hh.unsat_dem[cp_id] > 0 ? 1 / hh.unsat_dem[cp_id] : 0.0
             weights = map(cp_id -> create_weights(model[hh_id], cp_id), model[hh_id].cp)
 
             # Sample producer to replace
             p_id_replaced = sample(model[hh_id].cp, Weights(weights))[1]
-
             filter!(p_id -> p_id ≠ p_id_replaced, model[hh_id].cp)
 
             # Add new cp if list not already too long
@@ -430,6 +445,7 @@ function decide_switching_all_hh!(
                     # Ugly way to avoid inf loop, will change later
                     count += 1
                     if count == 500
+                        println("bruh1")
                         break
                     end
                 end
@@ -442,19 +458,14 @@ function decide_switching_all_hh!(
             end
         end
 
-        # Check if household will look for a better price
+        # Check if household will look for a better deal
         if rand() < globalparam.ψ_P
-
-
             if length(model[hh_id].cp) < length(all_cp)
 
                 # Randomly select a supplier that may be replaced
                 p_id_candidate1 = sample(model[hh_id].cp)
 
-                # Randomly pick another candidate from same type and see if price is lower
-                # Ugly sample to boost performance
-                # p_id_candidate2 = sample(setdiff(all_cp, model[hh_id].cp))
-
+                # Randomly pick another candidate for compare
                 p_id_candidate2 = sample(all_cp)
 
                 count = 0
@@ -464,12 +475,26 @@ function decide_switching_all_hh!(
                     # Ugly way to avoid inf loop, will change later
                     count += 1
                     if count == 500
+                        println("bruh2")
                         break
                     end
                 end
                 
-                # Replace supplier if price of other supplier is lower 
-                if model[p_id_candidate2].p[end] < model[p_id_candidate1].p[end] && p_id_candidate2 ∉ model[hh_id].cp
+                # Calculate Scores of CPs
+                # CP 1:
+                cp_id_model = p_id_candidate1 - length(all_hh)
+                price_part = norm_p[cp_id_model] * (1 - model[hh_id].Sust_Score)               # Normalized Price is used
+                emiss_part = norm_emiss_per_good[cp_id_model] * model[hh_id].Sust_Score      # Normalized emissions produced per good is used
+                score_cand_1 = price_part + emiss_part
+                # CP 2:
+                cp_id_model = p_id_candidate2 - length(all_hh)
+                price_part = norm_p[cp_id_model] * (1 - model[hh_id].Sust_Score)               # Normalized Price is used
+                emiss_part = norm_emiss_per_good[cp_id_model] * model[hh_id].Sust_Score      # Normalized emissions produced per good is used
+                score_cand_2 = price_part + emiss_part
+
+
+                # Replace old supplier if score of new supplier is lower (i.e. price and emissions are lower)
+                if score_cand_2 < score_cand_1
                     # model[hh_id].cp[findfirst(x->x==p_id_candidate1, model[hh_id].cp)] = p_id_candidate2
                     filter!(p_id -> p_id ≠ p_id_candidate1, model[hh_id].cp)
                     push!(model[hh_id].cp, p_id_candidate2)
@@ -478,10 +503,24 @@ function decide_switching_all_hh!(
                     model[hh_id].unsat_dem[p_id_candidate2] = 0.0
                 end
             else
-                # If all producers known, throw out producer with highest price
-                p_highest_price = maximum(cp_id -> model[cp_id].p[end], model[hh_id].cp)
-                filter!(p_id -> p_id ≠ p_highest_price, model[hh_id].cp)
-                delete!(model[hh_id].unsat_dem, p_highest_price)
+                # If all producers known, throw out producer with highest price and emission
+                max_score = -1      # it is max
+                max_id = -1
+                for cp_id in all_cp
+                    price_part = norm_p[cp_id - length(all_hh)] * (1 - model[hh_id].Sust_Score)               # Normalized Price is used
+                    emiss_part = norm_emiss_per_good[cp_id - length(all_hh)] * model[hh_id].Sust_Score      # Normalized emissions produced per good is used
+                    score = price_part + emiss_part
+                    if (score > max_score)
+                        max_score = score
+                        max_id = cp_id
+                    end
+                end
+                
+                if (max_id == -1)
+                    println("bruh3")
+                end
+                filter!(p_id -> p_id ≠ max_id, model[hh_id].cp)
+                delete!(model[hh_id].unsat_dem, max_id)
             end
         end
     end
@@ -499,14 +538,32 @@ function refillsuppliers_hh!(
     model::ABM
     )
 
+    # Getting values for futue calculations
+    # Normalized prices
+    all_p = map(cp_id -> model[cp_id].p[end], minimum(all_cp):maximum(all_cp))
+    norm_p = all_p ./ maximum(all_p)  
+    
+    # Normalized Emissions
+    emiss_per_good = map(cp_id -> model[cp_id].emissions_per_item[end], minimum(all_cp):maximum(all_cp))    # Last Emissions
+    if maximum(emiss_per_good) > 0      # There is a case when we have a green economy and no emissions are present
+        norm_emiss_per_good = emiss_per_good ./ maximum(emiss_per_good)
+    else
+        norm_emiss_per_good = fill(0.5, length(emiss_per_good))              # Nobody gets a low emission benefit in the clean economy
+    end
+
+
     if length(hh.cp) < n_cp_hh
 
         # Determine which bp are available
         n_add_cp = n_cp_hh - length(hh.cp)
         poss_cp = filter(p_id -> p_id ∉ hh.cp, all_cp)
 
-        # Determine weights based on prices, sample and add
-        weights = map(cp_id -> 1 / model[cp_id].p[end], poss_cp)
+        # Determine weights based on Prices and Emissions of CP, sample and add
+        weights = map(cp_id -> 
+                        1 / 
+                        ((norm_p[cp_id - minimum(all_cp) + 1] * (1 - hh.Sust_Score)) +
+                        (norm_emiss_per_good[cp_id - minimum(all_cp) + 1] * hh.Sust_Score)),
+                        poss_cp)
         add_cp = sample(poss_cp, Weights(weights), n_add_cp)
         hh.cp = vcat(hh.cp, add_cp)
 
@@ -583,3 +640,4 @@ function sust_opinion_exchange_all_hh!(
     end
 
 end
+

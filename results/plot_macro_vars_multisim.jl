@@ -4,7 +4,7 @@
 
 # Launch workers
 using Distributed
-n_proc_main = 8
+n_proc_main = 4
 addprocs(n_proc_main)
 
 # PARAMETERS AND FUNCTIONS ARE SHARED
@@ -27,53 +27,60 @@ addprocs(n_proc_main)
     # Adjust these as needed
     const PATH                = joinpath(pwd(), "results", "data_saved", "data") # Folder structure root
     const HH_STEP_START       = 300
-    const HH_STEP_END         = 1300
+    const HH_STEP_END         = 1200
 
-    SEEDS = [9130837, 6306863]
+    SEEDS = [7573706, 817298, 5015995, 7372452, 2700498, 9996918, 3495231, 3327595, 7666357, 7194651,
+    2110350, 2314701, 6076284, 493882, 4846528, 3574769, 4625989, 8707792, 7074644, 3980917, 9294657,
+    3486417, 7685624, 4288856, 5916162, 7355592, 3710378, 3801667, 6954119, 9529040, 6072593, 4085919,
+    3602909, 6415290, 1171631, 7390976, 3307371, 5079054, 4553034, 821390, 2036270, 5147823, 9264518,
+    6485874, 9136572, 5373138, 2772102, 4883998]
     SEEDS = string.(SEEDS)
 
-    alphas = [2, 18]
-    betas  = [2, 18]
-    prices_fossils = [0.35, 0.37, 0.39, 0.40, 0.41, 0.43, 0.45]
-    # with opinion
-    const FOLDERS = [
-            "alpha=2 beta=2 p_f=0.35",
-            "alpha=2 beta=2 p_f=0.37",
-            "alpha=2 beta=2 p_f=0.39",
-            "alpha=2 beta=2 p_f=0.40",
-            "alpha=2 beta=2 p_f=0.41",
-            "alpha=2 beta=2 p_f=0.43",
-            "alpha=2 beta=2 p_f=0.45",
-            "alpha=2 beta=18 p_f=0.35",
-            "alpha=2 beta=18 p_f=0.37",
-            "alpha=2 beta=18 p_f=0.39",
-            "alpha=2 beta=18 p_f=0.40",
-            "alpha=2 beta=18 p_f=0.41",
-            "alpha=2 beta=18 p_f=0.43",
-            "alpha=2 beta=18 p_f=0.45",
-            "alpha=18 beta=2 p_f=0.35",
-            "alpha=18 beta=2 p_f=0.37",
-            "alpha=18 beta=2 p_f=0.39",
-            "alpha=18 beta=2 p_f=0.40",
-            "alpha=18 beta=2 p_f=0.41",
-            "alpha=18 beta=2 p_f=0.43",
-            "alpha=18 beta=2 p_f=0.45",
-            "alpha=18 beta=18 p_f=0.35",
-            "alpha=18 beta=18 p_f=0.37",
-            "alpha=18 beta=18 p_f=0.39",
-            "alpha=18 beta=18 p_f=0.40",
-            "alpha=18 beta=18 p_f=0.41",
-            "alpha=18 beta=18 p_f=0.43",
-            "alpha=18 beta=18 p_f=0.45",
-    ]
-    # # without opinion
+    # # With opinion
     # const FOLDERS = [
-    #         "alpha=18 beta=2 p_f=0.425 id=2",
-    #         "alpha=18 beta=2 p_f=0.45 id=1"
+    #         "alpha=2 beta=2 p_f=0.35",
+    #         "alpha=2 beta=2 p_f=0.37",
+    #         "alpha=2 beta=2 p_f=0.39",
+    #         "alpha=2 beta=2 p_f=0.4",
+    #         "alpha=2 beta=2 p_f=0.41",
+    #         "alpha=2 beta=2 p_f=0.43",
+    #         "alpha=2 beta=2 p_f=0.45",
+    #         "alpha=2 beta=12 p_f=0.35",
+    #         "alpha=2 beta=12 p_f=0.37",
+    #         "alpha=2 beta=12 p_f=0.39",
+    #         "alpha=2 beta=12 p_f=0.4",
+    #         "alpha=2 beta=12 p_f=0.41",
+    #         "alpha=2 beta=12 p_f=0.43",
+    #         "alpha=2 beta=12 p_f=0.45",
+    #         "alpha=12 beta=2 p_f=0.35",
+    #         "alpha=12 beta=2 p_f=0.37",
+    #         "alpha=12 beta=2 p_f=0.39",
+    #         "alpha=12 beta=2 p_f=0.4",
+    #         "alpha=12 beta=2 p_f=0.41",
+    #         "alpha=12 beta=2 p_f=0.43",
+    #         "alpha=12 beta=2 p_f=0.45",
+    #         "alpha=12 beta=12 p_f=0.35",
+    #         "alpha=12 beta=12 p_f=0.37",
+    #         "alpha=12 beta=12 p_f=0.39",
+    #         "alpha=12 beta=12 p_f=0.4",
+    #         "alpha=12 beta=12 p_f=0.41",
+    #         "alpha=12 beta=12 p_f=0.43",
+    #         "alpha=12 beta=12 p_f=0.45",
     # ]
+    # Without opinion
+    const FOLDERS = [
+            "alpha=1 beta=1 p_f=0.35",
+            "alpha=1 beta=1 p_f=0.37",
+            "alpha=1 beta=1 p_f=0.39",
+            "alpha=1 beta=1 p_f=0.4",
+            "alpha=1 beta=1 p_f=0.41",
+            "alpha=1 beta=1 p_f=0.43",
+            "alpha=1 beta=1 p_f=0.45"
+    ]
+
     # Subplot grid sizes
-    const GRAPH_SIZE_DIFF_PARAM = (Int(length(FOLDERS)/2), 2)        # by default we have 7 values for p_f (used to compare results for same seed)
-    const GRAPH_SIZE_DIFF_SEED  = (Int(length(SEEDS)/2), 2)          # By default 32 values for seeds
+    const GRAPH_SIZE_DIFF_PARAM = (Int(length(FOLDERS)/7), 7)        # by default we have 7 values for p_f
+    const GRAPH_SIZE_DIFF_SEED  = (Int(length(SEEDS)/8), 8)          # By default 48 values for seeds
 
     # Parameters of the model to visualize
     MODEL_LEVEL_COLS = [
@@ -123,8 +130,8 @@ addprocs(n_proc_main)
         "Good_Emiss",
         "Good_Markup_mu",
         "Good_Prod_Q",
-        "market_share",
-        "profits"
+        "Profits",
+        "market_share"
     ]
     colnames_cp_agg =   [
         "Good_Emiss_overall_mean",
@@ -143,12 +150,13 @@ addprocs(n_proc_main)
         "market_share_overall_std",
         "market_share_lower_mean",
         "market_share_upper_mean",
-        "profits_overall_mean",
-        "profits_overall_std",
-        "profits_lower_mean",
-        "profits_upper_mean",
+        "Profits_overall_mean",
+        "Profits_overall_std",
+        "Profits_lower_mean",
+        "Profits_upper_mean"
     ]
 
+    # TODO: ADD VISULIZATIONS BASED ON THE EMISSIONS LIKE IN THE ORIGINAL FILE (Price and Wage)
 
 
     ###############################################################################
@@ -466,6 +474,7 @@ addprocs(n_proc_main)
 
         outpath = joinpath(graph_path, "$name $column_name.png")
         savefig(plt, outpath)
+        empty!(plt)
     end
 
 end
@@ -476,40 +485,61 @@ end
 
 
 # Compare different parameters using seeds for CI, model-level
-@distributed for col_name in MODEL_LEVEL_COLS
-    dataframes_model_ci = get_df_seed_for_ci_model(PATH, "model.csv")
+dataframes_model_ci_ = get_df_seed_for_ci_model(PATH, "model.csv")
+@everywhere dataframes_model_ci = fetch(@spawnat 1 dataframes_model_ci_)
+@sync @distributed for col_name in MODEL_LEVEL_COLS
     visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[1], GRAPH_SIZE_DIFF_PARAM[2], col_name, dataframes_model_ci, "model ci ", true)
 end
-
+println("Done Model Level Visualizations")
 
 # Compare different parameters using seeds for CI, producer-level
-@distributed for col_name in colnames_cp_agg
-    dataframes_cp_ci = get_df_seed_for_ci_producer(PATH, "cp_firm.csv", colnames_cp)
+dataframes_cp_ci_ = get_df_seed_for_ci_producer(PATH, "cp_firm.csv", colnames_cp)
+@everywhere dataframes_cp_ci = fetch(@spawnat 1 dataframes_cp_ci_)
+@sync @distributed for col_name in colnames_cp_agg
     visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[1], GRAPH_SIZE_DIFF_PARAM[2], col_name, dataframes_cp_ci, "cp ci ", true)
 end
+println("Done CP Level Visualizations")
 
 
-# Compare results for each Seed
-@distributed for seed in SEEDS
-    dataframes_cp_seeds = get_df_same_seed(PATH, "cp_firm.csv", seed)
-    for col_name in colnames_cp
-        visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[1], GRAPH_SIZE_DIFF_PARAM[2], col_name, dataframes_cp_seeds, string(seed))
-    end
-    dataframes_model_seeds = get_df_same_seed(PATH, "model.csv", seed)
-    for col_name in MODEL_LEVEL_COLS
-        visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[1], GRAPH_SIZE_DIFF_PARAM[2], col_name, dataframes_model_seeds, string(seed))
-    end
-end
-
-
-# Compare results for each Folder (Parameter set)
-@distributed for folder in FOLDERS
-    dataframes_cp_folders = get_df_diff_seed(PATH, "cp_firm.csv", folder)
-    for col_name in colnames_cp
-        visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[1], GRAPH_SIZE_DIFF_SEED[2], col_name, dataframes_cp_folders, folder, false, SEEDS)
-    end
-    dataframes_model_folders = get_df_diff_seed(PATH, "model.csv", folder)
-    for col_name in MODEL_LEVEL_COLS
+@sync for folder in FOLDERS
+    dataframes_model_folders_ = get_df_diff_seed(PATH, "model.csv", folder)
+    @distributed for col_name in MODEL_LEVEL_COLS
+        dataframes_model_folders = fetch(remotecall_fetch(() -> dataframes_model_folders_, 1))
         visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[1], GRAPH_SIZE_DIFF_SEED[2], col_name, dataframes_model_folders, folder, false, SEEDS)
     end
 end
+println("Done Each Experiment Level Visualizations 1")
+
+# Compare results for each Folder (Parameter set)
+@sync for folder in FOLDERS
+    dataframes_cp_folders_ = get_df_diff_seed(PATH, "cp_firm.csv", folder)
+    @distributed for col_name in colnames_cp
+        dataframes_cp_folders = fetch(remotecall_fetch(() -> dataframes_cp_folders_, 1))
+        visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[1], GRAPH_SIZE_DIFF_SEED[2], col_name, dataframes_cp_folders, folder, false, SEEDS)
+    end
+end
+println("Done Each Experiment Level Visualizations 2")
+
+
+@sync for seed in SEEDS
+    dataframes_model_seeds_ = get_df_same_seed(PATH, "model.csv", seed)
+    @distributed for col_name in MODEL_LEVEL_COLS
+        dataframes_model_seeds = fetch(remotecall_fetch(() -> dataframes_model_seeds_, 1))
+        visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[1], GRAPH_SIZE_DIFF_PARAM[2], col_name, dataframes_model_seeds, string(seed))
+    end
+end
+println("Done Each Seed Level Visualizations 1")
+
+# Compare results for each Seed
+@sync for seed in SEEDS
+    dataframes_cp_seeds_ = get_df_same_seed(PATH, "cp_firm.csv", seed)
+    @distributed for col_name in colnames_cp
+        dataframes_cp_seeds = fetch(remotecall_fetch(() -> dataframes_cp_seeds_, 1))
+        visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[1], GRAPH_SIZE_DIFF_PARAM[2], col_name, dataframes_cp_seeds, string(seed))
+    end
+end
+println("Done Each Seed Level Visualizations 2")
+
+
+
+# TODO Visualizations level 2 for both Seed and Folder are unstable

@@ -205,7 +205,7 @@ function matching_lm(
     n_jobswitchers = 0
     n_employed = length(labormarket.employed_hh)
 
-    allowed_excess_L = 100
+    allowed_excess_L = 100                  # Should be global 
 
     Lᵈ = Vector{Int64}(undef, 100)
 
@@ -213,7 +213,7 @@ function matching_lm(
     labormarket.L_hired = 0.0
 
     # update_hiring_firing_producers(labormarket, all_p, model)
-    sort!(labormarket.hiring_producers, by=p_id->model[p_id].ΔLᵈ, rev=true)
+    #sort!(labormarket.hiring_producers, by=p_id->model[p_id].ΔLᵈ, rev=true)         # Why would the biggest hiring companies get prioritized?
     hiring_producers_dict = Dict(p_id => model[p_id].ΔLᵈ for p_id in labormarket.hiring_producers)
 
     # Loop over hiring producers producers
@@ -224,6 +224,7 @@ function matching_lm(
 
         # Stop process if no unemployed left
         if length(labormarket.jobseeking_hh) == 0
+            #print(" Nobody is looking for a job (should never happen) | ")
             return
         elseif length(labormarket.jobseeking_hh) < length(Lᵈ)
             Lᵈ = Vector{Int64}(undef, length(labormarket.jobseeking_hh))
@@ -232,7 +233,7 @@ function matching_lm(
         # Make queue of job-seeking households
         # n_sample = min(30, length(jobseeking_hh))
         # @timeit to "sample" Lᵈ .= sample(jobseeking_hh, n_sample, replace=false)
-        StatsBase.sample!(labormarket.jobseeking_hh, Lᵈ; replace=false)
+        StatsBase.sample!(labormarket.jobseeking_hh, Lᵈ; replace=false)                 # Samples 100 random HH to check if they want to work at company (I guess)
         # sort!(Lᵈ, by = hh_id -> model[hh_id].skill, rev=true)
         # w = map(hh_id -> model[hh_id].skill, labormarket.jobseeking_hh)
         # StatsBase.sample!(Lᵈ, Lᵈ, weights(w); replace=false)

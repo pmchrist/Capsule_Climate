@@ -48,9 +48,9 @@ Defines struct for consumer good producer
     L::Float64                                # labor units
     Lᵈ::Float64 = L                           # desired labor units
     ΔLᵈ::Float64 = 0.0                        # desired change in labor force
-    w̄::Vector{Float64}                        # wage level
+    w̄::Vector{Float64}                        # wage level average
     wᴼ::Float64 = 1.0                         # offered wage
-    wᴼ_max::Float64 = 1.0                     # maximum offered wage
+    wᴼ_max::Float64 = 1.0                     # maximum offered wage per unit of skill
 
     π_LP::Float64 = 1.0                       # labor productivity of total capital stock
     π_EE::Float64 = 1.0                       # productivity per energy unit of total capital stock
@@ -117,19 +117,34 @@ function get_cp_mdata(model::ABM)
     # Initialize an empty DataFrame with columns as properties
     cp_df = DataFrame(; Dict(prop => Float64[] for prop in model.cpdata_tosave)...)
     #add an additional colum named TCI and K
-    insertcols!(cp_df, :TCI => Float64[])           # Total cost of investment
     insertcols!(cp_df, :K => Float64[])             # Kapital
-    insertcols!(cp_df, :size=> Float64[])           # Sales
+    insertcols!(cp_df, :sales_size=> Float64[])     # Sales
+    insertcols!(cp_df, :Profits => Float64[])       # Profits
+    insertcols!(cp_df, :market_share => Float64[])       # Market Share
 
+    insertcols!(cp_df, :TCI => Float64[])           # Total cost of investment
     insertcols!(cp_df, :TCL => Float64[])           # Total cost of Labor
     insertcols!(cp_df, :TCE => Float64[])           # Total cost of Energy
-    insertcols!(cp_df, :Profits => Float64[])       # Profits
-    insertcols!(cp_df, :Good_Price_p => Float64[])       # Price
-    insertcols!(cp_df, :Good_Markup_mu => Float64[])     # MarkUp
-    insertcols!(cp_df, :Good_Prod_Q => Float64[])        # Production
+
+    insertcols!(cp_df, :Good_Prod_Q => Float64[])        # Goods Produced
+    insertcols!(cp_df, :Good_Price_p => Float64[])       # Good Price
+    insertcols!(cp_df, :Good_Markup_mu => Float64[])     # Good Price MarkUp
     insertcols!(cp_df, :Good_Emiss => Float64[])         # emissions_per_item
-    insertcols!(cp_df, :market_share => Float64[])         # emissions_per_item
-    insertcols!(cp_df, :profits => Float64[])         # emissions_per_item
+
+    insertcols!(cp_df, :demand => Float64[])             # Demand
+    insertcols!(cp_df, :unsat_demand => Float64[])       # Unsat Demand
+    insertcols!(cp_df, :exp_demand => Float64[])       # Unsat Demand
+
+    insertcols!(cp_df, :N_goods => Float64[])           # Curent Inventory
+    insertcols!(cp_df, :N_goods_desired => Float64[])       # Desired Inventory
+    insertcols!(cp_df, :Q_prod_desired => Float64[])       # Desired Inventory
+
+    insertcols!(cp_df, :machines_production => Float64[])       # Total Machines Productivity
+
+    insertcols!(cp_df, :labor => Float64[])                     # Active Labor
+    insertcols!(cp_df, :labor_desired_change => Float64[])       # Desired Change in Labor
+    insertcols!(cp_df, :wage_level => Float64[])                # Wages
+    insertcols!(cp_df, :wage_offered => Float64[])                # Wages
 
 
     # ToDo: Definitely can be optimized
@@ -138,19 +153,34 @@ function get_cp_mdata(model::ABM)
         cp_agent = model[cp_id]  # Assuming model[id] retrieves the agent by id
         row = Dict(prop => getproperty(cp_agent, prop) for prop in model.cpdata_tosave)
         #populate the additional colum TCI with model[cp_id].curracc.TCI
-        row[:TCI] = model[cp_id].curracc.TCI
         row[:K] = model[cp_id].balance.K
-        row[:size] = model[cp_id].curracc.S
+        row[:sales_size] = model[cp_id].curracc.S
+        row[:Profits] = model[cp_id].Π[end]
+        row[:market_share] = model[cp_id].f[end]
 
+        row[:TCI] = model[cp_id].curracc.TCI
         row[:TCL] = model[cp_id].curracc.TCL
         row[:TCE] = model[cp_id].curracc.TCE
-        row[:Profits] = model[cp_id].Π[end]
+
+        row[:Good_Prod_Q] = model[cp_id].Q[end]
         row[:Good_Price_p] = model[cp_id].p[end]
         row[:Good_Markup_mu] = model[cp_id].μ[end]
-        row[:Good_Prod_Q] = model[cp_id].Q[end]
         row[:Good_Emiss] = model[cp_id].emissions_per_item[end]
-        row[:market_share] = model[cp_id].Π[end]
-        row[:profits] = model[cp_id].f[end]
+
+        row[:demand] = model[cp_id].D[end]
+        row[:unsat_demand] = model[cp_id].Dᵁ[end]
+        row[:exp_demand] = model[cp_id].Dᵉ
+
+        row[:N_goods] = model[cp_id].N_goods
+        row[:N_goods_desired] = model[cp_id].Nᵈ
+        row[:Q_prod_desired] = model[cp_id].Qˢ
+
+        row[:machines_production] = model[cp_id].n_machines
+        
+        row[:labor] = model[cp_id].L
+        row[:labor_desired_change] = model[cp_id].ΔLᵈ
+        row[:wage_level] = model[cp_id].w̄[end]
+        row[:wage_offered] = model[cp_id].wᴼ_max
 
         push!(cp_df, row)
     end
@@ -301,8 +331,16 @@ function check_funding_restrictions_cp!(
     # Determine how much additional debt can be made
     max_add_debt = max(globalparam.Λ * cp.D[end] * cp.p[end - 1] - cp.balance.debt, 0)
 
+    # ORIGINALLY IT WAS ASSUMED THAT ALL THE UNSATISFIED DEMAND CAN BE SATISFIED. THIS IS NOT THE CASE IN REALITY
+    # SOMEBODY HAS TO ACTUALLY WORK ON THE MACHINE AND THEY NEED COMPETITIVE SALARY ETC.
+    # WE HAVE TO PREVENT PRICE HIKING AND EMPTY PROMISES TO THE LABORMARKET
     # Check if cost of labor and investment can be financed from liquid assets
-    NW_no_prod = (cp.balance.NW + cp.Dᵉ * cp.p[end] + cp.curracc.rev_dep 
+    # (cp.cu > 0.0) ? real_prod = cp.cu : real_prod = 0.1        # 0.75 is default value. Let's be positive and assume newcomers can actually pull it off
+    
+    # NW_no_prod = (cp.balance.NW + cp.Dᵉ * cp.p[end] * real_prod + cp.curracc.rev_dep                # CHANGED A THING HERE BE AWARE
+    #               - cp.debt_installments[1] - cp.balance.debt * globalparam.r)
+
+    NW_no_prod = (cp.balance.NW + cp.Dᵉ * cp.p[end] * 0.25 + cp.curracc.rev_dep                # CHANGED A THING HERE BE AWARE       # Probably a fixed variable for smoothing and Not Cleaned storage is the best way
                   - cp.debt_installments[1] - cp.balance.debt * globalparam.r)
 
     cp.possible_I = NW_no_prod + max_add_debt - TCLᵉ - TCE
@@ -818,6 +856,8 @@ end
 
 """
 Replaces cp, places cp in firm list of hh.
+
+ToDo: This might needs some experiments and integrations of the more advanced score for HH allocations
 """
 function replace_bankrupt_cp!(
     bankrupt_cp::Vector{Int64},
@@ -836,13 +876,14 @@ function replace_bankrupt_cp!(
     nonbankrupt_cp = setdiff(all_cp, bankrupt_cp)
     nonbankrupt_kp = setdiff(all_kp, bankrupt_kp)
 
-    # Compute average number of machines and NW for non-bankrupt cp
+    # Compute average number of machines and NW for non-bankrupt cp and mean price
     avg_n_machines = mean(cp_id -> model[cp_id].n_machines, nonbankrupt_cp)
     avg_NW = mean(cp_id -> model[cp_id].balance.NW, nonbankrupt_cp)
+    competitive_p = minimum(cp_id -> model[cp_id].p[end], nonbankrupt_cp)
 
     # Make weights for allocating cp to hh
     # Minimum is taken to avoid weird outcomes when all bp and lp went bankrupt
-    weights_hh_cp = map(hh_id -> min(1, 1 / length(model[hh_id].cp)), all_hh)
+    weights_hh_cp = map(hh_id -> min(1, 1 / length(model[hh_id].cp)), all_hh)           # Shouldn't this follow the households score?
     weights_kp = map(kp_id -> max(model[kp_id].f[end], 0.01), nonbankrupt_kp)
 
     n_bankrupt_cp = length(bankrupt_cp)
@@ -887,9 +928,11 @@ function replace_bankrupt_cp!(
                     Vector{Machine}(),
                     model;
                     D=D,
-                    w=macro_struct.w_avg[t],
+                    w=0.5,
                     f=0.0
                 )
+        # Set initial price to be competitive (otherwise no hiring can happen)
+        new_cp.p = fill(competitive_p + new_cp.μ[end], 3)
 
         # Order machines at kp of choice
         new_cp.kp_ids = sample(nonbankrupt_kp, Weights(weights_kp), n_kp_sample; replace=false)
@@ -908,7 +951,7 @@ function replace_bankrupt_cp!(
 
         # Add new cp to subset of households, inversely proportional to amount of suppliers
         # they already have
-        n_init_hh = 100
+        n_init_hh = 100             # This should be a default value in global or init params
 
         customers = sample(all_hh, Weights(weights_hh_cp), n_init_hh)
     
@@ -942,6 +985,9 @@ function update_Dᵉ_cp!(
     end
     if (cp.Dᵉ == 0)
         println("Oh no, market is fucked")
+        println(cp.Dᵉ)
+        println(cp.D[end])
+        println(cp.Dᵁ[end])
     end
 end
 

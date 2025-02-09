@@ -37,7 +37,7 @@ function fire_excess_workers_p!(
         sort!(p.employees, by = hh_id -> model[hh_id].w[end] / model[hh_id].skill, rev=true)
 
         for hh_id in p.employees
-            if ΔL < 50
+            if ΔL < 1       # Once the requested productivity is achieved we can stop
                 break
             end
             push!(fired_workers, hh_id)
@@ -129,7 +129,7 @@ function update_w̄_p!(
     model::ABM
     )
 
-    if length(p.employees) > 0
+    if length(p.employees) > 0 && p.age > 1
         shift_and_append!(p.w̄, mean(hh_id -> model[hh_id].w[end], p.employees))
     else
         shift_and_append!(p.w̄, p.w̄[end])
@@ -327,7 +327,7 @@ function check_if_bankrupt_p!(
 
 
     if (typeof(p) == ConsumerGoodProducer && p.age > t_wait 
-        && (p.f[end] <= 1e-4 || p.balance.EQ < 1e-4))
+        && (p.f[end] <= 1e-8 || p.balance.EQ < -1e-1))
         return true
     elseif (typeof(p) == CapitalGoodProducer && p.age > t_wait 
             &&  p.balance.EQ < 0)

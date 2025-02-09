@@ -16,7 +16,6 @@ Mutable struct that holds the data structures used to save data from the consume
     all_C::Vector{Float64} = zeros(Float64, n_hh)               # Monetary capacity of hh
     all_N::Vector{Float64} = zeros(Float64, n_cp)               # Monetary capacity of cp, i.e. How much they can sell in $ (inventory*price)
     all_Sust_Score::Vector{Float64} = zeros(Float64, n_hh)      # How much emissions bother a hh (for consumption decision)
-    all_Sust_Penalty::Vector{Float64} = zeros(Float64, n_hh)    # Penalty of the household imposed onto the producer (score and emissions per unit)
 
     sold_per_hh::Vector{Float64} = spzeros(Float64, n_hh)
     sold_per_hh_round::Vector{Float64} = zeros(Float64, n_hh)
@@ -44,6 +43,9 @@ function reset_matrices_cp!(
     )
 
     # CP variables
+
+    all_N_goods = map(cp_id -> model[cp_id].N_goods, minimum(all_cp):maximum(all_cp))       # Inventory Size
+
     # Set to order of small to large id (minimum(all_cp):max(all_cp)
     #println()
     all_p = map(cp_id -> model[cp_id].p[end], minimum(all_cp):maximum(all_cp))              # Last Price
@@ -54,22 +56,16 @@ function reset_matrices_cp!(
         println("WARNING: Price is zero or negative")
     end
 
-
-
-    all_N_goods = map(cp_id -> model[cp_id].N_goods, minimum(all_cp):maximum(all_cp))       # Inventory Size
     # Emission aware value of good
     emiss_per_good = map(cp_id -> model[cp_id].emissions_per_item[end], minimum(all_cp):maximum(all_cp))    # Last Emissions
     #println(var(emiss_per_good) / mean(emiss_per_good))                                               # Dispersion of emissions
     # If Economy is all green, there is no point to take emissions in a decision process.
-    only_price = false
-    if maximum(emiss_per_good) > 0      # If there were some emissions in the last step
+    if maximum(emiss_per_good) > 1e-8      # If there were some emissions in the last step
         norm_emiss_per_good = emiss_per_good ./ maximum(emiss_per_good)
     else
-        # Can happen easily
         #println("WARNING: No Production or Clean Economy (second one)")
-        only_price = true
         # set norm_emiss_per_good to be the same value for every entry
-        norm_emiss_per_good = fill(0.0, length(emiss_per_good))  # Uniform distribution summing to 1
+        norm_emiss_per_good = fill(0.5, length(emiss_per_good))                  # Nobody gets a low emission benefit in the clean economy
     end
 
     # price_score = []
@@ -107,11 +103,10 @@ function reset_matrices_cp!(
             price_part = norm_p[j] * (1-cmdata.all_Sust_Score[i])           # Normalized Price is used
             emiss_part = norm_emiss_per_good[j] * cmdata.all_Sust_Score[i]       # Normalized emissions produced per good is used
             # # There is always a possibility of emiss part being zero
-            if only_price
-                cmdata.weights[i,j] = (norm_p[j]) ^ -1
-            else
-                cmdata.weights[i,j] = (price_part + emiss_part) ^ -1            # We return inverse, as these are weights for the decision process
-            end
+
+            cmdata.weights[i,j] = (price_part + emiss_part) ^ -1            # We return inverse, as these are weights for the decision process
+
+            # TODO Check if the price of product is less than budget, and rescale/clear accordingly
 
             #cmdata.weights[i,j] = (price_part + emiss_part) ^ -1
             # push!(price_score, price_part)

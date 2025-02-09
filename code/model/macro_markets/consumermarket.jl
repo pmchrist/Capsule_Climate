@@ -29,49 +29,29 @@ function cpmarket_matching_cp!(
     model::ABM
     )
 
-    # cmdata = model.cmdata
-
     # Normalize weights
     sum!(cmdata.weights_sum, cmdata.weights)
-    # if any(isnan.(cmdata.weights))
-    #     println()
-    #     println("before")
-    # end
-    cmdata.weights ./= cmdata.weights_sum       # Weights are just Price*Goods at producer (THEY WERE, NOW USE UTILITY FGUNCTION IN TMPDATA_STORAGE)
-    # if any(isnan.(cmdata.weights))
-    #     println()
-    #     println("after")
-    # end
+    cmdata.weights ./= cmdata.weights_sum
 
-    # YO, IF THERE IS NO INVENTORY, SET WEIGHT TO ZERO
-
-    # println()
-    # println(cmdata.weights)
-    # println()
-    
-    #display(cmdata.weights)
-
-    # First find the ideal distribution if no constraints are there
-    cmdata.C_spread .= cmdata.all_C     # <- cmdata.all_C Is NaN with the new Utility Function
-    cmdata.C_spread .*= cmdata.weights
-    cmdata.true_D .= cmdata.C_spread
-
-
-    # Now we can clear up weights for the producers that have zero stock and cannot participate
-    sold_out = findall(cmdata.all_N .<= 1e-1)
-    cmdata.weights[:, sold_out] .= 0.0
+    # # Now we can clear up weights for the producers that have zero stock and cannot participate
+    # sold_out = findall(cmdata.all_N .<= 1e-8)
+    # cmdata.weights[:, sold_out] .= 0.0
     sold_out = Int64[]  # For new additions into the no stock group
     prev_inventory = sum(cmdata.all_N)      # Early break out if necessary from matching process
     # Matching process
     counter = 0
+    first_round = true
 
+    
     while true
     #for i in 1:5
 
-        # Spread consumption budget according to weights (no allocs)
-        cmdata.C_spread .= cmdata.all_C     # <- cmdata.all_C Is NaN with the new Utility Function
+    # First find the ideal distribution if no availability constraints are there (only the budgetary of HH)
+        cmdata.C_spread .= cmdata.all_C
         cmdata.C_spread .*= cmdata.weights
-
+        if first_round
+            cmdata.true_D .= cmdata.C_spread
+        end
         # if i==1
         #     if any(isnan.(cmdata.all_C))
         #         println("lvl_1_All_C")
@@ -123,7 +103,6 @@ function cpmarket_matching_cp!(
 
         # Renormalize weights
         sum!(cmdata.weights_sum, cmdata.weights)
-
         cmdata.weights ./= cmdata.weights_sum
         replace!(cmdata.weights, NaN=>0.0)
 
@@ -140,6 +119,8 @@ function cpmarket_matching_cp!(
         # println()
         counter += 1
         total_inventory = sum(cmdata.all_N)
+        # ToDo: Move the convergence parameter into the global params 
+        # Maybe explore more sophisticated function based on the amount of Capacity left at HH or change of weights
         if (abs(total_inventory - prev_inventory) / max(total_inventory, prev_inventory)) < 1e-2
             break
         end
@@ -152,7 +133,7 @@ function cpmarket_matching_cp!(
         #     # println("Incorrect Inventories")
         #     break
         # end 
-        if counter > 100
+        if counter > 20
             # Does not happen
             println("WARNING: Consumer Market is not Converging")
             break

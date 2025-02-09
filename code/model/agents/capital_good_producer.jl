@@ -42,8 +42,8 @@
     EU::Float64 = 0.                      # energy use in the last period
 
     HC::Vector{Int64} = []                  # hist clients
-    Π::Vector{Float64} = zeros(Float64, 3)# hist profits
-    Πᵀ::Vector{Float64} = zeros(Float64, 3)# hist profits after tax
+    Π::Vector{Float64} = zeros(Float64, 3)  # hist profits
+    Πᵀ::Vector{Float64} = zeros(Float64, 3) # hist profits after tax
     debt_installments::Vector{Float64}    # installments of debt repayments
     f::Vector{Float64}                    # market share
     orders::Dict = Dict{Int64, Int64}()   # orders

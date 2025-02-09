@@ -103,8 +103,8 @@ addprocs(n_proc_main)
     include("model/main.jl")
 
     # Declare any necessary parameters or global arrays
-    alphas = [2, 18]
-    betas  = [2, 18]
+    alphas = [2, 12]
+    betas  = [2, 12]
     prices_fossils = [0.35, 0.37, 0.39, 0.40, 0.41, 0.43, 0.45]
     combined_params = [(a, b, pf) for a in alphas, b in betas, pf in prices_fossils]
     const sims_n = length(combined_params)
@@ -116,7 +116,7 @@ addprocs(n_proc_main)
 
             # Call your simulation (replace with your real function signature)
             run_simulation(
-                T = 1300,
+                T = 1200,
                 savedata = true,
                 show_full_output = false,
                 showprogress = false,
@@ -132,12 +132,16 @@ addprocs(n_proc_main)
 end
 
 # Define your list of seeds on the master process
-num_sim_ci = 48
-all_seeds = rand(1:10_000_000, num_sim_ci)
-println("Simulation started for seeds: ", all_seeds)
-# all_seeds = [9079431, 4572842, 7686122, 3610004, 5790260, 3877125]
+# num_sim_ci = 48
+# all_seeds = rand(1:10_000_000, num_sim_ci)
+# println("Simulation started for seeds: ", all_seeds)
+
+all_seeds = [7573706, 817298, 5015995, 7372452, 2700498, 9996918, 3495231, 3327595, 7666357, 7194651, 2110350,
+2314701, 6076284, 493882, 4846528, 3574769, 4625989, 8707792, 7074644, 3980917, 9294657, 3486417,
+7685624, 4288856, 5916162, 7355592, 3710378, 3801667, 6954119, 9529040, 6072593, 4085919, 3602909, 6415290, 1171631, 7390976, 3307371,
+5079054, 4553034, 821390, 2036270, 5147823, 9264518, 6485874, 9136572, 5373138, 2772102, 4883998]
 
 # Distribute seeds using pmap (one seed at a time per worker)
 pmap(run_sim_for_seed, all_seeds)
-println("Simulation finished")
+println("Simulation finished for seeds: ", all_seeds)
 println(all_seeds)

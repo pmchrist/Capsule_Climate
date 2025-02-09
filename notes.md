@@ -32,6 +32,7 @@ Phase 2 - Creating Sustainable Employee (Integrate Sustainabiltiy Opinion into J
 
 
 # Current ToDo:
+0) All suppliers replacement and sampling in HH is done based solely on price
 1) Make sure that everything is calibrated to the initial original parameters           ! Done
 2) Change visualization of Bunkruptcies from age to the global counter from model       ! Done
 3) Make main HH variables duplicated in the model for easier access                     ! Done
@@ -49,7 +50,8 @@ Phase 2 - Creating Sustainable Employee (Integrate Sustainabiltiy Opinion into J
 
 7) Find out why brown energy is always persistent in the economy and why it goes to 0 and bounces back in the green economy. 
 8) Perform test on taxation of CP with high Emissions, progressive tax should work and introduce feeding loops.
-    
+9) Market share is called profits in the output
+
 
 
 # Nice ToDo:
@@ -78,8 +80,9 @@ Phase 2 - Creating Sustainable Employee (Integrate Sustainabiltiy Opinion into J
 
 
 # Current Questions:
--
-
+0) I have integrated the opinion everywhere now, it seems to not change anything, tho.
+1) So, sometimes when consumermarket process does not have a lot of steps, it falls into monopolies. This process seems to be more frequent with the sustainability opinion. Does it make sense?
+2) These big companies are eating market, where should I check for why it is happening?
 
 
 # Answered Questions:
@@ -118,3 +121,31 @@ A - First exhaustive test should be performed on the existent features, later we
 
 Q - Should I start comparing to the model with no opinion? Or should we do it at all?
 A - We compare all, but build up features one by one.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Notes Call:
+1) We have some inversions of price and emissions for upper and lower percentiles of market share CP. Investigate.
+2) Quantify Collapses of economy in new model and old model.
+
+
+
+1) Something shady might be hiding in the demand in the cp
