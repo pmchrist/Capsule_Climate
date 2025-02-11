@@ -20,12 +20,13 @@ addprocs(n_proc_main)
     using Printf
     using Random
     using Plots
+    using StatsPlots
 
     ###############################################################################
     #  Parameters & Global Variables
     ###############################################################################
     # Adjust these as needed
-    const PATH                = joinpath(pwd(), "results", "data_saved", "data") # Folder structure root
+    const PATH                = joinpath(@__DIR__, "data_saved", "data") # Folder structure root
     const HH_STEP_START       = 300
     const HH_STEP_END         = 1200
 
@@ -36,38 +37,6 @@ addprocs(n_proc_main)
     6485874, 9136572, 5373138, 2772102, 4883998]
     SEEDS = string.(SEEDS)
 
-    # # With opinion
-    # const FOLDERS = [
-    #         "alpha=2 beta=2 p_f=0.35",
-    #         "alpha=2 beta=2 p_f=0.37",
-    #         "alpha=2 beta=2 p_f=0.39",
-    #         "alpha=2 beta=2 p_f=0.4",
-    #         "alpha=2 beta=2 p_f=0.41",
-    #         "alpha=2 beta=2 p_f=0.43",
-    #         "alpha=2 beta=2 p_f=0.45",
-    #         "alpha=2 beta=12 p_f=0.35",
-    #         "alpha=2 beta=12 p_f=0.37",
-    #         "alpha=2 beta=12 p_f=0.39",
-    #         "alpha=2 beta=12 p_f=0.4",
-    #         "alpha=2 beta=12 p_f=0.41",
-    #         "alpha=2 beta=12 p_f=0.43",
-    #         "alpha=2 beta=12 p_f=0.45",
-    #         "alpha=12 beta=2 p_f=0.35",
-    #         "alpha=12 beta=2 p_f=0.37",
-    #         "alpha=12 beta=2 p_f=0.39",
-    #         "alpha=12 beta=2 p_f=0.4",
-    #         "alpha=12 beta=2 p_f=0.41",
-    #         "alpha=12 beta=2 p_f=0.43",
-    #         "alpha=12 beta=2 p_f=0.45",
-    #         "alpha=12 beta=12 p_f=0.35",
-    #         "alpha=12 beta=12 p_f=0.37",
-    #         "alpha=12 beta=12 p_f=0.39",
-    #         "alpha=12 beta=12 p_f=0.4",
-    #         "alpha=12 beta=12 p_f=0.41",
-    #         "alpha=12 beta=12 p_f=0.43",
-    #         "alpha=12 beta=12 p_f=0.45",
-    # ]
-    # Without opinion
     const FOLDERS = [
             "alpha=1 beta=1 p_f=0.35",
             "alpha=1 beta=1 p_f=0.37",
@@ -75,8 +44,47 @@ addprocs(n_proc_main)
             "alpha=1 beta=1 p_f=0.4",
             "alpha=1 beta=1 p_f=0.41",
             "alpha=1 beta=1 p_f=0.43",
-            "alpha=1 beta=1 p_f=0.45"
+            "alpha=1 beta=1 p_f=0.45",
+            "alpha=2 beta=2 p_f=0.35",
+            "alpha=2 beta=2 p_f=0.37",
+            "alpha=2 beta=2 p_f=0.39",
+            "alpha=2 beta=2 p_f=0.4",
+            "alpha=2 beta=2 p_f=0.41",
+            "alpha=2 beta=2 p_f=0.43",
+            "alpha=2 beta=2 p_f=0.45",
+            "alpha=2 beta=12 p_f=0.35",
+            "alpha=2 beta=12 p_f=0.37",
+            "alpha=2 beta=12 p_f=0.39",
+            "alpha=2 beta=12 p_f=0.4",
+            "alpha=2 beta=12 p_f=0.41",
+            "alpha=2 beta=12 p_f=0.43",
+            "alpha=2 beta=12 p_f=0.45",
+            "alpha=12 beta=2 p_f=0.35",
+            "alpha=12 beta=2 p_f=0.37",
+            "alpha=12 beta=2 p_f=0.39",
+            "alpha=12 beta=2 p_f=0.4",
+            "alpha=12 beta=2 p_f=0.41",
+            "alpha=12 beta=2 p_f=0.43",
+            "alpha=12 beta=2 p_f=0.45",
+            "alpha=12 beta=12 p_f=0.35",
+            "alpha=12 beta=12 p_f=0.37",
+            "alpha=12 beta=12 p_f=0.39",
+            "alpha=12 beta=12 p_f=0.4",
+            "alpha=12 beta=12 p_f=0.41",
+            "alpha=12 beta=12 p_f=0.43",
+            "alpha=12 beta=12 p_f=0.45",
     ]
+    # # Without opinion
+    # const FOLDERS = [
+    #         "alpha=1 beta=1 p_f=0.35",
+    #         "alpha=1 beta=1 p_f=0.37",
+    #         "alpha=1 beta=1 p_f=0.39",
+    #         "alpha=1 beta=1 p_f=0.4",
+    #         "alpha=1 beta=1 p_f=0.41",
+    #         "alpha=1 beta=1 p_f=0.43",
+    #         "alpha=1 beta=1 p_f=0.45"
+
+    # ]
 
     # Subplot grid sizes
     const GRAPH_SIZE_DIFF_PARAM = (Int(length(FOLDERS)/7), 7)        # by default we have 7 values for p_f
@@ -477,6 +485,117 @@ addprocs(n_proc_main)
         empty!(plt)
     end
 
+
+    """
+    get_df_seed_for_ci_model(main_folder, looking_for) -> Dict{String, DataFrame}
+
+    Gathers model-level data (e.g., "model.csv") across multiple seeds for each folder 
+    in FOLDERS, concatenates, and returns a Dict {folder => DataFrame}.
+    Filters data to timesteps in [HH_STEP_START, HH_STEP_END].
+
+    TODO: No need to drag all the unused columns, just keep the necessary ones
+    """
+    function get_df_seed_for_boxplot_model_end(main_folder::String, looking_for::String, target_p_f::String)
+
+        dataframes = Dict{String, DataFrame}()          # Change this shit to array\
+
+        # Filter the overall list of folders to include only the target p_f experiments
+        p_f_Folders = filter(endswith(target_p_f), FOLDERS)
+
+        for folder in p_f_Folders
+            folder_path = joinpath(main_folder, folder)
+            if !isdir(folder_path)
+                # skip if not found
+                continue
+            end
+            df_models_experiment = DataFrame[]  # array of DataFrames for each seed
+
+            for seed in SEEDS
+                file_path = joinpath(folder_path, "$seed $looking_for")
+                if isfile(file_path)
+                    df = CSV.read(file_path, DataFrame)
+                    if looking_for == "model.csv"
+                        df."timestamp" = 1:nrow(df)
+                    end
+                    df[:, :seed] .= seed
+                    # filter based on HH_STEP_START and HH_STEP_END
+                    push!(df_models_experiment, df)
+                end
+            end
+
+            if !isempty(df_models_experiment)
+                dataframes[folder] = reduce(vcat, df_models_experiment)
+            else
+                dataframes[folder] = DataFrame()
+            end
+        end
+
+        return dataframes
+    end
+
+    """
+    visualize_2d_graph(num_rows, num_cols, column_name, dataframes, name; false)
+
+    Create a grid of subplots (num_rows x num_cols) and plot the mean + 95% CI 
+    for `column_name` from each DataFrame in `dataframes` (a Dict). 
+    Saves the figure in a "graphs/" folder inside PATH.
+
+    TODO: We can definitely visualize all the columns at the same time
+    TODO: Add Offsets most of the graphs do not fit
+    
+    """
+    function visualize_box_plot_end(column_name::String, dataframes::Dict, subfolder_name::String, target_p_f::String, last_steps::Int)
+
+        # Filter the overall list of folders to include only the target p_f experiments
+        keys = filter(endswith(target_p_f), FOLDERS)
+
+        # For each Dataframe(seed) we need to get the target variable(column_name) and average opinion of last 20 steps
+        # Plot them as boxplot t`o show the confidence interval for target variable, and just mean with the average value on x axis.
+
+
+        target_vals = Vector{Vector{Float64}}()     # Contains a vector of values for each seed (Y-axis)
+        sust_vals = Vector{String}()       # Containes a vector of values for each seed (X-axis)
+
+        # We'll loop over each key (folder or seed)
+        for key in keys
+
+            df = dataframes[key]
+
+            # Filter as we are interested in the final steps
+            filter!(row -> (row[:timestamp] >= HH_STEP_END - last_steps), df)
+            grouped_df = groupby(df, :seed)
+
+            # Compute per-seed means and variances
+            target_col_avgs = [mean(subdf[:, column_name]) for subdf in grouped_df]
+            sust_opinion_means = [mean(subdf[:, "sust_mean_all"]) for subdf in grouped_df]
+            sust_opinion_vars = [var(subdf[:, "sust_mean_all"]) for subdf in grouped_df]
+
+            # Compute overall mean and variance per seed
+            overall_sust_mean = mean(sust_opinion_means)
+            overall_sust_var = mean(sust_opinion_vars)
+
+            # Store results
+            push!(target_vals, target_col_avgs)
+            push!(sust_vals, string(round(overall_sust_mean, digits=3), " ± ", round(overall_sust_var, digits=3), "\n$key"))  # String format
+
+        end
+
+        plt = boxplot(sust_vals, target_vals, legend=false, size=(1500, 1000))
+        # Add title and labels (optional)
+        title!("Boxplot of $column_name with $target_p_f for different experiments\n(CI based on $(length(SEEDS)) Seeds)")
+        xlabel!("Average Sustainability Opinion (Mean ± Variance)")
+        ylabel!("$column_name Distribution")
+
+        # Decide folder to save
+        graph_path = joinpath(PATH, "graphs", subfolder_name)
+        # Make sure it exists
+        mkpath(graph_path)
+
+        outpath = joinpath(graph_path, "$target_p_f $column_name.png")
+        savefig(plt, outpath)
+        empty!(plt)
+    end
+
 end
 
 ###############################################################################
@@ -484,62 +603,71 @@ end
 ###############################################################################
 
 
-# Compare different parameters using seeds for CI, model-level
-dataframes_model_ci_ = get_df_seed_for_ci_model(PATH, "model.csv")
-@everywhere dataframes_model_ci = fetch(@spawnat 1 dataframes_model_ci_)
-@sync @distributed for col_name in MODEL_LEVEL_COLS
-    visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[1], GRAPH_SIZE_DIFF_PARAM[2], col_name, dataframes_model_ci, "model ci ", true)
-end
-println("Done Model Level Visualizations")
-
-# Compare different parameters using seeds for CI, producer-level
-dataframes_cp_ci_ = get_df_seed_for_ci_producer(PATH, "cp_firm.csv", colnames_cp)
-@everywhere dataframes_cp_ci = fetch(@spawnat 1 dataframes_cp_ci_)
-@sync @distributed for col_name in colnames_cp_agg
-    visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[1], GRAPH_SIZE_DIFF_PARAM[2], col_name, dataframes_cp_ci, "cp ci ", true)
-end
-println("Done CP Level Visualizations")
-
-
-@sync for folder in FOLDERS
-    dataframes_model_folders_ = get_df_diff_seed(PATH, "model.csv", folder)
-    @distributed for col_name in MODEL_LEVEL_COLS
-        dataframes_model_folders = fetch(remotecall_fetch(() -> dataframes_model_folders_, 1))
-        visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[1], GRAPH_SIZE_DIFF_SEED[2], col_name, dataframes_model_folders, folder, false, SEEDS)
+vars_to_plot = ["GDP", "U", "bankrupt_cp", "carbon_emissions", "avg_pi_EE", "avg_pi_EF", "GINI_W", "GDP_hh", "green_capacity", "unsat_demand", "unspend_C"]
+p_f_to_plot = ["p_f=0.35", "p_f=0.37", "p_f=0.39", "p_f=0.4", "p_f=0.41", "p_f=0.43", "p_f=0.45"]
+@sync @distributed for p_f_val in p_f_to_plot
+    dataframes_model_ci_ = get_df_seed_for_boxplot_model_end(PATH, "model.csv", p_f_val)
+    for target_var in vars_to_plot
+        visualize_box_plot_end(target_var, dataframes_model_ci_, "model_boxplot", p_f_val, 20)
     end
 end
-println("Done Each Experiment Level Visualizations 1")
 
-# Compare results for each Folder (Parameter set)
-@sync for folder in FOLDERS
-    dataframes_cp_folders_ = get_df_diff_seed(PATH, "cp_firm.csv", folder)
-    @distributed for col_name in colnames_cp
-        dataframes_cp_folders = fetch(remotecall_fetch(() -> dataframes_cp_folders_, 1))
-        visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[1], GRAPH_SIZE_DIFF_SEED[2], col_name, dataframes_cp_folders, folder, false, SEEDS)
-    end
-end
-println("Done Each Experiment Level Visualizations 2")
+# # Compare different parameters using seeds for CI, model-level
+# dataframes_model_ci_ = get_df_seed_for_ci_model(PATH, "model.csv")
+# @everywhere dataframes_model_ci = fetch(@spawnat 1 dataframes_model_ci_)
+# @sync @distributed for col_name in MODEL_LEVEL_COLS
+#     visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[1], GRAPH_SIZE_DIFF_PARAM[2], col_name, dataframes_model_ci, "model ci ", true)
+# end
+# println("Done Model Level Visualizations")
 
-
-@sync for seed in SEEDS
-    dataframes_model_seeds_ = get_df_same_seed(PATH, "model.csv", seed)
-    @distributed for col_name in MODEL_LEVEL_COLS
-        dataframes_model_seeds = fetch(remotecall_fetch(() -> dataframes_model_seeds_, 1))
-        visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[1], GRAPH_SIZE_DIFF_PARAM[2], col_name, dataframes_model_seeds, string(seed))
-    end
-end
-println("Done Each Seed Level Visualizations 1")
-
-# Compare results for each Seed
-@sync for seed in SEEDS
-    dataframes_cp_seeds_ = get_df_same_seed(PATH, "cp_firm.csv", seed)
-    @distributed for col_name in colnames_cp
-        dataframes_cp_seeds = fetch(remotecall_fetch(() -> dataframes_cp_seeds_, 1))
-        visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[1], GRAPH_SIZE_DIFF_PARAM[2], col_name, dataframes_cp_seeds, string(seed))
-    end
-end
-println("Done Each Seed Level Visualizations 2")
+# # Compare different parameters using seeds for CI, producer-level
+# dataframes_cp_ci_ = get_df_seed_for_ci_producer(PATH, "cp_firm.csv", colnames_cp)
+# @everywhere dataframes_cp_ci = fetch(@spawnat 1 dataframes_cp_ci_)
+# @sync @distributed for col_name in colnames_cp_agg
+#     visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[1], GRAPH_SIZE_DIFF_PARAM[2], col_name, dataframes_cp_ci, "cp ci ", true)
+# end
+# println("Done CP Level Visualizations")
 
 
+# @sync for folder in FOLDERS
+#     dataframes_model_folders_ = get_df_diff_seed(PATH, "model.csv", folder)
+#     @distributed for col_name in MODEL_LEVEL_COLS
+#         dataframes_model_folders = fetch(remotecall_fetch(() -> dataframes_model_folders_, 1))
+#         visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[1], GRAPH_SIZE_DIFF_SEED[2], col_name, dataframes_model_folders, folder, false, SEEDS)
+#     end
+# end
+# println("Done Each Experiment Level Visualizations 1")
 
-# TODO Visualizations level 2 for both Seed and Folder are unstable
+# # Compare results for each Folder (Parameter set)
+# @sync for folder in FOLDERS
+#     dataframes_cp_folders_ = get_df_diff_seed(PATH, "cp_firm.csv", folder)
+#     @distributed for col_name in colnames_cp
+#         dataframes_cp_folders = fetch(remotecall_fetch(() -> dataframes_cp_folders_, 1))
+#         visualize_2d_graph(GRAPH_SIZE_DIFF_SEED[1], GRAPH_SIZE_DIFF_SEED[2], col_name, dataframes_cp_folders, folder, false, SEEDS)
+#     end
+# end
+# println("Done Each Experiment Level Visualizations 2")
+
+
+# @sync for seed in SEEDS
+#     dataframes_model_seeds_ = get_df_same_seed(PATH, "model.csv", seed)
+#     @distributed for col_name in MODEL_LEVEL_COLS
+#         dataframes_model_seeds = fetch(remotecall_fetch(() -> dataframes_model_seeds_, 1))
+#         visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[1], GRAPH_SIZE_DIFF_PARAM[2], col_name, dataframes_model_seeds, string(seed))
+#     end
+# end
+# println("Done Each Seed Level Visualizations 1")
+
+# # Compare results for each Seed
+# @sync for seed in SEEDS
+#     dataframes_cp_seeds_ = get_df_same_seed(PATH, "cp_firm.csv", seed)
+#     @distributed for col_name in colnames_cp
+#         dataframes_cp_seeds = fetch(remotecall_fetch(() -> dataframes_cp_seeds_, 1))
+#         visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[1], GRAPH_SIZE_DIFF_PARAM[2], col_name, dataframes_cp_seeds, string(seed))
+#     end
+# end
+# println("Done Each Seed Level Visualizations 2")
+
+
+
+# # TODO Visualizations level 2 for both Seed and Folder are unstable (Too much memory devoted to the dataframes, do not drag all the columns)

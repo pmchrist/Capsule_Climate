@@ -38,25 +38,32 @@ Phase 2 - Creating Sustainable Employee (Integrate Sustainabiltiy Opinion into J
 3) Make main HH variables duplicated in the model for easier access                     ! Done
 
 4) We now must have 3 types of visualizations: one sim same seed (Granular - Done), multiple sims same seed (Comparative - Done), multiple sims multiple seeds (Aggregate of the previous one - Done)                                                  ! Done
-5) Provided plots make sense but it seems there is a chaos region introduced. To quantify it we should expand plot to a phase plot, Heatmap for Opinion vs p_f, check size of chaotic region. Heatmaps can be probabiltiies of green adoption based on initial parameters.      ! Analyze results further. Show results to the professor
-	- Quantify stochasticity in the simulation with multiple runs.
-	- Check without opinion how smaller the chaos regions is.
-    - Create a heatmap of initial opinion and probability of getting green economy.
+5) Provided plots make sense but it seems there is a chaos region introduced. To quantify it we should expand plot to a phase plot, Heatmap for Opinion vs p_f, check size of chaotic region. Heatmaps can be probabiltiies of green adoption based on initial parameters.      ! Done
+	- Quantify stochasticity in the simulation with multiple runs.                          ! Done - Nearly zero
+	- Check without opinion how smaller the chaos regions is.                               ! Done - It does not exist, was part of a bug on excessive borrowing
+    - Create a heatmap of initial opinion and probability of getting green economy.         ! Done
+    - Add Boxplot visualization of final steps and compare opinion for diff p_f             ! Done
+6) Minor Fixes for Code:
+    - Move new parameter which balances the borrowing into the global variables
+    - Clean up code
+    - Make all the demand functions more consistent (we normalize when there are zero emissions, do not do it)
+    - Put average emiss per good in the model level (why is not there already?)
+7) Perform shocks with taxation
 
-6) Add dynamic opinions. Make mapping for opinions and how they change function, the mapping can be based on all proposed metrics. But first we should try wealth, unemployment can be a sub case of low wealth, so it should cover the research.
+8) Add dynamic opinions. Make mapping for opinions and how they change function, the mapping can be based on all proposed metrics. But first we should try wealth, unemployment can be a sub case of low wealth, so it should cover the research.
 	- Try Cubic polynomial approximation - hysterisis for opinion change dynamics.
 	- Try sigmoid functions to be maping of different regions, for examples in EU discrepancy in opinions is lower than in US.
 	- Other ideas can be used for initialization of the model (political vs scientific)
 
-7) Find out why brown energy is always persistent in the economy and why it goes to 0 and bounces back in the green economy. 
-8) Perform test on taxation of CP with high Emissions, progressive tax should work and introduce feeding loops.
-9) Market share is called profits in the output
+9) Find out why brown energy is always persistent in the economy and why it goes to 0 and bounces back in the green economy. 
+10) Perform test on taxation of CP with high Emissions, progressive tax should work and introduce feeding loops.
+11) Market share is called profits in the output
 
 
 
 # Nice ToDo:
-0) FIX GRAPHS
-1) Migrate to the newer version of Agents.jl
+0) Improve Graphs
+1) Migrate to the newer version of Agents.jl    <- Probably not gonna happen, too many things to change
 2) Modify Isaak's Diagram to be in line with my Thesis Research
 3) These model parameter updaters are not consistent and logic of initialize_global_params() and changing_params for GlobalParam struct is ugly and works kinda by "magic"
 4) There are some resizing of arrays, if we keep them fixed it might make code faster
@@ -141,11 +148,3 @@ A - We compare all, but build up features one by one.
 
 
 
-
-Notes Call:
-1) We have some inversions of price and emissions for upper and lower percentiles of market share CP. Investigate.
-2) Quantify Collapses of economy in new model and old model.
-
-
-
-1) Something shady might be hiding in the demand in the cp
