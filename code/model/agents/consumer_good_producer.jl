@@ -64,7 +64,6 @@ Defines struct for consumer good producer
     balance::Balance = Balance()              # balance sheet
     curracc::FirmCurrentAccount = FirmCurrentAccount() # current account
 
-    #emissions::Float64 = 0.0                 # carbon emissions in last period
     emissions::Float64 = 0.0                  # carbon emissions in last period
     emissions_per_item::Vector{Float64} = zeros(Float64, 3)       # hist emissions per item
 
@@ -331,16 +330,7 @@ function check_funding_restrictions_cp!(
     # Determine how much additional debt can be made
     max_add_debt = max(globalparam.Λ * cp.D[end] * cp.p[end - 1] - cp.balance.debt, 0)
 
-    # ORIGINALLY IT WAS ASSUMED THAT ALL THE UNSATISFIED DEMAND CAN BE SATISFIED. THIS IS NOT THE CASE IN REALITY
-    # SOMEBODY HAS TO ACTUALLY WORK ON THE MACHINE AND THEY NEED COMPETITIVE SALARY ETC.
-    # WE HAVE TO PREVENT PRICE HIKING AND EMPTY PROMISES TO THE LABORMARKET
-    # Check if cost of labor and investment can be financed from liquid assets
-    # (cp.cu > 0.0) ? real_prod = cp.cu : real_prod = 0.1        # 0.75 is default value. Let's be positive and assume newcomers can actually pull it off
-    
-    # NW_no_prod = (cp.balance.NW + cp.Dᵉ * cp.p[end] * real_prod + cp.curracc.rev_dep                # CHANGED A THING HERE BE AWARE
-    #               - cp.debt_installments[1] - cp.balance.debt * globalparam.r)
-
-    NW_no_prod = (cp.balance.NW + cp.Dᵉ * cp.p[end] * 0.25 + cp.curracc.rev_dep                # CHANGED A THING HERE BE AWARE       # Probably a fixed variable for smoothing and Not Cleaned storage is the best way
+    NW_no_prod = (cp.balance.NW + cp.Dᵉ * cp.p[end] * globalparam.Λᵉ + cp.curracc.rev_dep           # <- Additional coeff to avoid overborrowing in high bankruptcy economy
                   - cp.debt_installments[1] - cp.balance.debt * globalparam.r)
 
     cp.possible_I = NW_no_prod + max_add_debt - TCLᵉ - TCE
@@ -1188,20 +1178,8 @@ function update_emissions_cp!(
     end
 
     cp.emissions = actual_em * cp.EU * ep.emissions_per_energy[t]
-    #println(actual_em * cp.EU, " | ", cp.emissions, " | ", ep.emissions_per_energy[t])
-    # If there was a production in this step, we need to save new emissions per item
-    #println(cp.emissions, "|", cp.Q[end])
 
-
-
-    # This is unstable for the consumer market process. Let's change it the average
-    # if cp.Q[end] > 0
-    #     shift_and_append!(cp.emissions_per_item, cp.emissions / cp.Q[end])
-    # else
-    #     # if no production in current step keep the last emissions value
-    #     # Note: We are not using zero, as there was still emission earlier and we do not want to give advantage to the existing stock
-    #     #shift_and_append!(cp.emissions_per_item, cp.emissions_per_item[end])
-    # end
+    # If no production in last turn (overproduction or newcomer) we do not want to give any zero emiss benefits
     if cp.Q[end] > 0
         shift_and_append!(cp.emissions_per_item, cp.emissions / cp.Q[end])
     else

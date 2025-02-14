@@ -12,8 +12,6 @@ using PyCall
 using Dates
 using StaticArrays
 
-
-
 # Include files
 include("../results/write_results.jl")
 include("helpers/custom_schedulers.jl")
@@ -187,23 +185,28 @@ function initialize_model(
 
     # Initialize households
     for _ in 1:model.i_param.n_hh
-
-        # HH with opinion
-        hh = Household(
-                        id = nextid(model), 
-                        skill = rand(LogNormal(model.i_param.skill_mean, model.i_param.skill_var)),
-                        β = rand(Uniform(model.i_param.βmin, model.i_param.βmax)),
-                        Sust_Score = rand(Beta(model.i_param.sust_α, model.i_param.sust_β)),
-                        Sust_Score_Uncertainty = rand(Beta(model.i_param.sust_uncert_α, model.i_param.sust_uncert_β)),
-                      )
-        # # HH without opinion
-        # hh = Household(
-        #                 id = nextid(model), 
-        #                 skill = rand(LogNormal(model.i_param.skill_mean, model.i_param.skill_var)),
-        #                 β = rand(Uniform(model.i_param.βmin, model.i_param.βmax)),
-        #                 Sust_Score = 0.0,
-        #                 Sust_Score_Uncertainty = 0.0,
-        #               )
+        # TODO: Maybe make a global passed param for the opinion init disabled if it seems necessary to keep it around later
+        # If we pass zeros for the init opinion we use a model where there is no Sustainability Opinion taken into accout
+        # optimization tip: kinda pointless to check everytime for each hh before creation, as they are all the same
+        if (model.i_param.sust_α == 0 && model.i_param.sust_β == 0)
+            # HH without opinion
+            hh = Household(
+                            id = nextid(model), 
+                            skill = rand(LogNormal(model.i_param.skill_mean, model.i_param.skill_var)),
+                            β = rand(Uniform(model.i_param.βmin, model.i_param.βmax)),
+                            Sust_Score = 0.0,
+                            Sust_Score_Uncertainty = 0.0,
+                        )
+        else
+            # HH with opinion
+            hh = Household(
+                            id = nextid(model), 
+                            skill = rand(LogNormal(model.i_param.skill_mean, model.i_param.skill_var)),
+                            β = rand(Uniform(model.i_param.βmin, model.i_param.βmax)),
+                            Sust_Score = rand(Beta(model.i_param.sust_α, model.i_param.sust_β)),
+                            Sust_Score_Uncertainty = rand(Beta(model.i_param.sust_uncert_α, model.i_param.sust_uncert_β)),
+                        )
+        end
         hh.wʳ = max(model.gov.w_min, hh.wʳ)
         add_agent!(hh, model)
     end
@@ -376,7 +379,7 @@ function initialize_datacategories(
 
         # Define data of climate/emissions to save !!! SAVED DATA
         model.climatedata_tosave = [
-            :em_index, :em_index_cp, :em_index_kp, :em_index_ep,
+            :em_index, :em_index_cp, :em_index_kp, :em_index_ep, :em_index_cp_good_avg, :em_index_cp_good_var,
             :energy_percentage, :carbon_emissions
         ]
 
@@ -884,14 +887,6 @@ function run_simulation(;
 
     # Initialize data categories that need to be saved
     adata, mdata = initialize_datacategories(model, savedata)
-
-    # At the beginning of the simulation
-    # property_dfs = Dict()   # MULTITHREADING #TODO #once global variable
-    # for prop in propertynames(model.all_hh)
-    #     if prop != :id  # Exclude the id property
-    #         property_dfs[prop] = DataFrame(id = collect(keys(model.all_hh)), t1 = Float64[])
-    #     end
-    # end
 
     # Run model
     # @timeit timer "runmodel" 

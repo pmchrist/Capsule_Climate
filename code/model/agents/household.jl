@@ -408,10 +408,10 @@ function decide_switching_all_hh!(
     
     # Normalized Emissions
     emiss_per_good = map(cp_id -> model[cp_id].emissions_per_item[end], minimum(all_cp):maximum(all_cp))    # Last Emissions
-    if maximum(emiss_per_good) > 0      # There is a case when we have a green economy and no emissions are present
+    if maximum(emiss_per_good) > 1e-8      # There is a case when we have a green economy and no emissions are present
         norm_emiss_per_good = emiss_per_good ./ maximum(emiss_per_good)
     else
-        norm_emiss_per_good = fill(0.5, length(emiss_per_good))         # Nobody gets a low emission benefit in the clean economy
+        norm_emiss_per_good = fill(0.0, length(emiss_per_good))
     end
 
 
@@ -445,7 +445,6 @@ function decide_switching_all_hh!(
                     # Ugly way to avoid inf loop, will change later
                     count += 1
                     if count == 500
-                        println("bruh1")
                         break
                     end
                 end
@@ -475,7 +474,6 @@ function decide_switching_all_hh!(
                     # Ugly way to avoid inf loop, will change later
                     count += 1
                     if count == 500
-                        println("bruh2")
                         break
                     end
                 end
@@ -483,15 +481,14 @@ function decide_switching_all_hh!(
                 # Calculate Scores of CPs
                 # CP 1:
                 cp_id_model = p_id_candidate1 - length(all_hh)
-                price_part = norm_p[cp_id_model] * (1 - model[hh_id].Sust_Score)               # Normalized Price is used
+                price_part = norm_p[cp_id_model] * (1 - model[hh_id].Sust_Score)             # Normalized Price is used
                 emiss_part = norm_emiss_per_good[cp_id_model] * model[hh_id].Sust_Score      # Normalized emissions produced per good is used
                 score_cand_1 = price_part + emiss_part
                 # CP 2:
                 cp_id_model = p_id_candidate2 - length(all_hh)
-                price_part = norm_p[cp_id_model] * (1 - model[hh_id].Sust_Score)               # Normalized Price is used
+                price_part = norm_p[cp_id_model] * (1 - model[hh_id].Sust_Score)             # Normalized Price is used
                 emiss_part = norm_emiss_per_good[cp_id_model] * model[hh_id].Sust_Score      # Normalized emissions produced per good is used
                 score_cand_2 = price_part + emiss_part
-
 
                 # Replace old supplier if score of new supplier is lower (i.e. price and emissions are lower)
                 if score_cand_2 < score_cand_1
@@ -507,7 +504,7 @@ function decide_switching_all_hh!(
                 max_score = -1      # it is max
                 max_id = -1
                 for cp_id in all_cp
-                    price_part = norm_p[cp_id - length(all_hh)] * (1 - model[hh_id].Sust_Score)               # Normalized Price is used
+                    price_part = norm_p[cp_id - length(all_hh)] * (1 - model[hh_id].Sust_Score)             # Normalized Price is used
                     emiss_part = norm_emiss_per_good[cp_id - length(all_hh)] * model[hh_id].Sust_Score      # Normalized emissions produced per good is used
                     score = price_part + emiss_part
                     if (score > max_score)
@@ -516,9 +513,6 @@ function decide_switching_all_hh!(
                     end
                 end
                 
-                if (max_id == -1)
-                    println("bruh3")
-                end
                 filter!(p_id -> p_id ≠ max_id, model[hh_id].cp)
                 delete!(model[hh_id].unsat_dem, max_id)
             end
@@ -545,10 +539,10 @@ function refillsuppliers_hh!(
     
     # Normalized Emissions
     emiss_per_good = map(cp_id -> model[cp_id].emissions_per_item[end], minimum(all_cp):maximum(all_cp))    # Last Emissions
-    if maximum(emiss_per_good) > 0      # There is a case when we have a green economy and no emissions are present
+    if maximum(emiss_per_good) > 1e-8       # There is a case when we have a green economy and no emissions are present
         norm_emiss_per_good = emiss_per_good ./ maximum(emiss_per_good)
     else
-        norm_emiss_per_good = fill(0.5, length(emiss_per_good))              # Nobody gets a low emission benefit in the clean economy
+        norm_emiss_per_good = fill(0.0, length(emiss_per_good))
     end
 
 

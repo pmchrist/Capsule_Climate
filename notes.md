@@ -32,32 +32,34 @@ Phase 2 - Creating Sustainable Employee (Integrate Sustainabiltiy Opinion into J
 
 
 # Current ToDo:
-0) All suppliers replacement and sampling in HH is done based solely on price
+0) All suppliers replacement and sampling in HH is done based solely on price           ! Fixed, now takes into account emissions too
 1) Make sure that everything is calibrated to the initial original parameters           ! Done
 2) Change visualization of Bunkruptcies from age to the global counter from model       ! Done
 3) Make main HH variables duplicated in the model for easier access                     ! Done
-
-4) We now must have 3 types of visualizations: one sim same seed (Granular - Done), multiple sims same seed (Comparative - Done), multiple sims multiple seeds (Aggregate of the previous one - Done)                                                  ! Done
-5) Provided plots make sense but it seems there is a chaos region introduced. To quantify it we should expand plot to a phase plot, Heatmap for Opinion vs p_f, check size of chaotic region. Heatmaps can be probabiltiies of green adoption based on initial parameters.      ! Done
+4) Fixed the bug of "chaotic" crash of economy, from high cp bankruptcies               ! Done
+    At the end, the issue boiled down to the fact that there was overborrowing. It occured because all of the Expected Demand was counted into the projected sales. It is the case for the properly working CP, but this assumption fails for the newcomers. As they do not have labor or in some cases machines to produce all the stuff to satisfy the demand. As a result they overextend credit line, get machines + some workers, produce few products and go bankrupt being not able to cover the first credit payment.
+    Additionally, most of the time the CP got machines but not workers, to get workers they hiked salaries, to cover them they hiked prices, given old information. They did not manage to sell anything, payed elevated wages and went bankrupt, throwing economy into the inflationary loop. There were a lot of wages and no production with high bankruptcy rates. It was fixed by restricting financing for the CP in check_funding_restrictions_cp!
+5) We now must have 3 types of visualizations: one sim same seed (Granular - Done), multiple sims same seed (Comparative - Done), multiple sims multiple seeds (Aggregate of the previous one - Done)                                                  ! Done
+6) Provided plots make sense but it seems there is a chaos region introduced. To quantify it we should expand plot to a phase plot, Heatmap for Opinion vs p_f, check size of chaotic region. Heatmaps can be probabiltiies of green adoption based on initial parameters.      ! Done
 	- Quantify stochasticity in the simulation with multiple runs.                          ! Done - Nearly zero
 	- Check without opinion how smaller the chaos regions is.                               ! Done - It does not exist, was part of a bug on excessive borrowing
     - Create a heatmap of initial opinion and probability of getting green economy.         ! Done
     - Add Boxplot visualization of final steps and compare opinion for diff p_f             ! Done
-6) Minor Fixes for Code:
-    - Move new parameter which balances the borrowing into the global variables
-    - Clean up code
-    - Make all the demand functions more consistent (we normalize when there are zero emissions, do not do it)
-    - Put average emiss per good in the model level (why is not there already?)
-7) Perform shocks with taxation
+7) Minor Fixes for Code:
+    - Move new parameter which balances the borrowing into the global variables             ! Done
+    - Clean up code                                                                         ! Done
+    - Make all the demand functions more consistent (we normalize when there are zero emissions, do not do it)      # Done
+    - Put average emiss per good in the model level (why is not there already?)             ! Done - Added through the index of climate metrics in the model
+8) Perform shocks with taxation
 
-8) Add dynamic opinions. Make mapping for opinions and how they change function, the mapping can be based on all proposed metrics. But first we should try wealth, unemployment can be a sub case of low wealth, so it should cover the research.
+9) Add dynamic opinions. Make mapping for opinions and how they change function, the mapping can be based on all proposed metrics. But first we should try wealth, unemployment can be a sub case of low wealth, so it should cover the research.
 	- Try Cubic polynomial approximation - hysterisis for opinion change dynamics.
 	- Try sigmoid functions to be maping of different regions, for examples in EU discrepancy in opinions is lower than in US.
 	- Other ideas can be used for initialization of the model (political vs scientific)
 
-9) Find out why brown energy is always persistent in the economy and why it goes to 0 and bounces back in the green economy. 
-10) Perform test on taxation of CP with high Emissions, progressive tax should work and introduce feeding loops.
-11) Market share is called profits in the output
+10) Find out why brown energy is always persistent in the economy and why it goes to 0 and bounces back in the green economy. 
+11) Perform test on taxation of CP with high Emissions, progressive tax should work and introduce feeding loops.
+12) Market share is called profits in the output
 
 
 

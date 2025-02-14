@@ -105,8 +105,14 @@ addprocs(n_proc_main)
     # Declare any necessary parameters or global arrays
     alphas = [2, 12]
     betas  = [2, 12]
-    prices_fossils = [0.35, 0.37, 0.39, 0.40, 0.41, 0.43, 0.45]
-    combined_params = [(a, b, pf) for a in alphas, b in betas, pf in prices_fossils]
+    #prices_fossils = [0.35, 0.37, 0.39, 0.40, 0.41, 0.43, 0.45]
+    prices_fossils = [0.15, 0.17, 0.19, 0.20, 0.21, 0.23, 0.25]
+
+    # If we want to use no opinion too, we just add combination zero values at the end
+    combined_params = vcat(
+        [ (a, b, pf) for a in alphas for b in betas for pf in prices_fossils ],
+        [ (0, 0, pf) for pf in prices_fossils ]
+    )
     const sims_n = length(combined_params)
 
     # Define a function that runs the simulation(s) for one seed
@@ -116,7 +122,7 @@ addprocs(n_proc_main)
 
             # Call your simulation (replace with your real function signature)
             run_simulation(
-                T = 1200,
+                T = 1000,
                 savedata = true,
                 show_full_output = false,
                 showprogress = false,
@@ -124,6 +130,7 @@ addprocs(n_proc_main)
                 save_firmdata = true,
                 sim_nr = idx,
                 changed_params_init = [(:sust_α, a), (:sust_β, b), (:p_f, pf)],
+                changed_taxrates = [(:τᶜ, 0.2)],
                 folder_name = "alpha=$a beta=$b p_f=$pf"
             )
         end
@@ -132,14 +139,16 @@ addprocs(n_proc_main)
 end
 
 # Define your list of seeds on the master process
-# num_sim_ci = 48
+# num_sim_ci = 20
 # all_seeds = rand(1:10_000_000, num_sim_ci)
 # println("Simulation started for seeds: ", all_seeds)
 
-all_seeds = [7573706, 817298, 5015995, 7372452, 2700498, 9996918, 3495231, 3327595, 7666357, 7194651, 2110350,
-2314701, 6076284, 493882, 4846528, 3574769, 4625989, 8707792, 7074644, 3980917, 9294657, 3486417,
-7685624, 4288856, 5916162, 7355592, 3710378, 3801667, 6954119, 9529040, 6072593, 4085919, 3602909, 6415290, 1171631, 7390976, 3307371,
-5079054, 4553034, 821390, 2036270, 5147823, 9264518, 6485874, 9136572, 5373138, 2772102, 4883998]
+all_seeds = [4645253, 748156, 4843131, 8027058, 3758814, 5425031, 6323392, 3644802, 2185451, 1755858,
+            8093407, 7071161, 7865358, 4456522, 5985056, 6082594, 9273138, 4351184, 9022376, 2845833]
+# all_seeds = [7573706, 817298, 5015995, 7372452, 2700498, 9996918, 3495231, 3327595, 7666357, 7194651, 2110350,
+# 2314701, 6076284, 493882, 4846528, 3574769, 4625989, 8707792, 7074644, 3980917, 9294657, 3486417,
+# 7685624, 4288856, 5916162, 7355592, 3710378, 3801667, 6954119, 9529040, 6072593, 4085919, 3602909, 6415290, 1171631, 7390976, 3307371,
+# 5079054, 4553034, 821390, 2036270, 5147823, 9264518, 6485874, 9136572, 5373138, 2772102, 4883998]
 
 # Distribute seeds using pmap (one seed at a time per worker)
 pmap(run_sim_for_seed, all_seeds)

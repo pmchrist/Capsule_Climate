@@ -29,61 +29,34 @@ function cpmarket_matching_cp!(
     model::ABM
     )
 
-    # Normalize weights
-    sum!(cmdata.weights_sum, cmdata.weights)
-    cmdata.weights ./= cmdata.weights_sum
-
-    # # Now we can clear up weights for the producers that have zero stock and cannot participate
-    # sold_out = findall(cmdata.all_N .<= 1e-8)
-    # cmdata.weights[:, sold_out] .= 0.0
-    sold_out = Int64[]  # For new additions into the no stock group
+    # Variables necessary for market matching process
+    sold_out = Int64[]                      # For new additions into the no stock group
     prev_inventory = sum(cmdata.all_N)      # Early break out if necessary from matching process
-    # Matching process
-    counter = 0
-    first_round = true
+    counter = 0                             # Used to avoid possible infinite loop (never happened yet)
+    first_round = true                      # First round is slightly unique
 
-    
-    while true
-    #for i in 1:5
+    while true      # Was originally for loop, now is based on convergence
 
-    # First find the ideal distribution if no availability constraints are there (only the budgetary of HH)
+        # Normalize weights
+        sum!(cmdata.weights_sum, cmdata.weights)
+        cmdata.weights ./= cmdata.weights_sum
+        replace!(cmdata.weights, NaN=>0.0)          # Just a safe guard
+
+        # First find the ideal distribution of demand if no availability constraints are there (only the budgetary and emiss score of HH based)
         cmdata.C_spread .= cmdata.all_C
         cmdata.C_spread .*= cmdata.weights
         if first_round
             cmdata.true_D .= cmdata.C_spread
         end
-        # if i==1
-        #     if any(isnan.(cmdata.all_C))
-        #         println("lvl_1_All_C")
-        #     end
-        #     if any(isnan.(cmdata.weights))
-        #         println("lvl_1_weights")
-        #     end
-        #     if any(isnan.(cmdata.C_spread))
-        #         println("lvl_1_C_spread")
-        #     end
-        # end
-
         
         # Compute demand per cp and find which cp is sold out and how much demand it can cover
         sum!(cmdata.demand_per_cp, cmdata.C_spread')
-
         cmdata.demand_per_cp .= max.(floor.(cmdata.demand_per_cp, digits=8), 0.0)
-
-        #print(cmdata.demand_per_cp)
-
-
         sold_out = findall(cmdata.all_N .<= cmdata.demand_per_cp)
 
         # Sell goods
         cmdata.frac_sellable .= min.(cmdata.all_N ./ cmdata.demand_per_cp, 1.0)
         replace!(cmdata.frac_sellable, -Inf=>0.0, NaN=>0.0)
-        #print(cmdata.frac_sellable)
-
-        # if i==1
-        #     display(cmdata.frac_sellable')
-        # end
-
         cmdata.C_spread .*= cmdata.frac_sellable'
         cmdata.transactions .+= cmdata.C_spread
 
@@ -94,51 +67,37 @@ function cpmarket_matching_cp!(
         # Update consumption budget C and inventory N
         cmdata.all_C .-= cmdata.sold_per_hh_round
         cmdata.all_C[cmdata.all_C .<= 1e-1] .= 0.0
-
         cmdata.all_N .-= cmdata.sold_per_cp_round
         cmdata.all_N[cmdata.all_N .<= 1e-1] .= 0.0
 
         # Set weights of sold-out producers to zero
         cmdata.weights[:,sold_out] .= 0.0
 
-        # Renormalize weights
-        sum!(cmdata.weights_sum, cmdata.weights)
-        cmdata.weights ./= cmdata.weights_sum
-        replace!(cmdata.weights, NaN=>0.0)
-
-        #println(cmdata.sold_per_hh_round, cmdata.sold_per_cp_round)
-
+        # Reset sold goods count
         cmdata.sold_per_hh_round .= 0.0
         cmdata.sold_per_cp_round .= 0.0
     
-
         # Check convergence
-        # println("Total: $total_inventory")
-        # println("Prev: $prev_inventory")
-        # println("Diff: $(abs(total_inventory - prev_inventory) / max(prev_inventory, total_inventory))")
-        # println()
         counter += 1
         total_inventory = sum(cmdata.all_N)
-        # ToDo: Move the convergence parameter into the global params 
-        # Maybe explore more sophisticated function based on the amount of Capacity left at HH or change of weights
-        if (abs(total_inventory - prev_inventory) / max(total_inventory, prev_inventory)) < 1e-2
+        # Once there is negligible difference in inventories between rounds we can continue
+        if (abs(total_inventory - prev_inventory) / max(total_inventory, prev_inventory)) < 2e-2
             break
         end
-        prev_inventory = total_inventory
+        # Or if there is no inventory
         if (total_inventory == 0)
-            # println("EMPTY Inventories")
             break
         end 
-        # if (isnan(prev_inventory) || isnan(total_inventory))
-        #     # println("Incorrect Inventories")
-        #     break
-        # end 
-        if counter > 20
-            # Does not happen
-            println("WARNING: Consumer Market is not Converging")
+        # Or if there have been too many rounds
+        if counter > 3
+            #println("WARNING: Consumer Market is not Converging")
             break
         end
+        # Updating variables for the convergence check
+        prev_inventory = total_inventory
+
     end
+    
 end
 
 

@@ -16,11 +16,16 @@ Parameters and parameter values all follow from table 9 in Lamperti et al. (2018
     carbon_emissions_cp::V = zeros(Float64, T)   # carbon emissions of cp
     carbon_emissions_kp::V = zeros(Float64, T)   # carbon emissions of kp
     carbon_emissions_ep::V = zeros(Float64, T)   # carbon emissions of ep
+    carbon_emissions_cp_good_avg::V = zeros(Float64, T)   # carbon emissions per consumer good produced
+    carbon_emissions_cp_good_var::V = zeros(Float64, T)   # carbon emissions per consumer good produced
 
     em_index::V = fill(100., T)
     em_index_cp::V = fill(100., T)
     em_index_kp::V = fill(100., T)
     em_index_ep::V = fill(100., T)
+    em_index_cp_good_avg::V = fill(100., T)
+    em_index_cp_good_var::V = fill(100., T)
+
     energy_percentage::V = zeros(Float64, T)     # percentage of emissions coming from energy
 end
 
@@ -43,12 +48,16 @@ function collect_emissions_cl!(
     climate.carbon_emissions[t] = (climate.carbon_emissions_cp[t] + 
                                    climate.carbon_emissions_kp[t] + 
                                    climate.carbon_emissions_ep[t])
+    emissions_cp_good_vals = map(cp_id -> model[cp_id].emissions_per_item[end], all_cp)
+    climate.carbon_emissions_cp_good_avg[t] = mean(emissions_cp_good_vals)
+    climate.carbon_emissions_cp_good_var[t] = var(emissions_cp_good_vals)
+    
 
     # Start saving emission indeces from warmup time
     # if t > t_warmup
         # climate.emissions_index[t] = 100 * climate.carbon_emissions[t] / climate.carbon_emissions[t_warmup]
-        
     # end
+
     climate.energy_percentage[t] = climate.carbon_emissions_ep[t] / climate.carbon_emissions[t]
 end
 
@@ -62,4 +71,8 @@ function compute_emission_indices!(
     climate.em_index_cp .= compute_index(climate.carbon_emissions_cp, t_index)
     climate.em_index_kp .= compute_index(climate.carbon_emissions_kp, t_index)
     climate.em_index_ep .= compute_index(climate.carbon_emissions_ep, t_index)
+
+    climate.em_index_cp_good_avg .= compute_index(climate.carbon_emissions_cp_good_avg, t_index)
+    climate.em_index_cp_good_var .= compute_index(climate.carbon_emissions_cp_good_var, t_index)
+
 end
