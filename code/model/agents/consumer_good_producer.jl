@@ -869,7 +869,7 @@ function replace_bankrupt_cp!(
     # Compute average number of machines and NW for non-bankrupt cp and mean price
     avg_n_machines = mean(cp_id -> model[cp_id].n_machines, nonbankrupt_cp)
     avg_NW = mean(cp_id -> model[cp_id].balance.NW, nonbankrupt_cp)
-    competitive_p = minimum(cp_id -> model[cp_id].p[end], nonbankrupt_cp)
+    competitive_p = mean(cp_id -> model[cp_id].p[end], nonbankrupt_cp)
 
     # Make weights for allocating cp to hh
     # Minimum is taken to avoid weird outcomes when all bp and lp went bankrupt
@@ -895,7 +895,7 @@ function replace_bankrupt_cp!(
         kp_choice_ps[i] = model[kp_choice_ids[i]].p[end]
 
         # Compute the number of machines each cp will buy
-        all_n_machines[i] = floor(Int64, capital_coefficients[i] * avg_n_machines / globalparam.freq_per_machine)
+        all_n_machines[i] = ceil(Int64, capital_coefficients[i] * avg_n_machines / globalparam.freq_per_machine)        # <- Changed to Ceil to avoid multiplication by zero
     end
 
     # Compute share of investments that can be paid from the investment fund
@@ -909,6 +909,11 @@ function replace_bankrupt_cp!(
 
         # Sample what the size of the capital stock will be
         D = macro_struct.cu[t] * all_n_machines[cp_i] * globalparam.freq_per_machine
+        if (D == 0)
+            println(macro_struct.cu[t])
+            println(all_n_machines[cp_i])
+            println(globalparam.freq_per_machine)
+        end
 
         # In the first period, the cp has no machines yet, these are delivered at the end of the first period
         new_cp = initialize_cp(
@@ -918,7 +923,6 @@ function replace_bankrupt_cp!(
                     Vector{Machine}(),
                     model;
                     D=D,
-                    w=0.5,
                     f=0.0
                 )
         # Set initial price to be competitive (otherwise no hiring can happen)

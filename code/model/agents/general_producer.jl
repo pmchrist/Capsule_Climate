@@ -129,7 +129,7 @@ function update_w̄_p!(
     model::ABM
     )
 
-    if length(p.employees) > 0 && p.age > 1
+    if length(p.employees) > 0
         shift_and_append!(p.w̄, mean(hh_id -> model[hh_id].w[end], p.employees))
     else
         shift_and_append!(p.w̄, p.w̄[end])
@@ -327,7 +327,7 @@ function check_if_bankrupt_p!(
 
 
     if (typeof(p) == ConsumerGoodProducer && p.age > t_wait 
-        && (p.f[end] <= 1e-8 || p.balance.EQ < -1e-1))
+        && (p.f[end] <= 1e-4 || p.balance.EQ < 0))
         return true
     elseif (typeof(p) == CapitalGoodProducer && p.age > t_wait 
             &&  p.balance.EQ < 0)

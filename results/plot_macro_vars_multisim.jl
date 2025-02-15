@@ -4,7 +4,7 @@
 
 # Launch workers
 using Distributed
-n_proc_main = 4
+n_proc_main = 6
 addprocs(n_proc_main)
 
 # PARAMETERS AND FUNCTIONS ARE SHARED
@@ -27,11 +27,10 @@ addprocs(n_proc_main)
     ###############################################################################
     # Adjust these as needed
     const PATH                = joinpath(@__DIR__, "data_saved", "data") # Folder structure root
-    const HH_STEP_START       = 300
-    const HH_STEP_END         = 1000
+    const HH_STEP_START       = 200
+    const HH_STEP_END         = 900
 
-    SEEDS = [4645253, 748156, 4843131, 8027058, 3758814, 5425031, 6323392, 3644802, 2185451, 1755858,
-    8093407, 7071161, 7865358, 4456522, 5985056, 6082594, 9273138, 4351184, 9022376, 2845833]
+    SEEDS = []
     # SEEDS = [7573706, 817298, 5015995, 7372452, 2700498, 9996918, 3495231, 3327595, 7666357, 7194651,
     # 2110350, 2314701, 6076284, 493882, 4846528, 3574769, 4625989, 8707792, 7074644, 3980917, 9294657,
     # 3486417, 7685624, 4288856, 5916162, 7355592, 3710378, 3801667, 6954119, 9529040, 6072593, 4085919,
@@ -40,50 +39,50 @@ addprocs(n_proc_main)
     SEEDS = string.(SEEDS)
 
     const FOLDERS = [
-            "alpha=0 beta=0 p_f=0.15",
-            "alpha=0 beta=0 p_f=0.17",
-            "alpha=0 beta=0 p_f=0.19",
-            "alpha=0 beta=0 p_f=0.2",
-            "alpha=0 beta=0 p_f=0.21",
-            "alpha=0 beta=0 p_f=0.23",
-            "alpha=0 beta=0 p_f=0.25",
+            "alpha=0 beta=0 p_f=0.35",
+            "alpha=0 beta=0 p_f=0.37",
+            "alpha=0 beta=0 p_f=0.39",
+            "alpha=0 beta=0 p_f=0.4",
+            "alpha=0 beta=0 p_f=0.41",
+            "alpha=0 beta=0 p_f=0.43",
+            "alpha=0 beta=0 p_f=0.45",
 
-            "alpha=2 beta=12 p_f=0.15",
-            "alpha=2 beta=12 p_f=0.17",
-            "alpha=2 beta=12 p_f=0.19",
-            "alpha=2 beta=12 p_f=0.2",
-            "alpha=2 beta=12 p_f=0.21",
-            "alpha=2 beta=12 p_f=0.23",
-            "alpha=2 beta=12 p_f=0.25",
+            "alpha=2 beta=12 p_f=0.35",
+            "alpha=2 beta=12 p_f=0.37",
+            "alpha=2 beta=12 p_f=0.39",
+            "alpha=2 beta=12 p_f=0.4",
+            "alpha=2 beta=12 p_f=0.41",
+            "alpha=2 beta=12 p_f=0.43",
+            "alpha=2 beta=12 p_f=0.45",
 
-            "alpha=2 beta=2 p_f=0.15",
-            "alpha=2 beta=2 p_f=0.17",
-            "alpha=2 beta=2 p_f=0.19",
-            "alpha=2 beta=2 p_f=0.2",
-            "alpha=2 beta=2 p_f=0.21",
-            "alpha=2 beta=2 p_f=0.23",
-            "alpha=2 beta=2 p_f=0.25",
+            "alpha=2 beta=2 p_f=0.35",
+            "alpha=2 beta=2 p_f=0.37",
+            "alpha=2 beta=2 p_f=0.39",
+            "alpha=2 beta=2 p_f=0.4",
+            "alpha=2 beta=2 p_f=0.41",
+            "alpha=2 beta=2 p_f=0.43",
+            "alpha=2 beta=2 p_f=0.45",
 
-            "alpha=12 beta=12 p_f=0.15",
-            "alpha=12 beta=12 p_f=0.17",
-            "alpha=12 beta=12 p_f=0.19",
-            "alpha=12 beta=12 p_f=0.2",
-            "alpha=12 beta=12 p_f=0.21",
-            "alpha=12 beta=12 p_f=0.23",
-            "alpha=12 beta=12 p_f=0.25",
+            "alpha=12 beta=12 p_f=0.35",
+            "alpha=12 beta=12 p_f=0.37",
+            "alpha=12 beta=12 p_f=0.39",
+            "alpha=12 beta=12 p_f=0.4",
+            "alpha=12 beta=12 p_f=0.41",
+            "alpha=12 beta=12 p_f=0.43",
+            "alpha=12 beta=12 p_f=0.45",
 
-            "alpha=12 beta=2 p_f=0.15",
-            "alpha=12 beta=2 p_f=0.17",
-            "alpha=12 beta=2 p_f=0.19",
-            "alpha=12 beta=2 p_f=0.2",
-            "alpha=12 beta=2 p_f=0.21",
-            "alpha=12 beta=2 p_f=0.23",
-            "alpha=12 beta=2 p_f=0.25"
+            "alpha=12 beta=2 p_f=0.35",
+            "alpha=12 beta=2 p_f=0.37",
+            "alpha=12 beta=2 p_f=0.39",
+            "alpha=12 beta=2 p_f=0.4",
+            "alpha=12 beta=2 p_f=0.41",
+            "alpha=12 beta=2 p_f=0.43",
+            "alpha=12 beta=2 p_f=0.45"
     ]
 
     # Subplot grid sizes
     const GRAPH_SIZE_DIFF_PARAM = (Int(length(FOLDERS)/7), 7)        # by default we have 7 values for p_f
-    const GRAPH_SIZE_DIFF_SEED  = (Int(length(SEEDS)/5), 5)          # By default 48 values for seeds
+    const GRAPH_SIZE_DIFF_SEED  = (Int(length(SEEDS)/10), 10)          # By default 48 values for seeds
 
     # Parameters of the model to visualize
     MODEL_LEVEL_COLS = [

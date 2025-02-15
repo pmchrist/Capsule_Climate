@@ -33,22 +33,17 @@ function cpmarket_matching_cp!(
     sold_out = Int64[]                      # For new additions into the no stock group
     prev_inventory = sum(cmdata.all_N)      # Early break out if necessary from matching process
     counter = 0                             # Used to avoid possible infinite loop (never happened yet)
-    first_round = true                      # First round is slightly unique
+
+    # Normalize weights
+    sum!(cmdata.weights_sum, cmdata.weights)
+    cmdata.weights ./= cmdata.weights_sum
+    # First find the ideal distribution of demand if no availability constraints are there (only the budgetary and emiss score of HH based)
+    cmdata.C_spread .= cmdata.all_C
+    cmdata.C_spread .*= cmdata.weights
+    cmdata.true_D .= cmdata.C_spread
 
     while true      # Was originally for loop, now is based on convergence
 
-        # Normalize weights
-        sum!(cmdata.weights_sum, cmdata.weights)
-        cmdata.weights ./= cmdata.weights_sum
-        replace!(cmdata.weights, NaN=>0.0)          # Just a safe guard
-
-        # First find the ideal distribution of demand if no availability constraints are there (only the budgetary and emiss score of HH based)
-        cmdata.C_spread .= cmdata.all_C
-        cmdata.C_spread .*= cmdata.weights
-        if first_round
-            cmdata.true_D .= cmdata.C_spread
-        end
-        
         # Compute demand per cp and find which cp is sold out and how much demand it can cover
         sum!(cmdata.demand_per_cp, cmdata.C_spread')
         cmdata.demand_per_cp .= max.(floor.(cmdata.demand_per_cp, digits=8), 0.0)
@@ -72,6 +67,14 @@ function cpmarket_matching_cp!(
 
         # Set weights of sold-out producers to zero
         cmdata.weights[:,sold_out] .= 0.0
+        # Renormalize weights
+        sum!(cmdata.weights_sum, cmdata.weights)
+        cmdata.weights ./= cmdata.weights_sum
+        replace!(cmdata.weights, NaN=>0.0)
+        cmdata.C_spread .= cmdata.all_C     # <- cmdata.all_C Is NaN with the new Utility Function
+        cmdata.C_spread .*= cmdata.weights
+    
+        
 
         # Reset sold goods count
         cmdata.sold_per_hh_round .= 0.0

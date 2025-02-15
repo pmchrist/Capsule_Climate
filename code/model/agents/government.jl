@@ -73,7 +73,7 @@ function change_taxrate!(
         tax_ts[t_warmup:end] .= taxrate
         #in case of shock experiment
         # change return taxrate to inital value after 100 entries
-        tax_ts[t_warmup+20:end] .= original_taxrate
+        tax_ts[t_warmup+24:end] .= original_taxrate         # shock is applied for 2 years, 24 steps
     else
         # Linear interpolation between τ_start and τ_end
         taxrate_start = changed_taxrate[2]

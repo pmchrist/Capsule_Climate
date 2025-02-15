@@ -51,6 +51,7 @@ Phase 2 - Creating Sustainable Employee (Integrate Sustainabiltiy Opinion into J
     - Make all the demand functions more consistent (we normalize when there are zero emissions, do not do it)      # Done
     - Put average emiss per good in the model level (why is not there already?)             ! Done - Added through the index of climate metrics in the model
 8) Perform shocks with taxation
+    - There is a bug of a very low expected demand producers to be still alive after a lot of turns. (Fix it, probably some of the survivability params from Isaak changed are at blame)
 
 9) Add dynamic opinions. Make mapping for opinions and how they change function, the mapping can be based on all proposed metrics. But first we should try wealth, unemployment can be a sub case of low wealth, so it should cover the research.
 	- Try Cubic polynomial approximation - hysterisis for opinion change dynamics.

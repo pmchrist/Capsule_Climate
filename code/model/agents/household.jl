@@ -503,7 +503,7 @@ function decide_switching_all_hh!(
                 # If all producers known, throw out producer with highest price and emission
                 max_score = -1      # it is max
                 max_id = -1
-                for cp_id in all_cp
+                for cp_id in model[hh_id].cp
                     price_part = norm_p[cp_id - length(all_hh)] * (1 - model[hh_id].Sust_Score)             # Normalized Price is used
                     emiss_part = norm_emiss_per_good[cp_id - length(all_hh)] * model[hh_id].Sust_Score      # Normalized emissions produced per good is used
                     score = price_part + emiss_part

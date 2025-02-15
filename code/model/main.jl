@@ -839,7 +839,7 @@ end
 """
 function run_simulation(;
     T::Int64 = 660,
-    t_warmup::Int64 = 500,      # 300 by default
+    t_warmup::Int64 = 300,      # 300 by default
     changed_params::Union{Dict,Nothing} = nothing,
     changed_params_ofat::Union{Dict,Nothing} = nothing,
     changed_taxrates::Union{Vector,Nothing} = nothing,
