@@ -23,8 +23,6 @@ Parameters and parameter values all follow from table 9 in Lamperti et al. (2018
     em_index_cp::V = fill(100., T)
     em_index_kp::V = fill(100., T)
     em_index_ep::V = fill(100., T)
-    em_index_cp_good_avg::V = fill(100., T)
-    em_index_cp_good_var::V = fill(100., T)
 
     energy_percentage::V = zeros(Float64, T)     # percentage of emissions coming from energy
 end
@@ -71,8 +69,5 @@ function compute_emission_indices!(
     climate.em_index_cp .= compute_index(climate.carbon_emissions_cp, t_index)
     climate.em_index_kp .= compute_index(climate.carbon_emissions_kp, t_index)
     climate.em_index_ep .= compute_index(climate.carbon_emissions_ep, t_index)
-
-    climate.em_index_cp_good_avg .= compute_index(climate.carbon_emissions_cp_good_avg, t_index)
-    climate.em_index_cp_good_var .= compute_index(climate.carbon_emissions_cp_good_var, t_index)
 
 end

@@ -39,6 +39,7 @@ Phase 2 - Creating Sustainable Employee (Integrate Sustainabiltiy Opinion into J
 4) Fixed the bug of "chaotic" crash of economy, from high cp bankruptcies               ! Done
     At the end, the issue boiled down to the fact that there was overborrowing. It occured because all of the Expected Demand was counted into the projected sales. It is the case for the properly working CP, but this assumption fails for the newcomers. As they do not have labor or in some cases machines to produce all the stuff to satisfy the demand. As a result they overextend credit line, get machines + some workers, produce few products and go bankrupt being not able to cover the first credit payment.
     Additionally, most of the time the CP got machines but not workers, to get workers they hiked salaries, to cover them they hiked prices, given old information. They did not manage to sell anything, payed elevated wages and went bankrupt, throwing economy into the inflationary loop. There were a lot of wages and no production with high bankruptcy rates. It was fixed by restricting financing for the CP in check_funding_restrictions_cp!
+    Addition: The fix did not work for the shock case, as system's averages were too off. However, the issue is indeed the same. Now it is fixed. So, the problem was in the borrowing, but now instead of just limiting Demand Expected we go straight to the Demand Unsatisfied. It produces by far better results. Obviously, producers might not know their unsatisfied demand, but we can argue that creditors do. Additionally, the earliest try at fix where I just improved the convergence of the consumermarket, seems to work for many cases as it improved the Demand part, leaving unsatisfied Demand empty thereforew making additional borrowing restricted. Therefore, we either set market to a lot of steps or use Unsatisfied Demand. Btw, there is still the variable for lowering the borrowing, but it is higher now.
 5) We now must have 3 types of visualizations: one sim same seed (Granular - Done), multiple sims same seed (Comparative - Done), multiple sims multiple seeds (Aggregate of the previous one - Done)                                                  ! Done
 6) Provided plots make sense but it seems there is a chaos region introduced. To quantify it we should expand plot to a phase plot, Heatmap for Opinion vs p_f, check size of chaotic region. Heatmaps can be probabiltiies of green adoption based on initial parameters.      ! Done
 	- Quantify stochasticity in the simulation with multiple runs.                          ! Done - Nearly zero
@@ -51,7 +52,19 @@ Phase 2 - Creating Sustainable Employee (Integrate Sustainabiltiy Opinion into J
     - Make all the demand functions more consistent (we normalize when there are zero emissions, do not do it)      # Done
     - Put average emiss per good in the model level (why is not there already?)             ! Done - Added through the index of climate metrics in the model
 8) Perform shocks with taxation
-    - There is a bug of a very low expected demand producers to be still alive after a lot of turns. (Fix it, probably some of the survivability params from Isaak changed are at blame)
+    - There is a bug of a very low expected demand producers to be still alive after a lot of turns. (Fix it, probably some of the survivability params from Isaak changed are at blame)                                                             ! Done, it was not it, it is still about artifacts from point 4
+    - The shocks seems to be working and do not crash the model. The issue seemed to be that some initial agents had too bad conditions, initial values were based on average in the society, but once economy is shocked they go down together. Solution is that now it is mandated that at least some machine are ordered for new CP (globalparam). And the projected production for the newcomers is done with average machine efficiency (this one is negligible)       ! Done
+    - Very interesting results. It seems that consumer decisions indeed have influece, but a limited one. Shocks indeed amplify them, by a lot. In general, there is more variance in emissions when there is more opinion on sustainability, in general CP emissions are lower and Machiens are more effective. There is a better consensus towards the optimal production. The thing that I did not expect is that there is slower adoption of green energy by EP. It might be just by chance, as ther are only 24 repetitions.                                                   ! Done
+    - To verify the CP emiss contributions a new metric should be added, percentage of CP Emissions to All Emiss        ! Done, still seamingly no difference
+    - EE is supposed to be higher, and EF lower, currently we introduce EP emissions into CP and KP emissions calculations so that green and brown runs are compatible. But what if we do not do this and only compare on the same p_f levels?                  ! Done - this seems to be the biggest culprit of the no change in results. Now there is definitely lower carbon emissions. However, no idea why they are lower, as EE and EF are seemingly the same.
+    - Perform tests with restrictions on the consumermarket process, people just consume everything     ! Done - there is an effect, but a very small one, more than everything with very high restrictions GDP drops
+    - Fix the boxplot, it show strange stuff                             ! Done, I was passing labels wrong and it visualized multiple things at once.
+    - Change em_index_cp_good to be just avg and mean.                   ! Done
+
+    - Verify the emissions calculation for CP and KP, in the beginning I have added EP emissions in the calculation so that we can compare emissions per good in-between green and brown runs. However this seems to change dynamics. We have to either revert or to re-calibrate.          ! Kinda Done
+        - I did an exhaustive run to compare both. Results are in general the same, just that CP emissions are scaled, so seems like no problem and we can keep comparative values for good emissions for different energy regimes. However, this is probably conceptually wrong. Should ask Isaak to be sure - like what is his interpretation why the emissions of machines do not go down in greener economy compared to brown?
+    - Perform final exhaustive run, find out why overall emissions go lower. Or do they?        ! Kinda Done, it seems that opinion influences well the emissions, however extreme opinions stop economic processes and slows down overall progress. Moreover we can see the improvement in pi_EE and pi_EF of machines used proportionate to the opinion. It is small but still present. It exhibits the highest effect on the highest opinion, but highest opinion slows down the economy which grinds down the technological progress. Dig deeper after the meeting with the professor.
+    - Do final run with all the changes reverted (CP and KP emissions calculation and 3 rounds for the consumermarket) and more repetitions (like a 100) for multiple shock levels.
 
 9) Add dynamic opinions. Make mapping for opinions and how they change function, the mapping can be based on all proposed metrics. But first we should try wealth, unemployment can be a sub case of low wealth, so it should cover the research.
 	- Try Cubic polynomial approximation - hysterisis for opinion change dynamics.
@@ -60,7 +73,9 @@ Phase 2 - Creating Sustainable Employee (Integrate Sustainabiltiy Opinion into J
 
 10) Find out why brown energy is always persistent in the economy and why it goes to 0 and bounces back in the green economy. 
 11) Perform test on taxation of CP with high Emissions, progressive tax should work and introduce feeding loops.
-12) Market share is called profits in the output
+12) Some minor stuff with variables:
+    - Market share is called profits in the output                                            ! Done, has been Renamed
+    - Some of the variables are not saved properly, for example wage of CP or Good_Emiss, it tilts the results. Possible solution is to just keep stats of producers that are odler than 5, as they are stable.
 
 
 
@@ -90,9 +105,15 @@ Phase 2 - Creating Sustainable Employee (Integrate Sustainabiltiy Opinion into J
 
 
 # Current Questions:
-0) I have integrated the opinion everywhere now, it seems to not change anything, tho.
-1) So, sometimes when consumermarket process does not have a lot of steps, it falls into monopolies. This process seems to be more frequent with the sustainability opinion. Does it make sense?
-2) These big companies are eating market, where should I check for why it is happening?
+Q - I have changed intial NW parameters for CP, as they spawned with 0 machines and stayed idle for the simulation. Moreover, I found why increased convergence in the consumermarket helped. It just impoved the real difference between Demand Exp and Demand while minimizing the Demand Unexpected. As a result I know try to use the Demand Unsatisfied as it is without increasing steps. What is more correct?
+A - 
+
+Q - I have integrated the opinion everywhere now, it seems to not change anything, tho.
+A - Shocks might help, otherwise we need an utility function too. Or try ignoring high polluters.
+
+Q - So, sometimes when consumermarket process does not have a lot of steps, it falls into monopolies. This process seems to be more frequent with the sustainability opinion. Does it make sense?
+A - It has been fixed, issue was in overborrowing and calculating of expected Demand
+
 
 
 # Answered Questions:

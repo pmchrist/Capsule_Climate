@@ -4,7 +4,6 @@
     D_ep::Vector{Float64} = zeros(Float64, T)       # Demand for energy units over time
     Qmax_ep::Vector{Float64} = zeros(Float64, T)    # Maximum production of units over time
 
-
     # Prices, cost and investments
     markup_ep::Float64                            # Markup to determine price
     profit_ep::Vector{Float64} = zeros(Float64, T) # Profits over time

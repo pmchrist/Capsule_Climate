@@ -24,7 +24,7 @@
     η::Int64 = 60                   # physical scrapping age
     ηₑ::Int64 = 240                 # physical scrapping age energy producer
     Λ::Float64 = 2.0                # max debt/sales ratio
-    Λᵉ::Float64 = 0.25              # max debt/expected sales ratio                                  <- New
+    Λᵉ::Float64 = 0.5               # max debt/expected sales ratio                                  <- New
     update_period::Int64 = 3        # time period after which cp update prod plans
     green_limit::Float64 = 1.0      # limit on green tech share in ep production
 

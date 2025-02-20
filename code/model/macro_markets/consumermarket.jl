@@ -32,7 +32,7 @@ function cpmarket_matching_cp!(
     # Variables necessary for market matching process
     sold_out = Int64[]                      # For new additions into the no stock group
     prev_inventory = sum(cmdata.all_N)      # Early break out if necessary from matching process
-    counter = 0                             # Used to avoid possible infinite loop (never happened yet)
+    counter = 1                             # We need to restrict consumption, otherwise all the orders are fulfilled
 
     # Normalize weights
     sum!(cmdata.weights_sum, cmdata.weights)
@@ -74,17 +74,16 @@ function cpmarket_matching_cp!(
         cmdata.C_spread .= cmdata.all_C     # <- cmdata.all_C Is NaN with the new Utility Function
         cmdata.C_spread .*= cmdata.weights
     
-        
-
         # Reset sold goods count
         cmdata.sold_per_hh_round .= 0.0
         cmdata.sold_per_cp_round .= 0.0
+
     
         # Check convergence
         counter += 1
         total_inventory = sum(cmdata.all_N)
         # Once there is negligible difference in inventories between rounds we can continue
-        if (abs(total_inventory - prev_inventory) / max(total_inventory, prev_inventory)) < 2e-2
+        if (abs(total_inventory - prev_inventory) / max(total_inventory, prev_inventory)) < 1e-1
             break
         end
         # Or if there is no inventory

@@ -98,57 +98,73 @@ addprocs(n_proc_main)
 
 # Make sure all needed packages and code are loaded on every worker
 @everywhere begin
-
+    changed_taxrates = nothing
+    
     # Include or define your simulation code
     include("model/main.jl")
 
     # Declare any necessary parameters or global arrays
-    alphas = [2, 12]
-    betas  = [2, 12]
-    #prices_fossils = [0.35, 0.37, 0.39, 0.40, 0.41, 0.43, 0.45]
-    prices_fossils = [0.35, 0.37, 0.39, 0.40, 0.41, 0.43, 0.45]
+    alphas = [20, 5]
+    betas  = [2]
+    prices_fossils = [0.36, 0.39, 0.40, 0.41, 0.44]
 
     # If we want to use no opinion too, we just add combination zero values at the end
     combined_params = vcat(
         [ (a, b, pf) for a in alphas for b in betas for pf in prices_fossils ],
+        [ (2, 4, pf) for pf in prices_fossils ],
         [ (0, 0, pf) for pf in prices_fossils ]
     )
     const sims_n = length(combined_params)
-
+    
     # Define a function that runs the simulation(s) for one seed
     function run_sim_for_seed(s::Int)
         for idx in 1:sims_n
             (a, b, pf) = combined_params[idx]
 
-            # Call your simulation (replace with your real function signature)
+            # Call simulation if no taxrate changes
             run_simulation(
                 T = 900,
                 savedata = true,
                 show_full_output = false,
                 showprogress = false,
                 seed = s,
-                save_firmdata = true,
+                save_firmdata = false,
                 sim_nr = idx,
                 changed_params_init = [(:sust_α, a), (:sust_β, b), (:p_f, pf)],
-                changed_taxrates = [(:τᶜ, 0.6)],
-                folder_name = "alpha=$a beta=$b p_f=$pf"
+                changed_taxrates = changed_taxrates,
+                folder_name = "alpha=$a beta=$b p_f=$pf t_c=$(changed_taxrates[1][2])"
             )
         end
-        return nothing  # or return a result if needed
+        return nothing  # or return a result if needed-
     end
 end
 
 # Define your list of seeds on the master process
-num_sim_ci = 20
+num_sim_ci = 96     # 12 * 8
 all_seeds = rand(1:10_000_000, num_sim_ci)
 println("Simulation started for seeds: ", all_seeds)
 
-# all_seeds = [7573706, 817298, 5015995, 7372452, 2700498, 9996918, 3495231, 3327595, 7666357, 7194651, 2110350,
-# 2314701, 6076284, 493882, 4846528, 3574769, 4625989, 8707792, 7074644, 3980917, 9294657, 3486417,
-# 7685624, 4288856, 5916162, 7355592, 3710378, 3801667, 6954119, 9529040, 6072593, 4085919, 3602909, 6415290, 1171631, 7390976, 3307371,
-# 5079054, 4553034, 821390, 2036270, 5147823, 9264518, 6485874, 9136572, 5373138, 2772102, 4883998]
+# all_seeds = [6609998, 7249887, 8779994, 5431938, 946441, 1581778, 3930509, 2755223, 3083691, 6533138, 6869048,
+# 6440610, 4576833, 1482523, 7757849, 9023027, 562751, 6460312, 4549838, 2664049, 4736061, 7419312, 6306156, 5678119, 4428008, 3151124, 7285472, 5867902,
+# 3521526, 5478513, 2806874, 504588, 6334862, 1036149, 8574745, 714547, 5851435, 9023586, 3667601, 2435656, 6018643, 5663829]
 
 # Distribute seeds using pmap (one seed at a time per worker)
+@everywhere changed_taxrates = [(:τᶜ, 0.0)]
 pmap(run_sim_for_seed, all_seeds)
-println("Simulation finished for seeds: ", all_seeds)
-println(all_seeds)
+println("Simulation finished for no shock: ", all_seeds)
+
+@everywhere changed_taxrates = [(:τᶜ, 0.2)]
+pmap(run_sim_for_seed, all_seeds)
+println("Simulation finished for low shock: ", all_seeds)
+
+@everywhere changed_taxrates = [(:τᶜ, 0.4)]
+pmap(run_sim_for_seed, all_seeds)
+println("Simulation finished for mid shock: ", all_seeds)
+
+@everywhere changed_taxrates = [(:τᶜ, 0.6)]
+pmap(run_sim_for_seed, all_seeds)
+println("Simulation finished for high shock: ", all_seeds)
+
+@everywhere changed_taxrates = [(:τᶜ, 0.8)]
+pmap(run_sim_for_seed, all_seeds)
+println("Simulation finished for very high shock: ", all_seeds)

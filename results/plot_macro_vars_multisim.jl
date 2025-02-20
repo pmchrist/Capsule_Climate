@@ -19,7 +19,6 @@ addprocs(n_proc_main)
     using FileIO
     using Printf
     using Random
-    using Plots
     using StatsPlots
 
     ###############################################################################
@@ -30,59 +29,40 @@ addprocs(n_proc_main)
     const HH_STEP_START       = 200
     const HH_STEP_END         = 900
 
-    SEEDS = []
-    # SEEDS = [7573706, 817298, 5015995, 7372452, 2700498, 9996918, 3495231, 3327595, 7666357, 7194651,
-    # 2110350, 2314701, 6076284, 493882, 4846528, 3574769, 4625989, 8707792, 7074644, 3980917, 9294657,
-    # 3486417, 7685624, 4288856, 5916162, 7355592, 3710378, 3801667, 6954119, 9529040, 6072593, 4085919,
-    # 3602909, 6415290, 1171631, 7390976, 3307371, 5079054, 4553034, 821390, 2036270, 5147823, 9264518,
-    # 6485874, 9136572, 5373138, 2772102, 4883998]
+    SEEDS = [6609998, 7249887, 8779994, 5431938, 946441, 1581778, 3930509, 2755223, 3083691, 6533138, 6869048, 6440610, 4576833, 1482523,
+    7757849, 9023027, 562751, 6460312, 4549838, 2664049, 4736061, 7419312, 6306156, 5678119, 4428008, 3151124, 7285472, 5867902, 3521526,
+    5478513, 2806874, 504588, 6334862, 1036149, 8574745, 714547, 5851435, 9023586, 3667601, 2435656, 6018643, 5663829]
     SEEDS = string.(SEEDS)
 
     const FOLDERS = [
-            "alpha=0 beta=0 p_f=0.35",
-            "alpha=0 beta=0 p_f=0.37",
-            "alpha=0 beta=0 p_f=0.39",
-            "alpha=0 beta=0 p_f=0.4",
-            "alpha=0 beta=0 p_f=0.41",
-            "alpha=0 beta=0 p_f=0.43",
-            "alpha=0 beta=0 p_f=0.45",
+            "alpha=0 beta=0 p_f=0.36 t_c=0.0",
+            "alpha=0 beta=0 p_f=0.39 t_c=0.0",
+            "alpha=0 beta=0 p_f=0.4 t_c=0.0",
+            "alpha=0 beta=0 p_f=0.41 t_c=0.0",
+            "alpha=0 beta=0 p_f=0.44 t_c=0.0",
 
-            "alpha=2 beta=12 p_f=0.35",
-            "alpha=2 beta=12 p_f=0.37",
-            "alpha=2 beta=12 p_f=0.39",
-            "alpha=2 beta=12 p_f=0.4",
-            "alpha=2 beta=12 p_f=0.41",
-            "alpha=2 beta=12 p_f=0.43",
-            "alpha=2 beta=12 p_f=0.45",
+            "alpha=2 beta=4 p_f=0.36 t_c=0.0",
+            "alpha=2 beta=4 p_f=0.39 t_c=0.0",
+            "alpha=2 beta=4 p_f=0.4 t_c=0.0",
+            "alpha=2 beta=4 p_f=0.41 t_c=0.0",
+            "alpha=2 beta=4 p_f=0.44 t_c=0.0",
 
-            "alpha=2 beta=2 p_f=0.35",
-            "alpha=2 beta=2 p_f=0.37",
-            "alpha=2 beta=2 p_f=0.39",
-            "alpha=2 beta=2 p_f=0.4",
-            "alpha=2 beta=2 p_f=0.41",
-            "alpha=2 beta=2 p_f=0.43",
-            "alpha=2 beta=2 p_f=0.45",
+            "alpha=5 beta=2 p_f=0.36 t_c=0.0",
+            "alpha=5 beta=2 p_f=0.39 t_c=0.0",
+            "alpha=5 beta=2 p_f=0.4 t_c=0.0",
+            "alpha=5 beta=2 p_f=0.41 t_c=0.0",
+            "alpha=5 beta=2 p_f=0.44 t_c=0.0",
 
-            "alpha=12 beta=12 p_f=0.35",
-            "alpha=12 beta=12 p_f=0.37",
-            "alpha=12 beta=12 p_f=0.39",
-            "alpha=12 beta=12 p_f=0.4",
-            "alpha=12 beta=12 p_f=0.41",
-            "alpha=12 beta=12 p_f=0.43",
-            "alpha=12 beta=12 p_f=0.45",
-
-            "alpha=12 beta=2 p_f=0.35",
-            "alpha=12 beta=2 p_f=0.37",
-            "alpha=12 beta=2 p_f=0.39",
-            "alpha=12 beta=2 p_f=0.4",
-            "alpha=12 beta=2 p_f=0.41",
-            "alpha=12 beta=2 p_f=0.43",
-            "alpha=12 beta=2 p_f=0.45"
+            "alpha=20 beta=2 p_f=0.36 t_c=0.0",
+            "alpha=20 beta=2 p_f=0.39 t_c=0.0",
+            "alpha=20 beta=2 p_f=0.4 t_c=0.0",
+            "alpha=20 beta=2 p_f=0.41 t_c=0.0",
+            "alpha=20 beta=2 p_f=0.44 t_c=0.0"
     ]
 
     # Subplot grid sizes
-    const GRAPH_SIZE_DIFF_PARAM = (Int(length(FOLDERS)/7), 7)        # by default we have 7 values for p_f
-    const GRAPH_SIZE_DIFF_SEED  = (Int(length(SEEDS)/10), 10)          # By default 48 values for seeds
+    const GRAPH_SIZE_DIFF_PARAM = (Int(length(FOLDERS)/5), 5)        # by default we have 7 values for p_f
+    const GRAPH_SIZE_DIFF_SEED  = (Int(length(SEEDS)/6), 6)          # By default 48 values for seeds
 
     # Parameters of the model to visualize
     MODEL_LEVEL_COLS = [
@@ -494,7 +474,7 @@ addprocs(n_proc_main)
         dataframes = Dict{String, DataFrame}()          # Change this shit to array\
 
         # Filter the overall list of folders to include only the target p_f experiments
-        p_f_Folders = filter(endswith(target_p_f), FOLDERS)
+        p_f_Folders = filter(f -> occursin(target_p_f, f), FOLDERS)
 
         for folder in p_f_Folders
             folder_path = joinpath(main_folder, folder)
@@ -510,6 +490,14 @@ addprocs(n_proc_main)
                     df = CSV.read(file_path, DataFrame)
                     if looking_for == "model.csv"
                         df."timestamp" = 1:nrow(df)
+                        df."carbon_emissions_cp_proportion" = df."carbon_emissions_cp" ./ df."carbon_emissions"
+                        df."carbon_emissions_ep_proportion" = df."carbon_emissions_ep" ./ df."carbon_emissions"
+                        df."carbon_emissions_kp_proportion" = df."carbon_emissions_kp" ./ df."carbon_emissions"
+                        df."carbon_emissions_per_GDP" = df."carbon_emissions" ./ df."GDP"
+                        replace!(df."carbon_emissions_cp_proportion", NaN => 0)
+                        replace!(df."carbon_emissions_ep_proportion", NaN => 0)
+                        replace!(df."carbon_emissions_kp_proportion", NaN => 0)
+                        replace!(df."carbon_emissions_per_GDP", NaN => 0)
                     end
                     df[:, :seed] .= seed
                     # filter based on HH_STEP_START and HH_STEP_END
@@ -541,11 +529,9 @@ addprocs(n_proc_main)
     function visualize_box_plot_end(column_name::String, dataframes::Dict, subfolder_name::String, target_p_f::String, last_steps::Int)
 
         # Filter the overall list of folders to include only the target p_f experiments
-        keys = filter(endswith(target_p_f), FOLDERS)
-
+        keys = filter(f -> occursin(target_p_f, f), FOLDERS)
         # For each Dataframe(seed) we need to get the target variable(column_name) and average opinion of last 20 steps
         # Plot them as boxplot t`o show the confidence interval for target variable, and just mean with the average value on x axis.
-
 
         target_vals = Vector{Vector{Float64}}()     # Contains a vector of values for each seed (Y-axis)
         sust_vals = Vector{String}()       # Containes a vector of values for each seed (X-axis)
@@ -573,12 +559,17 @@ addprocs(n_proc_main)
             push!(sust_vals, string(round(overall_sust_mean, digits=3), " ± ", round(overall_sust_var, digits=3), "\n$key"))  # String format
 
         end
-        plt = boxplot(sust_vals, target_vals, legend=false, size=(1500, 1000))
-        # Add title and labels (optional)
+
+        plt = boxplot(target_vals,
+                        legend=false,
+                        outliers=false,
+                        size=(1500, 1000),
+                        xticks=(1:length(sust_vals), sust_vals))
         title!("Boxplot of $column_name with $target_p_f for different experiments\n(CI based on $(length(SEEDS)) Seeds)")
         xlabel!("Average Sustainability Opinion (Mean ± Variance)")
         ylabel!("$column_name Distribution")
-
+        # Adjust padding
+        plot!(plt, bottom_margin=10Plots.mm, left_margin=10Plots.mm, top_margin=5Plots.mm)
         # Decide folder to save
         graph_path = joinpath(PATH, "graphs", subfolder_name)
         # Make sure it exists
@@ -596,22 +587,24 @@ end
 ###############################################################################
 
 
-vars_to_plot = ["em_index", "em_index_cp", "em_index_kp", "em_index_ep", "em_index_cp_good_avg", "em_index_cp_good_var", "GDP", "U", "bankrupt_cp", "carbon_emissions", "avg_pi_EE", "avg_pi_EF", "GINI_W", "GDP_hh", "green_capacity", "unsat_demand", "unspend_C"]
-p_f_to_plot = ["p_f=0.15", "p_f=0.17", "p_f=0.19", "p_f=0.2", "p_f=0.21", "p_f=0.23", "p_f=0.25"]
+#vars_to_plot = ["em_index", "em_index_cp", "em_index_kp", "em_index_ep", "em_index_cp_good_avg", "em_index_cp_good_var", "GDP", "U", "bankrupt_cp", "carbon_emissions", "avg_pi_EE", "avg_pi_EF", "GINI_W", "GDP_hh", "green_capacity", "unsat_demand", "unspend_C"]
+vars_to_plot = ["carbon_emissions_cp_proportion", "carbon_emissions_ep_proportion", "carbon_emissions_kp_proportion", "carbon_emissions", "avg_pi_EE", "avg_pi_EF", "green_capacity", "dirty_capacity", "carbon_emissions_cp_good_avg", "carbon_emissions_cp_good_var", "GDP", "carbon_emissions_per_GDP", "carbon_emissions_cp"]
+p_f_to_plot = ["p_f=0.36 ", "p_f=0.39 ", "p_f=0.4 ", "p_f=0.41 ", "p_f=0.44 "]      # There is a space at the end of each string
 @sync @distributed for p_f_val in p_f_to_plot
     dataframes_model_ci_ = get_df_seed_for_boxplot_model_end(PATH, "model.csv", p_f_val)
     for target_var in vars_to_plot
-        visualize_box_plot_end(target_var, dataframes_model_ci_, "model_boxplot", p_f_val, 20)
+        visualize_box_plot_end(target_var, dataframes_model_ci_, "model_boxplot", p_f_val, 50)
     end
 end
+println("Done Boxplots")
 
-# # Compare different parameters using seeds for CI, model-level
-# dataframes_model_ci_ = get_df_seed_for_ci_model(PATH, "model.csv")
-# @everywhere dataframes_model_ci = fetch(@spawnat 1 dataframes_model_ci_)
-# @sync @distributed for col_name in MODEL_LEVEL_COLS
-#     visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[1], GRAPH_SIZE_DIFF_PARAM[2], col_name, dataframes_model_ci, "model ci ", true)
-# end
-# println("Done Model Level Visualizations")
+# Compare different parameters using seeds for CI, model-level
+dataframes_model_ci_ = get_df_seed_for_ci_model(PATH, "model.csv")
+@everywhere dataframes_model_ci = fetch(@spawnat 1 dataframes_model_ci_)
+@sync @distributed for col_name in MODEL_LEVEL_COLS
+    visualize_2d_graph(GRAPH_SIZE_DIFF_PARAM[1], GRAPH_SIZE_DIFF_PARAM[2], col_name, dataframes_model_ci, "model ci ", true)
+end
+println("Done Model Level Visualizations")
 
 # # Compare different parameters using seeds for CI, producer-level
 # dataframes_cp_ci_ = get_df_seed_for_ci_producer(PATH, "cp_firm.csv", colnames_cp)

@@ -145,6 +145,10 @@ function get_cp_mdata(model::ABM)
     insertcols!(cp_df, :wage_level => Float64[])                # Wages
     insertcols!(cp_df, :wage_offered => Float64[])                # Wages
 
+    insertcols!(cp_df, :n_mach_desired_EI => Float64[])             # Machines Stuff
+    insertcols!(cp_df, :n_mach_ordered_EI => Float64[])
+    insertcols!(cp_df, :n_mach_desired_RS => Float64[])
+    insertcols!(cp_df, :n_mach_ordered_RS => Float64[])
 
     # ToDo: Definitely can be optimized
     # Populate the DataFrame by iterating through all_cp
@@ -180,6 +184,11 @@ function get_cp_mdata(model::ABM)
         row[:labor_desired_change] = model[cp_id].ΔLᵈ
         row[:wage_level] = model[cp_id].w̄[end]
         row[:wage_offered] = model[cp_id].wᴼ_max
+
+        row[:n_mach_desired_EI] = model[cp_id].n_mach_desired_EI
+        row[:n_mach_ordered_EI] = model[cp_id].n_mach_ordered_EI
+        row[:n_mach_desired_RS] = model[cp_id].n_mach_desired_RS
+        row[:n_mach_ordered_RS] = model[cp_id].n_mach_ordered_RS
 
         push!(cp_df, row)
     end
@@ -227,7 +236,7 @@ function plan_production_cp!(
     update_Qˢ_cp!(cp)
 
     # Update average productivity
-    update_π_cp!(cp)
+    update_π_cp!(cp, model)
 
     # Compute corresponding change in labor stock
     update_Lᵈ!(cp, globalparam.λ)
@@ -330,7 +339,10 @@ function check_funding_restrictions_cp!(
     # Determine how much additional debt can be made
     max_add_debt = max(globalparam.Λ * cp.D[end] * cp.p[end - 1] - cp.balance.debt, 0)
 
-    NW_no_prod = (cp.balance.NW + cp.Dᵉ * cp.p[end] * globalparam.Λᵉ + cp.curracc.rev_dep           # <- Additional coeff to avoid overborrowing in high bankruptcy economy
+    # NW_no_prod = (cp.balance.NW + max((cp.Dᵉ - cp.D[end]), 0) * cp.p[end] * globalparam.Λᵉ + cp.curracc.rev_dep           # <- Additional coeff to avoid overborrowing in high bankruptcy economy
+    #               - cp.debt_installments[1] - cp.balance.debt * globalparam.r)
+
+    NW_no_prod = (cp.balance.NW + cp.Dᵁ[end] * cp.p[end] * globalparam.Λᵉ + cp.curracc.rev_dep           # <- Additional coeff to avoid overborrowing in high bankruptcy economy (Possible sales which are not accounted in previous debt calculations)
                   - cp.debt_installments[1] - cp.balance.debt * globalparam.r)
 
     cp.possible_I = NW_no_prod + max_add_debt - TCLᵉ - TCE
@@ -567,6 +579,13 @@ function plan_expansion_cp!(
     brochure = get(model.kp_brochures, Symbol(cp.kp_ids[1]), nothing)
     if cp.possible_I < brochure[:price]
         cp.n_mach_desired_EI = 0
+        # if (cp.age > 10)
+        #     println("Really? No money?")
+        #     println(cp.possible_I)
+        #     println(brochure[:price])
+        # end
+        # println("No money for expansion: L, n_mach, possible I, brochure price, KPs Available")
+        # println(cp.L, ' ', cp.n_machines, ' ', cp.possible_I, ' ', brochure[:price], ' ', cp.kp_ids)
         # cp.EIᵈ = 0.0
     end
 
@@ -895,7 +914,15 @@ function replace_bankrupt_cp!(
         kp_choice_ps[i] = model[kp_choice_ids[i]].p[end]
 
         # Compute the number of machines each cp will buy
-        all_n_machines[i] = ceil(Int64, capital_coefficients[i] * avg_n_machines / globalparam.freq_per_machine)        # <- Changed to Ceil to avoid multiplication by zero
+        # If in this state the result is 0, the simulation fails to replace the CP, they stay as "dead weight"
+        # It happens because producer never gets at least one machine to kick start production and remains in limbo
+        # Moreover it does not understand that he can produce anything, as Qe depends on Qs but to enter the loop there has to be at least one machine
+        # We cannot change it, as then it will try to produce good on non existent machine (I assume)
+        bank_cp_start_mach_bonus = 10       # <- Initial workers got up to 80 basicly (2000/25). TODO: Make it global
+        all_n_machines[i] = floor(Int64, capital_coefficients[i] * avg_n_machines / globalparam.freq_per_machine) + bank_cp_start_mach_bonus        # <- (Changed to Ceil to avoid multiplication by zero, reverted), moreover added the more favorable initial NW
+        if (all_n_machines[i] == 0)
+            println("Requested Machines 0 for bankrupt cp") 
+        end
     end
 
     # Compute share of investments that can be paid from the investment fund
@@ -908,7 +935,7 @@ function replace_bankrupt_cp!(
     for (cp_i, cp_id) in enumerate(bankrupt_cp)
 
         # Sample what the size of the capital stock will be
-        D = macro_struct.cu[t] * all_n_machines[cp_i] * globalparam.freq_per_machine
+        D = macro_struct.cu[t] * all_n_machines[cp_i] * globalparam.freq_per_machine            # <- It is zero when all_n_machines is very low, and it crashes everything (no machines to kick start production)
         if (D == 0)
             println(macro_struct.cu[t])
             println(all_n_machines[cp_i])
@@ -923,12 +950,16 @@ function replace_bankrupt_cp!(
                     Vector{Machine}(),
                     model;
                     D=D,
+                    w=1.0,      # <- this thing distorts statistics in the reporting, we have to take into account only alive and well producers
                     f=0.0
                 )
         # Set initial price to be competitive (otherwise no hiring can happen)
         new_cp.p = fill(competitive_p + new_cp.μ[end], 3)
 
         # Order machines at kp of choice
+        if (size(nonbankrupt_kp) == 0)
+            println("??????")
+        end
         new_cp.kp_ids = sample(nonbankrupt_kp, Weights(weights_kp), n_kp_sample; replace=false)
         new_cp.n_mach_desired_EI = all_n_machines[cp_i]
 
@@ -1016,7 +1047,7 @@ function update_Qᵉ_cp!(
     ι::Float64
     )
 
-    if length(cp.Ξ) > 0
+    if length(cp.Ξ) > 0             # <- this thing stops the possibility of ordering new machines if no machines had been installed in the start of CP
         cp.Qᵉ = ω * cp.Qᵉ + (1 - ω) * ((1 + ι) * cp.Dᵉ)
     end
 end
@@ -1043,12 +1074,18 @@ end
 Updates weighted producivity of machine stock π_LP
 """
 function update_π_cp!(
-    cp::ConsumerGoodProducer
+    cp::ConsumerGoodProducer,
+    model::ABM
     )
+    # Not sure if necessary, it is around 1.0 always
+    exp_π_LP = length(cp.kp_ids) > 0 ? mean(cp_id -> model[cp_id].A_LP, cp.kp_ids) : 1.0
+    exp_π_EE = length(cp.kp_ids) > 0 ? mean(cp_id -> model[cp_id].A_EE, cp.kp_ids) : 1.0
+    exp_π_EF = length(cp.kp_ids) > 0 ? mean(cp_id -> model[cp_id].A_EF, cp.kp_ids) : 1.0
 
-    cp.π_LP = length(cp.Ξ) > 0 ? sum(machine -> (machine.freq * machine.A_LP) / cp.n_machines, cp.Ξ) : 1.0
-    cp.π_EE = length(cp.Ξ) > 0 ? sum(machine -> (machine.freq * machine.A_EE) / cp.n_machines, cp.Ξ) : 1.0
-    cp.π_EF = length(cp.Ξ) > 0 ? sum(machine -> (machine.freq * machine.A_EF) / cp.n_machines, cp.Ξ) : 1.0
+    # We need to set expected productivity of the machine to something proper
+    cp.π_LP = length(cp.Ξ) > 0 ? sum(machine -> (machine.freq * machine.A_LP) / cp.n_machines, cp.Ξ) : exp_π_LP
+    cp.π_EE = length(cp.Ξ) > 0 ? sum(machine -> (machine.freq * machine.A_EE) / cp.n_machines, cp.Ξ) : exp_π_EE
+    cp.π_EF = length(cp.Ξ) > 0 ? sum(machine -> (machine.freq * machine.A_EF) / cp.n_machines, cp.Ξ) : exp_π_EF
 end
 
 
@@ -1181,9 +1218,10 @@ function update_emissions_cp!(
         actual_em = length(cp.Ξ) > 0 ? mean(machine -> machine.A_EF, cp.Ξ) : 0.0
     end
 
-    cp.emissions = actual_em * cp.EU * ep.emissions_per_energy[t]
+    #cp.emissions = actual_em * cp.EU * ep.emissions_per_energy[t]
+    cp.emissions = actual_em * cp.EU
 
-    # If no production in last turn (overproduction or newcomer) we do not want to give any zero emiss benefits
+    # If no production in last turn (overproduction or newcomer) we do not want to give any zero emiss benefits (but we do anyways)
     if cp.Q[end] > 0
         shift_and_append!(cp.emissions_per_item, cp.emissions / cp.Q[end])
     else

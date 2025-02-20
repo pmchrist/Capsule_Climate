@@ -569,7 +569,8 @@ function update_emissions_kp!(
     t::Int64
     )
     #println(ep.emissions_per_energy)
-    kp.emissions = kp.B_EF * kp.EU * ep.emissions_per_energy[t]
+    #kp.emissions = kp.B_EF * kp.EU * ep.emissions_per_energy[t]
+    kp.emissions = kp.B_EF * kp.EU
 end
 
 
