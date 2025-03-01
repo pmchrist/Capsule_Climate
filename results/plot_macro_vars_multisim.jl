@@ -29,40 +29,43 @@ addprocs(n_proc_main)
     const HH_STEP_START       = 200
     const HH_STEP_END         = 900
 
-    SEEDS = [6609998, 7249887, 8779994, 5431938, 946441, 1581778, 3930509, 2755223, 3083691, 6533138, 6869048, 6440610, 4576833, 1482523,
-    7757849, 9023027, 562751, 6460312, 4549838, 2664049, 4736061, 7419312, 6306156, 5678119, 4428008, 3151124, 7285472, 5867902, 3521526,
-    5478513, 2806874, 504588, 6334862, 1036149, 8574745, 714547, 5851435, 9023586, 3667601, 2435656, 6018643, 5663829]
+    SEEDS = [3144844, 5350382, 3462521, 6246687, 34794, 3128292, 4501814, 8481853, 9819898, 456358, 6275293, 5762542, 4112631, 580187, 2392795, 6222835,
+    4830615, 5618569, 4884842, 9945681, 7994132, 3040165, 6808937, 6655892, 1324003, 900270, 3355661, 6180976, 2332478, 966511, 1816903, 7365202, 1046363,
+    8534176, 1838829, 4555616, 8354089, 1680089, 3769248, 555458, 8194912, 2205931, 7979678, 3582217, 938199, 3625848, 4441534, 3784838, 8026317, 1231958,
+    1049909, 2074801, 6091673, 983946, 5015862, 2066171, 3467704, 5504406, 2435910, 6672341, 5634803, 2725395, 1740706, 8560131, 4581419, 4667196, 9680289,
+    4083872, 8707007, 8590567, 7195279, 4297841, 3642648, 9475638, 7408326, 8648921, 8892920, 1365992, 5986182,
+    1184503, 937150, 4079685, 3558105, 3940712, 9456482, 7748705, 8846385, 3562407, 1548586, 5559196, 5573995, 9792463, 4512372, 1058415, 181441, 4470050]
     SEEDS = string.(SEEDS)
 
     const FOLDERS = [
-            "alpha=0 beta=0 p_f=0.36 t_c=0.0",
-            "alpha=0 beta=0 p_f=0.39 t_c=0.0",
-            "alpha=0 beta=0 p_f=0.4 t_c=0.0",
-            "alpha=0 beta=0 p_f=0.41 t_c=0.0",
-            "alpha=0 beta=0 p_f=0.44 t_c=0.0",
+            "alpha=0 beta=0 p_f=0.36 t_c=0.6",
+            "alpha=0 beta=0 p_f=0.39 t_c=0.6",
+            "alpha=0 beta=0 p_f=0.4 t_c=0.6",
+            "alpha=0 beta=0 p_f=0.41 t_c=0.6",
+            "alpha=0 beta=0 p_f=0.44 t_c=0.6",
 
-            "alpha=2 beta=4 p_f=0.36 t_c=0.0",
-            "alpha=2 beta=4 p_f=0.39 t_c=0.0",
-            "alpha=2 beta=4 p_f=0.4 t_c=0.0",
-            "alpha=2 beta=4 p_f=0.41 t_c=0.0",
-            "alpha=2 beta=4 p_f=0.44 t_c=0.0",
+            "alpha=2 beta=4 p_f=0.36 t_c=0.6",
+            "alpha=2 beta=4 p_f=0.39 t_c=0.6",
+            "alpha=2 beta=4 p_f=0.4 t_c=0.6",
+            "alpha=2 beta=4 p_f=0.41 t_c=0.6",
+            "alpha=2 beta=4 p_f=0.44 t_c=0.6",
 
-            "alpha=5 beta=2 p_f=0.36 t_c=0.0",
-            "alpha=5 beta=2 p_f=0.39 t_c=0.0",
-            "alpha=5 beta=2 p_f=0.4 t_c=0.0",
-            "alpha=5 beta=2 p_f=0.41 t_c=0.0",
-            "alpha=5 beta=2 p_f=0.44 t_c=0.0",
+            "alpha=6 beta=2 p_f=0.36 t_c=0.6",
+            "alpha=6 beta=2 p_f=0.39 t_c=0.6",
+            "alpha=6 beta=2 p_f=0.4 t_c=0.6",
+            "alpha=6 beta=2 p_f=0.41 t_c=0.6",
+            "alpha=6 beta=2 p_f=0.44 t_c=0.6",
 
-            "alpha=20 beta=2 p_f=0.36 t_c=0.0",
-            "alpha=20 beta=2 p_f=0.39 t_c=0.0",
-            "alpha=20 beta=2 p_f=0.4 t_c=0.0",
-            "alpha=20 beta=2 p_f=0.41 t_c=0.0",
-            "alpha=20 beta=2 p_f=0.44 t_c=0.0"
+            "alpha=20 beta=2 p_f=0.36 t_c=0.6",
+            "alpha=20 beta=2 p_f=0.39 t_c=0.6",
+            "alpha=20 beta=2 p_f=0.4 t_c=0.6",
+            "alpha=20 beta=2 p_f=0.41 t_c=0.6",
+            "alpha=20 beta=2 p_f=0.44 t_c=0.6"
     ]
 
     # Subplot grid sizes
     const GRAPH_SIZE_DIFF_PARAM = (Int(length(FOLDERS)/5), 5)        # by default we have 7 values for p_f
-    const GRAPH_SIZE_DIFF_SEED  = (Int(length(SEEDS)/6), 6)          # By default 48 values for seeds
+    const GRAPH_SIZE_DIFF_SEED  = (Int(length(SEEDS)/12), 12)          # By default 48 values for seeds
 
     # Parameters of the model to visualize
     MODEL_LEVEL_COLS = [

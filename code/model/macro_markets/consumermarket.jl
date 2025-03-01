@@ -83,7 +83,7 @@ function cpmarket_matching_cp!(
         counter += 1
         total_inventory = sum(cmdata.all_N)
         # Once there is negligible difference in inventories between rounds we can continue
-        if (abs(total_inventory - prev_inventory) / max(total_inventory, prev_inventory)) < 1e-1
+        if (abs(total_inventory - prev_inventory) / max(total_inventory, prev_inventory)) < 1e-2
             break
         end
         # Or if there is no inventory

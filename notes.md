@@ -60,11 +60,12 @@ Phase 2 - Creating Sustainable Employee (Integrate Sustainabiltiy Opinion into J
     - Perform tests with restrictions on the consumermarket process, people just consume everything     ! Done - there is an effect, but a very small one, more than everything with very high restrictions GDP drops
     - Fix the boxplot, it show strange stuff                             ! Done, I was passing labels wrong and it visualized multiple things at once.
     - Change em_index_cp_good to be just avg and mean.                   ! Done
-
-    - Verify the emissions calculation for CP and KP, in the beginning I have added EP emissions in the calculation so that we can compare emissions per good in-between green and brown runs. However this seems to change dynamics. We have to either revert or to re-calibrate.          ! Kinda Done
-        - I did an exhaustive run to compare both. Results are in general the same, just that CP emissions are scaled, so seems like no problem and we can keep comparative values for good emissions for different energy regimes. However, this is probably conceptually wrong. Should ask Isaak to be sure - like what is his interpretation why the emissions of machines do not go down in greener economy compared to brown?
-    - Perform final exhaustive run, find out why overall emissions go lower. Or do they?        ! Kinda Done, it seems that opinion influences well the emissions, however extreme opinions stop economic processes and slows down overall progress. Moreover we can see the improvement in pi_EE and pi_EF of machines used proportionate to the opinion. It is small but still present. It exhibits the highest effect on the highest opinion, but highest opinion slows down the economy which grinds down the technological progress. Dig deeper after the meeting with the professor.
-    - Do final run with all the changes reverted (CP and KP emissions calculation and 3 rounds for the consumermarket) and more repetitions (like a 100) for multiple shock levels.
+    - Verify the emissions calculation for CP and KP, in the beginning I have added EP emissions in the calculation so that we can compare emissions per good in-between green and brown runs. However this seems to change dynamics. We have to either revert or to re-calibrate.          ! Done
+        - I did an exhaustive run to compare both. Results are in general the same, just that CP emissions are scaled, so seems like no problem and we can keep comparative values for good emissions for different energy regimes. However, this is probably conceptually wrong. Should ask Isaak to be sure (first check in the paper) - like what is his interpretation why the emissions of machines do not go down in greener economy compared to brown?
+    - Perform final exhaustive run, find out why overall emissions go lower. Or do they?        ! Done
+        - It seems that opinion clearly influences the emissions, however extreme opinions stop economic processes and slows down overall progress. Moreover we can see the improvement in pi_EE and pi_EF of machines used proportionate to the opinion (most of the time it is small but still present). It exhibits the highest effect on the highest opinion, but highest opinion slows down the economy which grinds down the technological progress and as a result we lose the emissions/gdp unit. Dig deeper after the meeting with the professor.
+    - Do final run with all the changes reverted (CP and KP emissions calculation and 3 rounds for the consumermarket) and more repetitions (like a 100) for multiple shock levels.                                                                                     ! Done
+        - Results are good. I have reverted all the changes to follow the original paper by Dosi. The thing is, that there are some quirks of green economy which were never documented in any of the research (like machines are not improving much). Overall, emissions go lower, proportionate with the opinion. If opinion is extreme it slows down the economy, all in line with previous experiments. Few notes on the parameters: Machines qualities are calculated as average, but not all machines are used neither not all the machines have same productivity to have this metric to work properly we need to make it weighted average. Same goes to the average emissions per good, not it is just average of all producers, however not all producers produce the same amount of good. Main metric for now is Emissions per GDP also Overall emissions of CPs both of them go down with opinion.
 
 9) Add dynamic opinions. Make mapping for opinions and how they change function, the mapping can be based on all proposed metrics. But first we should try wealth, unemployment can be a sub case of low wealth, so it should cover the research.
 	- Try Cubic polynomial approximation - hysterisis for opinion change dynamics.
@@ -72,10 +73,9 @@ Phase 2 - Creating Sustainable Employee (Integrate Sustainabiltiy Opinion into J
 	- Other ideas can be used for initialization of the model (political vs scientific)
 
 10) Find out why brown energy is always persistent in the economy and why it goes to 0 and bounces back in the green economy. 
-11) Perform test on taxation of CP with high Emissions, progressive tax should work and introduce feeding loops.
-12) Some minor stuff with variables:
+11) Some minor stuff with variables:
     - Market share is called profits in the output                                            ! Done, has been Renamed
-    - Some of the variables are not saved properly, for example wage of CP or Good_Emiss, it tilts the results. Possible solution is to just keep stats of producers that are odler than 5, as they are stable.
+    - Some of the variables are not saved properly, for example wage of CP or Good_Emiss, it tilts the results. Also newcomer CPs have 0 emissions, which skews the aggregated average. Possible solution is to just keep stats of producers that are odler than 5, as they are stable.
 
 
 
