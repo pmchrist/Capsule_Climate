@@ -93,7 +93,7 @@ using Distributed
 using Random
 
 # Launch workers
-n_proc_main = 10
+n_proc_main = 8
 addprocs(n_proc_main)
 
 # Make sure all needed packages and code are loaded on every worker
@@ -139,34 +139,34 @@ addprocs(n_proc_main)
     end
 end
 
-# # Define your list of seeds on the master process
-# num_sim_ci = 96     # 12 * 8
-# all_seeds = rand(1:10_000_000, num_sim_ci)
-# println("Simulation started for seeds: ", all_seeds)
+# Define your list of seeds on the master process
+num_sim_ci = 24     # 12 * 8
+all_seeds = rand(1:10_000_000, num_sim_ci)
+println("Simulation started for seeds: ", all_seeds)
 
-all_seeds = [3144844, 5350382, 3462521, 6246687, 34794, 3128292, 4501814, 8481853, 9819898, 456358, 6275293, 5762542, 4112631, 580187,
-2392795, 6222835, 4830615, 5618569, 4884842, 9945681, 7994132, 3040165, 6808937, 6655892, 1324003, 900270, 3355661, 6180976, 2332478, 966511,
-1816903, 7365202, 1046363, 8534176, 1838829, 4555616, 8354089, 1680089, 3769248, 555458, 8194912, 2205931, 7979678, 3582217, 938199, 3625848,
-4441534, 3784838, 8026317, 1231958, 1049909, 2074801, 6091673, 983946, 5015862, 2066171, 3467704, 5504406, 2435910, 6672341, 5634803, 2725395,
-1740706, 8560131, 4581419, 4667196, 9680289, 4083872, 8707007, 8590567, 7195279, 4297841, 3642648, 9475638, 7408326, 8648921, 8892920, 1365992, 5986182, 1184503,
-937150, 4079685, 3558105, 3940712, 9456482, 7748705, 8846385, 3562407, 1548586, 5559196, 5573995, 9792463, 4512372, 1058415, 181441, 4470050]
+# all_seeds = [3144844, 5350382, 3462521, 6246687, 34794, 3128292, 4501814, 8481853, 9819898, 456358, 6275293, 5762542, 4112631, 580187,
+# 2392795, 6222835, 4830615, 5618569, 4884842, 9945681, 7994132, 3040165, 6808937, 6655892, 1324003, 900270, 3355661, 6180976, 2332478, 966511,
+# 1816903, 7365202, 1046363, 8534176, 1838829, 4555616, 8354089, 1680089, 3769248, 555458, 8194912, 2205931, 7979678, 3582217, 938199, 3625848,
+# 4441534, 3784838, 8026317, 1231958, 1049909, 2074801, 6091673, 983946, 5015862, 2066171, 3467704, 5504406, 2435910, 6672341, 5634803, 2725395,
+# 1740706, 8560131, 4581419, 4667196, 9680289, 4083872, 8707007, 8590567, 7195279, 4297841, 3642648, 9475638, 7408326, 8648921, 8892920, 1365992, 5986182, 1184503,
+# 937150, 4079685, 3558105, 3940712, 9456482, 7748705, 8846385, 3562407, 1548586, 5559196, 5573995, 9792463, 4512372, 1058415, 181441, 4470050]
 
-# # Distribute seeds using pmap (one seed at a time per worker)
-# @everywhere changed_taxrates = [(:τᶜ, 0.0)]
-# pmap(run_sim_for_seed, all_seeds)
-# println("Simulation finished for no shock: ", all_seeds)
-
-@everywhere changed_taxrates = [(:τᶜ, 0.2)]
+# Distribute seeds using pmap (one seed at a time per worker)
+@everywhere changed_taxrates = [(:τᶜ, 0.0)]
 pmap(run_sim_for_seed, all_seeds)
-println("Simulation finished for low shock: ", all_seeds)
+println("Simulation finished for no shock: ", all_seeds)
+
+# @everywhere changed_taxrates = [(:τᶜ, 0.2)]
+# pmap(run_sim_for_seed, all_seeds)
+# println("Simulation finished for low shock: ", all_seeds)
 
 # @everywhere changed_taxrates = [(:τᶜ, 0.4)]
 # pmap(run_sim_for_seed, all_seeds)
 # println("Simulation finished for mid shock: ", all_seeds)
 
-@everywhere changed_taxrates = [(:τᶜ, 0.6)]
-pmap(run_sim_for_seed, all_seeds)
-println("Simulation finished for high shock: ", all_seeds)
+# @everywhere changed_taxrates = [(:τᶜ, 0.6)]
+# pmap(run_sim_for_seed, all_seeds)
+# println("Simulation finished for high shock: ", all_seeds)
 
 # @everywhere changed_taxrates = [(:τᶜ, 0.8)]
 # pmap(run_sim_for_seed, all_seeds)

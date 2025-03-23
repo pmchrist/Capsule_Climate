@@ -18,6 +18,7 @@ Parameters and parameter values all follow from table 9 in Lamperti et al. (2018
     carbon_emissions_ep::V = zeros(Float64, T)   # carbon emissions of ep
     carbon_emissions_cp_good_avg::V = zeros(Float64, T)   # carbon emissions per consumer good produced
     carbon_emissions_cp_good_var::V = zeros(Float64, T)   # carbon emissions per consumer good produced
+    carbon_emissions_cp_good_avg_w::V = zeros(Float64, T)   # carbon emissions per consumer good produced weighted by production
 
     em_index::V = fill(100., T)
     em_index_cp::V = fill(100., T)
@@ -46,10 +47,12 @@ function collect_emissions_cl!(
     climate.carbon_emissions[t] = (climate.carbon_emissions_cp[t] + 
                                    climate.carbon_emissions_kp[t] + 
                                    climate.carbon_emissions_ep[t])
-    emissions_cp_good_vals = map(cp_id -> model[cp_id].emissions_per_item[end], all_cp)
+    
+    emissions_cp_good_vals = [model[cp_id].emissions_per_item[end] for cp_id in all_cp]
+    Q_CPs = [model[cp_id].Q[end] for cp_id in all_cp]
     climate.carbon_emissions_cp_good_avg[t] = mean(emissions_cp_good_vals)
     climate.carbon_emissions_cp_good_var[t] = var(emissions_cp_good_vals)
-    
+    climate.carbon_emissions_cp_good_avg_w[t] = sum(emissions_cp_good_vals .* Q_CPs) ./ sum(Q_CPs)
 
     # Start saving emission indeces from warmup time
     # if t > t_warmup

@@ -379,7 +379,7 @@ function initialize_datacategories(
 
         # Define data of climate/emissions to save !!! SAVED DATA
         model.climatedata_tosave = [
-            :em_index, :em_index_cp, :em_index_kp, :em_index_ep, :carbon_emissions_cp_good_avg, :carbon_emissions_cp_good_var,
+            :em_index, :em_index_cp, :em_index_kp, :em_index_ep, :carbon_emissions_cp_good_avg, :carbon_emissions_cp_good_var, :carbon_emissions_cp_good_avg_w,
             :energy_percentage, :carbon_emissions, :carbon_emissions_cp, :carbon_emissions_kp, :carbon_emissions_ep
         ]
 

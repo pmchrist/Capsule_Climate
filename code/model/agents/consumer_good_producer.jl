@@ -763,7 +763,7 @@ function produce_goods_cp!(
     # If the cp does not need to use its complete capital stock, only use most productive machines
     n_machines_req = ceil(Int64, cp.Qˢ / globalparam.freq_per_machine)
     if n_machines_req < length(cp.Ξ)
-        # Compute number of machines needed (machines already ordered on productivity, least to most productive
+        # Compute number of machines needed (machines already ordered by productivity, least to most productive)
         req_machines = cp.Ξ[end-n_machines_req:end]
         actual_π_LP = mean(machine -> machine.A_LP, req_machines)
         actual_π_EE = mean(machine -> machine.A_EE, req_machines)

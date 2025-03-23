@@ -13,10 +13,10 @@ using Distributed
 # Opinion = (.4, .2) Uncertainty = (1.2, 1.6) - Modern Society with slightly Positive Bias and small clustering
 # When we have Uncertainty reverse proportionate to the extremes: Opinion = (.8, .8) Similar to earlier cases
 # When we have Uncertainty reverse proportionate to the extremes: Opinion = (.2, .2) We get uniform opinions, if we update uncertainty on each step we get extremes only
-OPINION_ALPHA = .2
-OPINION_BETA = .2
+OPINION_ALPHA = .5
+OPINION_BETA = .5
 UNCERTAINTY_ALPHA = 1.2
-UNCERTAINRY_BETA = 1.2
+UNCERTAINRY_BETA = 1.6
 
 # Agent Properties
 mutable struct hh <: AbstractAgent
@@ -39,8 +39,8 @@ function init_opinion_model(n_hh = 2500, opinion_conversion_rate = 0.1, opinion_
     for i in 1:n_hh
         o1 = o2 = rand(Beta(OPINION_ALPHA, OPINION_BETA))
         u = rand(Beta(UNCERTAINTY_ALPHA, UNCERTAINRY_BETA))
-        agent = hh(nextid(model), o1, o2, (0.5-abs(0.5-o1))*2)  # Uncertainty is proportionate to how extreme is opinion
-        #agent = hh(nextid(model), o1, o2, u)                   # Uncertainty is random
+        #agent = hh(nextid(model), o1, o2, (0.5-abs(0.5-o1))*2)  # Uncertainty is proportionate to how extreme is opinion
+        agent = hh(nextid(model), o1, o2, u)                   # Uncertainty is random
         add_agent!(agent, model)
     end
     return model
@@ -98,29 +98,29 @@ function deffuant_model_step!(model)
         id_1 = ids[a_id]
         id_2 = ids[a_id+1]
 
-        # # Shock the individual opinion (personal shock, 1% of 1% probability per each person)
-        # if (rand() < 1e-4)
-        #     model[id_1].old_opinion += 0.2
-        #     model[id_2].new_opinion += 0.2
-        #     if (model[id_1].old_opinion > 1) model[id_1].old_opinion = 1 end
-        #     if (model[id_1].new_opinion > 1) model[id_1].new_opinion = 1 end
-        # end
-        # if (rand() < 1e-4)
-        #     model[id_2].old_opinion += 0.2
-        #     model[id_2].new_opinion += 0.2
-        #     if (model[id_2].old_opinion > 1) model[id_2].old_opinion = 1 end
-        #     if (model[id_2].new_opinion > 1) model[id_2].new_opinion = 1 end
-        # end
+        # Shock the individual opinion (personal shock, 1% of 1% probability per each person)
+        if (rand() < 1e-3)
+            model[id_1].old_opinion += 0.2
+            model[id_2].new_opinion += 0.2
+            if (model[id_1].old_opinion > 1) model[id_1].old_opinion = 1 end
+            if (model[id_1].new_opinion > 1) model[id_1].new_opinion = 1 end
+        end
+        if (rand() < 1e-3)
+            model[id_2].old_opinion += 0.2
+            model[id_2].new_opinion += 0.2
+            if (model[id_2].old_opinion > 1) model[id_2].old_opinion = 1 end
+            if (model[id_2].new_opinion > 1) model[id_2].new_opinion = 1 end
+        end
 
-        # # Shock the individual uncertainty (personal shock, 1% probability per each person)
-        # if (rand() < 1e-4)
-        #     model[id_1].opinion_uncertainty += 0.2
-        #     if (model[id_1].opinion_uncertainty > 1) model[id_1].opinion_uncertainty = 1 end
-        # end
-        # if (rand() < 1e-4)
-        #     model[id_2].opinion_uncertainty += 0.2
-        #     if (model[id_2].opinion_uncertainty > 1) model[id_2].opinion_uncertainty = 1 end
-        # end
+        # Shock the individual uncertainty (personal shock, 1% probability per each person)
+        if (rand() < 1e-3)
+            model[id_1].opinion_uncertainty += 0.2
+            if (model[id_1].opinion_uncertainty > 1) model[id_1].opinion_uncertainty = 1 end
+        end
+        if (rand() < 1e-3)
+            model[id_2].opinion_uncertainty += 0.2
+            if (model[id_2].opinion_uncertainty > 1) model[id_2].opinion_uncertainty = 1 end
+        end
 
 
         # calculate the wealth bonus for each id and pass it into old func

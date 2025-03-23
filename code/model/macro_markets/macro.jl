@@ -84,14 +84,23 @@
     avg_pi_LP::Vector{Float64} = zeros(Float64, T)          # average labor productivity cp
     avg_pi_EE::Vector{Float64} = zeros(Float64, T)          # average productivity per energy unit cp
     avg_pi_EF::Vector{Float64} = zeros(Float64, T)          # average energy friendliness 
+    avg_w_pi_LP::Vector{Float64} = zeros(Float64, T)          # weighted by production(sales) average labor productivity cp
+    avg_w_pi_EE::Vector{Float64} = zeros(Float64, T)          # weighted by production(sales) average productivity per energy unit cp
+    avg_w_pi_EF::Vector{Float64} = zeros(Float64, T)          # weighted by production(sales) average energy friendliness 
 
     avg_A_LP::Vector{Float64} = zeros(Float64, T)           # average A_LP at kp
     avg_A_EE::Vector{Float64} = zeros(Float64, T)           # average A_EE at kp
     avg_A_EF::Vector{Float64} = zeros(Float64, T)           # average A_EF at kp
+    avg_w_A_LP::Vector{Float64} = zeros(Float64, T)           # weighted by production(sales) average A_LP at kp
+    avg_w_A_EE::Vector{Float64} = zeros(Float64, T)           # weighted by production(sales) average A_EE at kp
+    avg_w_A_EF::Vector{Float64} = zeros(Float64, T)           # weighted by production(sales) average A_EF at kp
 
     avg_B_LP::Vector{Float64} = zeros(Float64, T)           # average B_LP at kp
     avg_B_EE::Vector{Float64} = zeros(Float64, T)           # average B_EE at kp
     avg_B_EF::Vector{Float64} = zeros(Float64, T)           # average B_EF at kp
+    avg_w_B_LP::Vector{Float64} = zeros(Float64, T)           # weighted by production(sales) average B_LP at kp
+    avg_w_B_EE::Vector{Float64} = zeros(Float64, T)           # weighted by production(sales) average B_EE at kp
+    avg_w_B_EF::Vector{Float64} = zeros(Float64, T)           # weighted by production(sales) average B_EF at kp
 
     # Production
     total_Q_cp::Vector{Float64} = zeros(Float64, T)         # total units produced by cp
@@ -203,21 +212,47 @@ function update_macro_timeseries(
     model.macroeconomy.n_mach_RS_avg[t] = mean(cp_id -> model[cp_id].n_mach_ordered_RS, all_cp)
 
     # Productivity
-    model.macroeconomy.avg_pi_LP[t] = mean(cp_id -> model[cp_id].π_LP, all_cp)
-    model.macroeconomy.avg_pi_EE[t] = mean(cp_id -> model[cp_id].π_EE, all_cp)
-    model.macroeconomy.avg_pi_EF[t] = mean(cp_id -> model[cp_id].π_EF, all_cp)
-
-    model.macroeconomy.avg_A_LP[t] = mean(kp_id -> model[kp_id].A_LP[end], all_kp)
-    model.macroeconomy.avg_A_EE[t] = mean(kp_id -> model[kp_id].A_EE[end], all_kp)
-    model.macroeconomy.avg_A_EF[t] = mean(kp_id -> model[kp_id].A_EF[end], all_kp)
-
-    model.macroeconomy.avg_B_LP[t] = mean(kp_id -> model[kp_id].B_LP[end], all_kp)
-    model.macroeconomy.avg_B_EE[t] = mean(kp_id -> model[kp_id].B_EE[end], all_kp)
-    model.macroeconomy.avg_B_EF[t] = mean(kp_id -> model[kp_id].B_EF[end], all_kp)
-
     # Production quantity
-    model.macroeconomy.total_Q_cp[t] = sum(cp_id -> model[cp_id].Q[end], all_cp)
-    model.macroeconomy.total_Q_kp[t] = sum(kp_id -> model[kp_id].Q[end], all_kp)
+    Q_CPs = [model[cp_id].Q[end] for cp_id in all_cp]
+    Q_KPs = [model[kp_id].Q[end] for kp_id in all_kp]
+    sum_Q_CPs = sum(Q_CPs)
+    sum_Q_KPs = sum(Q_KPs)
+    model.macroeconomy.total_Q_cp[t] = sum_Q_CPs
+    model.macroeconomy.total_Q_kp[t] = sum_Q_KPs
+
+    # These are productivities at CPs
+    pi_LP = [model[cp_id].π_LP for cp_id in all_cp]
+    pi_EE = [model[cp_id].π_EE for cp_id in all_cp]
+    pi_EF = [model[cp_id].π_EF for cp_id in all_cp]
+    model.macroeconomy.avg_pi_LP[t] = mean(pi_LP)
+    model.macroeconomy.avg_pi_EE[t] = mean(pi_EE)
+    model.macroeconomy.avg_pi_EF[t] = mean(pi_EF)
+    model.macroeconomy.avg_w_pi_LP[t] = sum(pi_LP .* Q_CPs) ./ sum_Q_CPs
+    model.macroeconomy.avg_w_pi_EE[t] = sum(pi_EE .* Q_CPs) ./ sum_Q_CPs
+    model.macroeconomy.avg_w_pi_EF[t] = sum(pi_EF .* Q_CPs) ./ sum_Q_CPs
+
+    # These are productivities of machines available to buy from KPs for CPs
+    A_LP = [model[kp_id].A_LP[end] for kp_id in all_kp]
+    A_EE = [model[kp_id].A_EE[end] for kp_id in all_kp]
+    A_EF = [model[kp_id].A_EF[end] for kp_id in all_kp]
+    model.macroeconomy.avg_A_LP[t] = mean(A_LP)
+    model.macroeconomy.avg_A_EE[t] = mean(A_EE)
+    model.macroeconomy.avg_A_EF[t] = mean(A_EF)
+    model.macroeconomy.avg_w_A_LP[t] = sum(A_LP .* Q_KPs) ./ sum_Q_KPs
+    model.macroeconomy.avg_w_A_EE[t] = sum(A_EE .* Q_KPs) ./ sum_Q_KPs
+    model.macroeconomy.avg_w_A_EF[t] = sum(A_EF .* Q_KPs) ./ sum_Q_KPs
+
+    # These are productivities of machines at KPs
+    B_LP = [model[kp_id].B_LP[end] for kp_id in all_kp]
+    B_EE = [model[kp_id].B_EE[end] for kp_id in all_kp]
+    B_EF = [model[kp_id].B_EF[end] for kp_id in all_kp]
+    model.macroeconomy.avg_B_LP[t] = mean(B_LP)
+    model.macroeconomy.avg_B_EE[t] = mean(B_EE)
+    model.macroeconomy.avg_B_EF[t] = mean(B_EF)
+    model.macroeconomy.avg_B_LP[t] = sum(B_LP .* Q_KPs) ./ sum_Q_KPs
+    model.macroeconomy.avg_B_EE[t] = sum(B_EE .* Q_KPs) ./ sum_Q_KPs
+    model.macroeconomy.avg_B_EF[t] = sum(B_EF .* Q_KPs) ./ sum_Q_KPs
+
     if t > 3
         total_Q_t = model.macroeconomy.total_Q_cp[t] + model.macroeconomy.total_Q_kp[t]
         total_Q_t3 = model.macroeconomy.total_Q_cp[t-3] + model.macroeconomy.total_Q_kp[t-3]

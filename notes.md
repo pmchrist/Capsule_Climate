@@ -27,12 +27,12 @@ Fix the emission calcualtions                                       ! Done
 
 
 Phase 2 - Creating Sustainable Employee (Integrate Sustainabiltiy Opinion into Job Market)
-...
+    This one is not happening. Because, it will add too many new research questions and broads scope too much!
 
 
 
 # Current ToDo:
-0) All suppliers replacement and sampling in HH is done based solely on price           ! Fixed, now takes into account emissions too
+0) All suppliers replacement and sampling in HH is done based solely on price           ! Done
 1) Make sure that everything is calibrated to the initial original parameters           ! Done
 2) Change visualization of Bunkruptcies from age to the global counter from model       ! Done
 3) Make main HH variables duplicated in the model for easier access                     ! Done
@@ -67,15 +67,20 @@ Phase 2 - Creating Sustainable Employee (Integrate Sustainabiltiy Opinion into J
     - Do final run with all the changes reverted (CP and KP emissions calculation and 3 rounds for the consumermarket) and more repetitions (like a 100) for multiple shock levels.                                                                                     ! Done
         - Results are good. I have reverted all the changes to follow the original paper by Dosi. The thing is, that there are some quirks of green economy which were never documented in any of the research (like machines are not improving much). Overall, emissions go lower, proportionate with the opinion. If opinion is extreme it slows down the economy, all in line with previous experiments. Few notes on the parameters: Machines qualities are calculated as average, but not all machines are used neither not all the machines have same productivity to have this metric to work properly we need to make it weighted average. Same goes to the average emissions per good, not it is just average of all producers, however not all producers produce the same amount of good. Main metric for now is Emissions per GDP also Overall emissions of CPs both of them go down with opinion.
 
-9) Add dynamic opinions. Make mapping for opinions and how they change function, the mapping can be based on all proposed metrics. But first we should try wealth, unemployment can be a sub case of low wealth, so it should cover the research.
-	- Try Cubic polynomial approximation - hysterisis for opinion change dynamics.
-	- Try sigmoid functions to be maping of different regions, for examples in EU discrepancy in opinions is lower than in US.
-	- Other ideas can be used for initialization of the model (political vs scientific)
-
-10) Find out why brown energy is always persistent in the economy and why it goes to 0 and bounces back in the green economy. 
-11) Some minor stuff with variables:
+9) Some minor stuff with variables and visualizations:
     - Market share is called profits in the output                                            ! Done, has been Renamed
-    - Some of the variables are not saved properly, for example wage of CP or Good_Emiss, it tilts the results. Also newcomer CPs have 0 emissions, which skews the aggregated average. Possible solution is to just keep stats of producers that are odler than 5, as they are stable.
+    - Some of the variables are not saved properly, for example wage of CP or Good_Emiss, it tilts the results. Also newcomer CPs have 0 emissions, which skews the aggregated average. Possible solution is to just keep stats of producers that are odler than 5, as they are stable. - Proposed solution, all the CP related variables should be weighted by production at turn, as some of them are much more influential                 ! Done, Good_Emiss are now weighted by the Q (production), other variable changed is labor produc and machine efficiency. Did not change wage. Moreover, carbon_emissions_cp is not avg it is just a sum, so left it as it is. The results are negligible, nearly non existent 1e-4 influence.
+    - Add a heatmap visualization for each price level, instead of boxplot show the AVG and STD of all together.        ! In progress. Needs aggregate values throuout all the folders, therefore will be a meta visualization (done by hand after gathering all results, for now)
+
+10) Add dynamic opinions. Make mapping for opinions and how they change function, the mapping can be based on all proposed metrics. We first should try wealth(unemployment can be a sub case of low wealth, so it should cover the research)
+	- Try Cubic polynomial approximation - hysterisis for opinion change dynamics.                                                      ! Kinda Done. Checked this thing, does not seem to add anything of value, should verify further though. From speaking with professor it seems that we do not need a square term.
+	- Try sigmoid functions to be maping of different regions, for examples in EU discrepancy in opinions is lower than in US.          ! In progress. The proposed idea to use Wealth with the sigmoid mapping was accepted. Only need to integrate it and run experiments at scale.
+	- Other ideas can be used for initialization of the model (political vs scientific)                                                 ! In progress. We can use different initialization values for the difference in Regions and etc. for tests. Should verify with CIs the proposed params in test_opinion.
+
+11) Do experiments without the stabilized economy, when everything crashed with original params.
+
+11) Find out why brown energy is always persistent in the economy and why it goes to 0 and bounces back in the green economy. 
+
 
 
 
@@ -83,10 +88,10 @@ Phase 2 - Creating Sustainable Employee (Integrate Sustainabiltiy Opinion into J
 0) Improve Graphs
 1) Migrate to the newer version of Agents.jl    <- Probably not gonna happen, too many things to change
 2) Modify Isaak's Diagram to be in line with my Thesis Research
-3) These model parameter updaters are not consistent and logic of initialize_global_params() and changing_params for GlobalParam struct is ugly and works kinda by "magic"
-4) There are some resizing of arrays, if we keep them fixed it might make code faster
-5) Move all visualizations to Julia for speed improvements
-6) Data analysis pipeline is incosistent! Some stuff is dumped per each time step, some are aggregated inside of the model and saved into the model output. For example cp/kp production or amount of owned machines is mostly aggregated and saved into the model output as macroeconomy, which it isnt. Meanwhile for hh Income and Wealth is aggregated on the model level, but in parallel everything is dumped too. That is why we have two solutions for opinion, in one we aggregate it through the dumped files and through other we aggregate it in the model. It is definitely better to divide tasks and first run model and dump everything and analyze it later. For now most of the stuff is cramped in the model output. Better to reorganize it for consistency.
+3) These model parameter updaters are not consistent and logic of initialize_global_params() and changing_params for GlobalParam struct is ugly and works kinda by "magic"          ! Abandonde. It is ok.
+4) There are some resizing of arrays, if we keep them fixed it might make code faster       ! Abandoned. Does not worth the effort
+5) Move all visualizations to Julia for speed improvements                                  ! Done
+6) Data analysis pipeline is incosistent! Some stuff is dumped per each time step, some are aggregated inside of the model and saved into the model output. For example cp/kp production or amount of owned machines is mostly aggregated and saved into the model output as macroeconomy, which it isnt. Meanwhile for hh Income and Wealth is aggregated on the model level, but in parallel everything is dumped too. That is why we have two solutions for opinion, in one we aggregate it through the dumped files and through other we aggregate it in the model. It is definitely better to divide tasks and first run model and dump everything and analyze it later. For now most of the stuff is cramped in the model output. Better to reorganize it for consistency.                                    ! Abandoned. The granular level information is only useful for debuging. It is not computationally feasible to parse all of the company level informations. Much easier to aggregate on the model level.
 
 
 
