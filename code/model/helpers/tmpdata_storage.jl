@@ -93,14 +93,21 @@ function reset_matrices_cp!(
             price_part = norm_p[j] * (1-cmdata.all_Sust_Score[i])               # Normalized Price is used
             emiss_part = norm_emiss_per_good[j] * cmdata.all_Sust_Score[i]      # Normalized emissions produced per good is used
 
-            cmdata.weights[i,j] = (price_part + emiss_part) ^ -1            # We return inverse, as these are weights for the decision process
-
+            # SO, THE ISSUE IS COMPLEX, IN THE BEGINNING THERE IS NO PRODUCTION AND AS A RESULT NO EMISSIONS
+            # BUT IF SUST_SCORE IS 1 WE ONLY USE EMISSIONS AND GET DIVISION BY ZERO. IF WE JUST ASSIGN ZERO
+            # IT DEFEATS PURPOSE AS CONSUMER FOLLOWS LOWEST EMISSION, AND IT IS ZERO, WEIGHT SHOULD BE ANYTHING BUT ZERO
+            # BEST TACTIC IS TO JUST GO BACK TO PRICE, FOR NOW
+            if (emiss_part != 0)
+                cmdata.weights[i,j] = (price_part + emiss_part) ^ -1            # We return inverse, as these are weights for the decision process
+            else
+                cmdata.weights[i,j] = norm_p[j] ^ -1
+            end
             # push!(price_score, price_part)
             # push!(env_score, emiss_part)
 
             if (isnan(cmdata.weights[i,j]) || (cmdata.weights[i,j] <= 1e-3) || (cmdata.weights[i,j] == Inf) || (cmdata.weights[i,j] == -Inf))
                 # Should never happen
-                println("Incorrect Weight")
+                println("Incorrect Weight: ", cmdata.all_Sust_Score[i])
             end
         end
     end

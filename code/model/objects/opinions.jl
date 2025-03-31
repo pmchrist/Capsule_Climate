@@ -11,6 +11,13 @@
     sust_mean_90::V = zeros(Float64, T)   # Average opinion on Sustainability across 50-90th percentile hh
     sust_mean_100::V = zeros(Float64, T)  # Average opinion on Sustainability across 90-100th percentile hh
 
+    # Emissions
+    sust_unc_mean_all::V = zeros(Float64, T)  # Average opinion on Sustainability across all hh
+    sust_unc_mean_10::V = zeros(Float64, T)   # Average opinion on Sustainability across 0-10th percentile hh
+    sust_unc_mean_50::V = zeros(Float64, T)   # Average opinion on Sustainability across 10-50th percentile hh
+    sust_unc_mean_90::V = zeros(Float64, T)   # Average opinion on Sustainability across 50-90th percentile hh
+    sust_unc_mean_100::V = zeros(Float64, T)  # Average opinion on Sustainability across 90-100th percentile hh
+
 end
 
 
@@ -22,6 +29,7 @@ function collect_opinions(
     
     quantile_bins = [0, 0.1, 0.5, 0.9, 1.0]     # Hardcoded to support only this amount of quantiles
     sust_sorted = sort(map(hh_id -> model[hh_id].Sust_Score, all_hh))       # Sort to calculate statistics
+    sust_unc_sorted = sort(map(hh_id -> model[hh_id].Sust_Score_Uncertainty, all_hh))       # Sort to calculate statistics
 
     # Establish boundaries for Quantiles
     start_q = round(Int64, quantile_bins[2] * length(all_hh))
@@ -42,6 +50,11 @@ function collect_opinions(
     model.opinions.sust_mean_90[t] = mean(sust_sorted[mid_q:end_q])
     model.opinions.sust_mean_100[t] = mean(sust_sorted[end_q:round(Int64, length(all_hh))])
 
-    # Do same for Uncertainty!
+    # Assign mean values to percentile variables for Uncertainty
+    model.opinions.sust_unc_mean_all[t] = mean(sust_unc_sorted)
+    model.opinions.sust_unc_mean_10[t] = mean(sust_unc_sorted[1:start_q])
+    model.opinions.sust_unc_mean_50[t] = mean(sust_unc_sorted[start_q:mid_q])
+    model.opinions.sust_unc_mean_90[t] = mean(sust_unc_sorted[mid_q:end_q])
+    model.opinions.sust_unc_mean_100[t] = mean(sust_unc_sorted[end_q:round(Int64, length(all_hh))])
 
 end

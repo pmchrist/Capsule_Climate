@@ -613,23 +613,92 @@ function sust_opinion_exchange_all_hh!(
     globalparam::GlobalParam,
     all_hh::Vector{Int64},
     model::ABM,
-    to
+    to,
+    POLITIC_UPD::Bool = false,
+    SCIENTIFIC_UPD::Bool = false,
+    USE_WEALTH::Bool = false
     )
 
+    all_hh_shuffled = shuffle(all_hh)
     rate = globalparam.sust_conv_rate
 
-    for hh_id in collect(1:2:length(all_hh))
-        id_1 = all_hh[hh_id]
-        id_2 = all_hh[hh_id + 1]
+    if USE_WEALTH
+        # Get Wealths and Median wealth
+        all_W = map(hh_id -> model[hh_id].W, all_hh_shuffled)
 
+        W_min = minimum(all_W)
+        W_max = maximum(all_W)
+        W_diff = W_max - W_min
+        W_norm = ((all_W .- W_min) ./ W_diff)   # Min-Max
+        W_median = median(W_norm)
+        
+        # To map values under and over the median we have to calculate difference and transform it
+        function symm_map(x::Float64, median::Float64; power::Float64=1.0)
+            if x >= median
+                return ((x - median) / (1 - median))^power
+            else
+                return -((median - x) / median)^power
+            end
+        end
+        W_all = symm_map.(W_norm, W_median)
+        # We use a modified DAF (Sigmoid func) to find the bonus value
+        function get_wealth_influence(x::Float64)     
+            return -0.3 + 0.4 / (1 + exp(-5 * (x + log(3)/5)))
+        end
+        W_all = get_wealth_influence.(W_all)
+        #replace!(W_all, NaN=>0)
+        if (any(isnan, W_all)) println("GOT NAN") end
+        if (any(isinf, W_all)) println("GOT INF") end
+
+    end
+
+    # Updating opinions
+    for hh_id in collect(1:2:length(all_hh))
+
+        id_1 = all_hh_shuffled[hh_id]
+        id_2 = all_hh_shuffled[hh_id + 1]
+
+        if USE_WEALTH
+            w_1 = W_all[hh_id]
+            w_2 = W_all[hh_id + 1]
+        else
+            w_1 = 0
+            w_2 = 0
+        end
+
+        updated_1 = false
+        updated_2 = false
         # Update rules as per https://www.jasss.org/19/1/6.html
         if abs(model[id_1].Sust_Score_Old - model[id_2].Sust_Score_Old) < model[id_1].Sust_Score_Uncertainty
-            model[id_1].Sust_Score = model[id_1].Sust_Score_Old + rate * (model[id_2].Sust_Score_Old - model[id_1].Sust_Score_Old)
-        elseif abs(model[id_1].Sust_Score_Old - model[id_2].Sust_Score_Old) < model[id_2].Sust_Score_Uncertainty
-            model[id_2].Sust_Score = model[id_2].Sust_Score_Old + rate * (model[id_1].Sust_Score_Old - model[id_2].Sust_Score_Old)
+            model[id_1].Sust_Score = model[id_1].Sust_Score_Old + rate * (model[id_2].Sust_Score_Old - model[id_1].Sust_Score_Old) + w_1
+            if (model[id_1].Sust_Score < 0) model[id_1].Sust_Score = 0 end
+            if (model[id_1].Sust_Score > 1) model[id_1].Sust_Score = 1 end
+            updated_1 = true
         end
-        model[id_1].Sust_Score_Old = model[id_1].Sust_Score
-        model[id_2].Sust_Score_Old = model[id_2].Sust_Score
+        if abs(model[id_1].Sust_Score_Old - model[id_2].Sust_Score_Old) < model[id_2].Sust_Score_Uncertainty
+            model[id_2].Sust_Score = model[id_2].Sust_Score_Old + rate * (model[id_1].Sust_Score_Old - model[id_2].Sust_Score_Old) + w_2
+            if (model[id_2].Sust_Score < 0) model[id_2].Sust_Score = 0 end
+            if (model[id_2].Sust_Score > 1) model[id_2].Sust_Score = 1 end
+            updated_2 = true
+        end
+
+        if (model[id_1].Sust_Score < 0) println("Opa1<") end
+        if (model[id_2].Sust_Score < 0) println("Opa2<") end
+        if (model[id_1].Sust_Score > 1) println("Opa1>") end
+        if (model[id_2].Sust_Score > 1) println("Opa2>") end
+
+        #println(model[id_1].Sust_Score, " ", w_1, " | ", model[id_2].Sust_Score, " ", w_2)
+
+        if updated_1
+            if POLITIC_UPD model[id_1].Sust_Score_Uncertainty = (0.5-abs(0.5-model[id_1].Sust_Score))*2 end
+            if SCIENTIFIC_UPD model[id_1].Sust_Score_Uncertainty = (1.0 - model[id_1].Sust_Score) end
+            model[id_1].Sust_Score_Old = model[id_1].Sust_Score
+        end
+        if updated_2
+            if POLITIC_UPD model[id_2].Sust_Score_Uncertainty = (0.5-abs(0.5-model[id_2].Sust_Score))*2 end
+            if SCIENTIFIC_UPD model[id_2].Sust_Score_Uncertainty = (1.0 - model[id_2].Sust_Score) end
+            model[id_2].Sust_Score_Old = model[id_2].Sust_Score
+        end
         
     end
 

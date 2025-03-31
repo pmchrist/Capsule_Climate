@@ -28,10 +28,13 @@
     βmin::Float64 = 0.7                   # minimum value discount factor
     βmax::Float64 = 1.0                   # maximum value discount factor
     # Determine household sustainability
-    sust_α::Int64 = 2                       # Used in beta distribution for weight of sustainable decisions         <- new
-    sust_β::Int64 = 2                       # Used in beta distribution for weight of sustainable decisions         <- new
-    sust_uncert_α::Int64 = 5                # Used in beta distribution for uncertainty in importance of sustainability     <- new
-    sust_uncert_β::Int64 = 5                # Used in beta distribution for uncertainty in importance of sustainability     <- new
+    sust_α::Int64 = 1                       # Used in beta distribution for weight of sustainable decisions         <- new
+    sust_β::Int64 = 1                       # Used in beta distribution for weight of sustainable decisions         <- new
+    sust_uncert_α::Int64 = 1                # Used in beta distribution for uncertainty in importance of sustainability     <- new
+    sust_uncert_β::Int64 = 1                # Used in beta distribution for uncertainty in importance of sustainability     <- new
+    sust_upd_rule_politic::Bool = false         # Additional rule for updates, more in notes
+    sust_upd_rule_scientific::Bool = false      # Additional rule for updates, more in notes
+    sust_upd_rule_use_wealth::Bool = false      # Additional rule for updates, more in notes
 
     # Init params of ep
     n_powerplants_init::Int64 = 300_000   # number of unit of power plants in ep

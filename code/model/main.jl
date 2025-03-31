@@ -385,8 +385,8 @@ function initialize_datacategories(
 
         # 
         model.opinionsdata_tosave = [
-            :sust_mean_all, :sust_mean_10, :sust_mean_50, :sust_mean_90,
-            :sust_mean_100
+            :sust_mean_all, :sust_mean_10, :sust_mean_50, :sust_mean_90, :sust_mean_100,
+            :sust_unc_mean_all, :sust_unc_mean_10, :sust_unc_mean_50, :sust_unc_mean_90, :sust_unc_mean_100
         ]
 
         # Define data of government to save
@@ -672,7 +672,10 @@ function model_step!(
         globalparam,
         all_hh,
         model,
-        timer
+        timer,
+        initparam.sust_upd_rule_politic,
+        initparam.sust_upd_rule_scientific,
+        initparam.sust_upd_rule_use_wealth
     )
 
     # Gather opinions to save into the model

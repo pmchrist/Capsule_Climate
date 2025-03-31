@@ -1002,18 +1002,18 @@ function update_Dᵉ_cp!(
     )
 
     cp.Dᵉ = cp.age > 1 ? ω * cp.Dᵉ + (1 - ω) * (cp.D[end] + cp.Dᵁ[end]) : cp.Dᵉ
-    if isnan(cp.Dᵉ)
-        println("Demand Part: Expected, Unsatisfied Before, Historical")
-        println(cp.Dᵉ)
-        println(cp.D[end])
-        println(cp.Dᵁ[end])
-    end
-    if (cp.Dᵉ == 0)
-        println("Oh no, market is fucked")
-        println(cp.Dᵉ)
-        println(cp.D[end])
-        println(cp.Dᵁ[end])
-    end
+    # if isnan(cp.Dᵉ)
+    #     println("Demand Part: Expected, Unsatisfied Before, Historical")
+    #     println(cp.Dᵉ)
+    #     println(cp.D[end])
+    #     println(cp.Dᵁ[end])
+    # end
+    # if (cp.Dᵉ == 0)
+    #     println("Oh no, market is fucked")
+    #     println(cp.Dᵉ)
+    #     println(cp.D[end])
+    #     println(cp.Dᵁ[end])
+    # end
 end
 
 
@@ -1025,16 +1025,16 @@ function update_Qˢ_cp!(
     )
 
     cp.Qˢ = max(cp.Dᵉ + cp.Nᵈ - cp.N_goods, 0.0)
-    if isnan(cp.Qˢ)
-        println("Qs is NaN")
-        println(cp.Dᵉ)
-        println(cp.Nᵈ)
-        println(cp.N_goods)
-        println(cp.age)
-        println(cp.emissions)
-        #cp.Qˢ = 0
-        println()
-    end
+    # if isnan(cp.Qˢ)
+    #     println("Qs is NaN")
+    #     println(cp.Dᵉ)
+    #     println(cp.Nᵈ)
+    #     println(cp.N_goods)
+    #     println(cp.age)
+    #     println(cp.emissions)
+    #     #cp.Qˢ = 0
+    #     println()
+    # end
 end
 
 

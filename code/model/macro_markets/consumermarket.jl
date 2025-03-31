@@ -157,11 +157,11 @@ function process_transactions_cm!(
         model[cp_id].curracc.S = model[cp_id].curracc.S * (1 / (1 + government.τˢ))
 
         N_goods_sold = model[cp_id].curracc.S / model[cp_id].p[end]
-        if isnan(N_goods_sold)
-            println("Goods Sold Nan")
-            println(model[cp_id].p[end])
-            #N_goods_sold = 0
-        end
+        # if isnan(N_goods_sold)
+        #     println("Goods Sold Nan")
+        #     println(model[cp_id].p[end])
+        #     #N_goods_sold = 0
+        # end
         shift_and_append!(model[cp_id].D, N_goods_sold)
         shift_and_append!(model[cp_id].Dᵁ, sum(unsat_demand))
         model[cp_id].N_goods = abs(model[cp_id].N_goods - N_goods_sold) > 1e-1 ? model[cp_id].N_goods - N_goods_sold : 0.0

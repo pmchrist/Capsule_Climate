@@ -93,7 +93,7 @@ using Distributed
 using Random
 
 # Launch workers
-n_proc_main = 8
+n_proc_main = 12
 addprocs(n_proc_main)
 
 # Make sure all needed packages and code are loaded on every worker
@@ -104,15 +104,13 @@ addprocs(n_proc_main)
     include("model/main.jl")
 
     # Declare any necessary parameters or global arrays
-    alphas = [20, 6]
-    betas  = [2]
+    alphas = [1]
+    betas  = [1]
     prices_fossils = [0.36, 0.39, 0.40, 0.41, 0.44]
 
     # If we want to use no opinion too, we just add combination zero values at the end
     combined_params = vcat(
         [ (a, b, pf) for a in alphas for b in betas for pf in prices_fossils ],
-        [ (2, 4, pf) for pf in prices_fossils ],
-        [ (0, 0, pf) for pf in prices_fossils ]
     )
     const sims_n = length(combined_params)
     
@@ -131,6 +129,7 @@ addprocs(n_proc_main)
                 save_firmdata = false,
                 sim_nr = idx,
                 changed_params_init = [(:sust_α, a), (:sust_β, b), (:p_f, pf)],
+                #changed_params_init = [(:sust_α, a), (:sust_β, b), (:p_f, pf), (:sust_upd_rule_use_wealth, true)],
                 changed_taxrates = changed_taxrates,
                 folder_name = "alpha=$a beta=$b p_f=$pf t_c=$(changed_taxrates[1][2])"
             )
@@ -139,10 +138,13 @@ addprocs(n_proc_main)
     end
 end
 
-# Define your list of seeds on the master process
-num_sim_ci = 24     # 12 * 8
-all_seeds = rand(1:10_000_000, num_sim_ci)
-println("Simulation started for seeds: ", all_seeds)
+# # Define your list of seeds on the master process
+# num_sim_ci = 24     # 12 * 8
+# all_seeds = rand(1:10_000_000, num_sim_ci)
+# println("Simulation started for seeds: ", all_seeds)
+
+all_seeds = [9937590, 9494897, 408387, 169105, 6612768, 9827382, 592810, 1826964, 524941, 5111625, 3580871, 7379769, 2411994,
+            1250345, 1200648, 8623226, 6739373, 7707222, 9076351, 5616723, 5147647, 8676955, 9216682, 6743063]
 
 # all_seeds = [3144844, 5350382, 3462521, 6246687, 34794, 3128292, 4501814, 8481853, 9819898, 456358, 6275293, 5762542, 4112631, 580187,
 # 2392795, 6222835, 4830615, 5618569, 4884842, 9945681, 7994132, 3040165, 6808937, 6655892, 1324003, 900270, 3355661, 6180976, 2332478, 966511,
