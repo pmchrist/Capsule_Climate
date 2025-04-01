@@ -74,8 +74,10 @@ Phase 2 - Creating Sustainable Employee (Integrate Sustainabiltiy Opinion into J
 
 10) Add dynamic opinions. Make mapping for opinions and how they change function, the mapping can be based on all proposed metrics. We first should try wealth(unemployment can be a sub case of low wealth, so it should cover the research)
 	- Try Cubic polynomial approximation - hysterisis for opinion change dynamics.                                                      ! Done. Checked this thing, does not seem to add anything of value, should verify further though. From speaking with professor it seems that we do not need a square term. UPD: Did more testing, it once again either destroys dynamics or just moves the base point. Additionally, introduced it into the uncertainty of opinion. The results are as expected, it creates either one or few points where values concentrate, or just diverge into the extremes, i.e. there are different stable points given the parameters and initial values. It does not seem to add anything of value, as we have no idea what are the points in the society, better to just assume some variability.
-	- Try sigmoid functions to be maping of different regions, for examples in EU discrepancy in opinions is lower than in US.          ! In progress. The proposed idea to use Wealth with the sigmoid mapping was accepted. Only need to integrate it and run experiments at scale.
-	- Other ideas can be used for initialization of the model (political vs scientific)                                                 ! In progress. We can use different initialization values for the difference in Regions and etc. for tests. Should verify with CIs the proposed params in test_opinion.
+	- Try sigmoid functions to be maping of different regions, for examples in EU discrepancy in opinions is lower than in US.          ! Done. The proposed idea to use Wealth with the sigmoid mapping was accepted. Integrated it to the model and it influences the results indeed, by increasing variance in Emissions per GDP.
+	- Other ideas can be used for initialization of the model (political vs scientific)                                                 ! Done. We use different rules for uncertainty convergence based on opinion, the idea is given in the notes. It unfluences results, as expected.
+
+11) Write thesis chapter on experimens and explain the results of all the experiments (Fixed Opinion, Politic, Scientific, Wealth)
 
 11) Do experiments without the stabilized economy, when everything crashed with original params.
 
