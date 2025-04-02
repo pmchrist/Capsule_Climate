@@ -77,12 +77,19 @@ Phase 2 - Creating Sustainable Employee (Integrate Sustainabiltiy Opinion into J
 	- Try sigmoid functions to be maping of different regions, for examples in EU discrepancy in opinions is lower than in US.          ! Done. The proposed idea to use Wealth with the sigmoid mapping was accepted. Integrated it to the model and it influences the results indeed, by increasing variance in Emissions per GDP.
 	- Other ideas can be used for initialization of the model (political vs scientific)                                                 ! Done. We use different rules for uncertainty convergence based on opinion, the idea is given in the notes. It unfluences results, as expected.
 
-11) Write thesis chapter on experimens and explain the results of all the experiments (Fixed Opinion, Politic, Scientific, Wealth)
+11) Perform Experiments with the proposed dynamic opinions:
+    - Comparing them all together:      There is definitely some difference between experiments based on the initialization, so far if uncertainty is random it is uniform and opinion is intiated differently.
+    - Comparing Politic:                The bigger the extremes the bigger the effect, general average consensus is much better
+    - Comparing Scientific:             
+    ...
+    
+11) Write thesis chapter on experimens and explain the results of all the experiments (Fixed Opinion, Politic, Scientific, Wealth)      ! In Progress
 
 11) Do experiments without the stabilized economy, when everything crashed with original params.
 
 11) Find out why brown energy is always persistent in the economy and why it goes to 0 and bounces back in the green economy. 
 
+QUESTION ABOUT BOXPLOT: So, I calculate mean in averages of multiple runs. I assume I need to find the variance for each run and calculate mean of it? Otherwise it is just close to zero.
 
 
 

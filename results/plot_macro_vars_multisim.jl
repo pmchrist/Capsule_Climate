@@ -40,35 +40,65 @@ addprocs(n_proc_main)
     SEEDS = string.(SEEDS)
 
     const FOLDERS = [
-            "alpha=0 beta=0 p_f=0.36 t_c=0.0",
-            "alpha=0 beta=0 p_f=0.39 t_c=0.0",
-            "alpha=0 beta=0 p_f=0.4 t_c=0.0",
-            "alpha=0 beta=0 p_f=0.41 t_c=0.0",
-            "alpha=0 beta=0 p_f=0.44 t_c=0.0",
+            "alpha=0.0 beta=0.0 p_f=0.36 t_c=0.0",
+            "alpha=0.0 beta=0.0 p_f=0.39 t_c=0.0",
+            "alpha=0.0 beta=0.0 p_f=0.4 t_c=0.0",
+            "alpha=0.0 beta=0.0 p_f=0.41 t_c=0.0",
+            "alpha=0.0 beta=0.0 p_f=0.44 t_c=0.0",
 
-            "alpha=1 beta=1 p_f=0.36 t_c=0.0",
-            "alpha=1 beta=1 p_f=0.39 t_c=0.0",
-            "alpha=1 beta=1 p_f=0.4 t_c=0.0",
-            "alpha=1 beta=1 p_f=0.41 t_c=0.0",
-            "alpha=1 beta=1 p_f=0.44 t_c=0.0",
+            "alpha=1.0 beta=1.0 p_f=0.36 t_c=0.0",
+            "alpha=1.0 beta=1.0 p_f=0.39 t_c=0.0",
+            "alpha=1.0 beta=1.0 p_f=0.4 t_c=0.0",
+            "alpha=1.0 beta=1.0 p_f=0.41 t_c=0.0",
+            "alpha=1.0 beta=1.0 p_f=0.44 t_c=0.0",
 
-            "alpha=1 beta=1 p_f=0.36 t_c=0.0 scientific",
-            "alpha=1 beta=1 p_f=0.39 t_c=0.0 scientific",
-            "alpha=1 beta=1 p_f=0.4 t_c=0.0 scientific",
-            "alpha=1 beta=1 p_f=0.41 t_c=0.0 scientific",
-            "alpha=1 beta=1 p_f=0.44 t_c=0.0 scientific",
+            "alpha=2.0 beta=2.0 p_f=0.36 t_c=0.0",
+            "alpha=2.0 beta=2.0 p_f=0.39 t_c=0.0",
+            "alpha=2.0 beta=2.0 p_f=0.4 t_c=0.0",
+            "alpha=2.0 beta=2.0 p_f=0.41 t_c=0.0",
+            "alpha=2.0 beta=2.0 p_f=0.44 t_c=0.0",
 
-            "alpha=1 beta=1 p_f=0.36 t_c=0.0 politic",
-            "alpha=1 beta=1 p_f=0.39 t_c=0.0 politic",
-            "alpha=1 beta=1 p_f=0.4 t_c=0.0 politic",
-            "alpha=1 beta=1 p_f=0.41 t_c=0.0 politic",
-            "alpha=1 beta=1 p_f=0.44 t_c=0.0 politic",           
+            "alpha=4.0 beta=4.0 p_f=0.36 t_c=0.0",
+            "alpha=4.0 beta=4.0 p_f=0.39 t_c=0.0",
+            "alpha=4.0 beta=4.0 p_f=0.4 t_c=0.0",
+            "alpha=4.0 beta=4.0 p_f=0.41 t_c=0.0",
+            "alpha=4.0 beta=4.0 p_f=0.44 t_c=0.0",
 
-            "alpha=1 beta=1 p_f=0.36 t_c=0.0 wealth",
-            "alpha=1 beta=1 p_f=0.39 t_c=0.0 wealth",
-            "alpha=1 beta=1 p_f=0.4 t_c=0.0 wealth",
-            "alpha=1 beta=1 p_f=0.41 t_c=0.0 wealth",
-            "alpha=1 beta=1 p_f=0.44 t_c=0.0 wealth",  
+            "alpha=0.4 beta=0.4 p_f=0.36 t_c=0.0",
+            "alpha=0.4 beta=0.4 p_f=0.39 t_c=0.0",
+            "alpha=0.4 beta=0.4 p_f=0.4 t_c=0.0",
+            "alpha=0.4 beta=0.4 p_f=0.41 t_c=0.0",
+            "alpha=0.4 beta=0.4 p_f=0.44 t_c=0.0",
+
+            "alpha=0.8 beta=0.8 p_f=0.36 t_c=0.0",
+            "alpha=0.8 beta=0.8 p_f=0.39 t_c=0.0",
+            "alpha=0.8 beta=0.8 p_f=0.4 t_c=0.0",
+            "alpha=0.8 beta=0.8 p_f=0.41 t_c=0.0",
+            "alpha=0.8 beta=0.8 p_f=0.44 t_c=0.0",
+
+            "alpha=0.8 beta=1.0 p_f=0.36 t_c=0.0",
+            "alpha=0.8 beta=1.0 p_f=0.39 t_c=0.0",
+            "alpha=0.8 beta=1.0 p_f=0.4 t_c=0.0",
+            "alpha=0.8 beta=1.0 p_f=0.41 t_c=0.0",
+            "alpha=0.8 beta=1.0 p_f=0.44 t_c=0.0",
+
+            "alpha=2.0 beta=4.0 p_f=0.36 t_c=0.0",
+            "alpha=2.0 beta=4.0 p_f=0.39 t_c=0.0",
+            "alpha=2.0 beta=4.0 p_f=0.4 t_c=0.0",
+            "alpha=2.0 beta=4.0 p_f=0.41 t_c=0.0",
+            "alpha=2.0 beta=4.0 p_f=0.44 t_c=0.0",
+
+            "alpha=1.0 beta=0.8 p_f=0.36 t_c=0.0",
+            "alpha=1.0 beta=0.8 p_f=0.39 t_c=0.0",
+            "alpha=1.0 beta=0.8 p_f=0.4 t_c=0.0",
+            "alpha=1.0 beta=0.8 p_f=0.41 t_c=0.0",
+            "alpha=1.0 beta=0.8 p_f=0.44 t_c=0.0",
+    
+            "alpha=4.0 beta=2.0 p_f=0.36 t_c=0.0",
+            "alpha=4.0 beta=2.0 p_f=0.39 t_c=0.0",
+            "alpha=4.0 beta=2.0 p_f=0.4 t_c=0.0",
+            "alpha=4.0 beta=2.0 p_f=0.41 t_c=0.0",
+            "alpha=4.0 beta=2.0 p_f=0.44 t_c=0.0",
     ]
 
     # Subplot grid sizes
@@ -584,7 +614,7 @@ addprocs(n_proc_main)
         plt = boxplot(target_vals,
                         legend=false,
                         outliers=false,
-                        size=(1500, 1000),
+                        size=(4000, 2000),
                         xticks=(1:length(sust_vals), sust_vals))
         title!("Boxplot of $column_name with $target_p_f for different experiments\n(CI based on $(length(SEEDS)) Seeds)")
         xlabel!("Average Sustainability Opinion (Mean ± Variance)")

@@ -93,7 +93,7 @@ using Distributed
 using Random
 
 # Launch workers
-n_proc_main = 12
+n_proc_main = 16
 addprocs(n_proc_main)
 
 # Make sure all needed packages and code are loaded on every worker
@@ -104,13 +104,25 @@ addprocs(n_proc_main)
     include("model/main.jl")
 
     # Declare any necessary parameters or global arrays
-    alphas = [1]
-    betas  = [1]
+    # alphas = [1]
+    # betas  = [1]
     prices_fossils = [0.36, 0.39, 0.40, 0.41, 0.44]
 
     # If we want to use no opinion too, we just add combination zero values at the end
     combined_params = vcat(
-        [ (a, b, pf) for a in alphas for b in betas for pf in prices_fossils ],
+        [ (0.0, 0.0, pf) for pf in prices_fossils ],
+
+        [ (1.0, 1.0, pf) for pf in prices_fossils ],
+        [ (2.0, 2.0, pf) for pf in prices_fossils ],
+        [ (4.0, 4.0, pf) for pf in prices_fossils ],
+        [ (0.4, 0.4, pf) for pf in prices_fossils ],
+        [ (0.8, 0.8, pf) for pf in prices_fossils ],
+
+        [ (0.8, 1.0, pf) for pf in prices_fossils ],
+        [ (2.0, 4.0, pf) for pf in prices_fossils ],
+
+        [ (1.0, 0.8, pf) for pf in prices_fossils ],
+        [ (4.0, 2.0, pf) for pf in prices_fossils ]
     )
     const sims_n = length(combined_params)
     
@@ -128,8 +140,8 @@ addprocs(n_proc_main)
                 seed = s,
                 save_firmdata = false,
                 sim_nr = idx,
-                changed_params_init = [(:sust_α, a), (:sust_β, b), (:p_f, pf)],
-                #changed_params_init = [(:sust_α, a), (:sust_β, b), (:p_f, pf), (:sust_upd_rule_use_wealth, true)],
+                #changed_params_init = [(:sust_α, a), (:sust_β, b), (:p_f, pf)],
+                changed_params_init = [(:sust_α, a), (:sust_β, b), (:p_f, pf), (:sust_upd_rule_scientific, true)],
                 changed_taxrates = changed_taxrates,
                 folder_name = "alpha=$a beta=$b p_f=$pf t_c=$(changed_taxrates[1][2])"
             )

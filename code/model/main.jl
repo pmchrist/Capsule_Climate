@@ -188,7 +188,7 @@ function initialize_model(
         # TODO: Maybe make a global passed param for the opinion init disabled if it seems necessary to keep it around later
         # If we pass zeros for the init opinion we use a model where there is no Sustainability Opinion taken into accout
         # optimization tip: kinda pointless to check everytime for each hh before creation, as they are all the same
-        if (model.i_param.sust_α == 0 && model.i_param.sust_β == 0)
+        if (model.i_param.sust_α == 0.0 && model.i_param.sust_β == 0.0)
             # HH without opinion
             hh = Household(
                             id = nextid(model), 
