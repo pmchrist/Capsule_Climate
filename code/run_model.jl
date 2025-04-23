@@ -93,7 +93,7 @@ using Distributed
 using Random
 
 # Launch workers
-n_proc_main = 16
+n_proc_main = 12
 addprocs(n_proc_main)
 
 # Make sure all needed packages and code are loaded on every worker
