@@ -599,15 +599,14 @@ addprocs(n_proc_main)
             # Compute per-seed means and variances
             target_col_avgs = [mean(subdf[:, column_name]) for subdf in grouped_df]
             sust_opinion_means = [mean(subdf[:, "sust_mean_all"]) for subdf in grouped_df]
-            sust_opinion_vars = [var(subdf[:, "sust_mean_all"]) for subdf in grouped_df]
 
             # Compute overall mean and variance per seed
             overall_sust_mean = mean(sust_opinion_means)
-            overall_sust_var = mean(sust_opinion_vars)
+            overall_sust_std = std(sust_opinion_means)
 
             # Store results
             push!(target_vals, target_col_avgs)
-            push!(sust_vals, string(round(overall_sust_mean, digits=3), " ± ", round(overall_sust_var, digits=3), "\n$key"))  # String format
+            push!(sust_vals, string(round(overall_sust_mean, digits=3), " ± ", round(overall_sust_std, digits=3), "\n$key"))  # String format
 
         end
 
@@ -643,9 +642,9 @@ vars_to_plot = ["carbon_emissions_cp_proportion", "carbon_emissions_ep_proportio
 "avg_pi_LP", "avg_w_pi_EE", "avg_w_pi_EF", "avg_w_pi_LP", "green_capacity", "dirty_capacity", "carbon_emissions_cp_good_avg", "carbon_emissions_cp_good_var",
 "carbon_emissions_cp_good_avg_w", "GDP", "carbon_emissions_per_GDP", "carbon_emissions_cp", "carbon_emissions_ep"]
 p_f_to_plot = ["p_f=0.36 ", "p_f=0.39 ", "p_f=0.4 ", "p_f=0.41 ", "p_f=0.44 "]      # There is a space at the end of each string
-@sync @distributed for p_f_val in p_f_to_plot
+for p_f_val in p_f_to_plot
     dataframes_model_ci_ = get_df_seed_for_boxplot_model_end(PATH, "model.csv", p_f_val)
-    for target_var in vars_to_plot
+    @sync @distributed for target_var in vars_to_plot
         visualize_box_plot_end(target_var, dataframes_model_ci_, "model_boxplot", p_f_val, 50)
     end
 end

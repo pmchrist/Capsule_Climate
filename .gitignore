@@ -46,6 +46,7 @@ performance_py.ipynb
 
 results/experiments/OFAT_experiments
 results/data_saved/
+results/opinion_dynamics/
 
 parameters/calibration/calibrate_example.py
 parameters/calibration/calibration_simple.py

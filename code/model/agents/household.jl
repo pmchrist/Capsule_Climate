@@ -624,12 +624,11 @@ function sust_opinion_exchange_all_hh!(
 
     if USE_WEALTH
         # Get Wealths and Median wealth
-        all_W = map(hh_id -> model[hh_id].W, all_hh_shuffled)
+        all_W = map(hh_id -> model[hh_id].W̃, all_hh_shuffled)
 
         W_min = minimum(all_W)
         W_max = maximum(all_W)
-        W_diff = W_max - W_min
-        W_norm = ((all_W .- W_min) ./ W_diff)   # Min-Max
+        W_norm = ((all_W .- W_min) ./ (W_max - W_min))   # Min-Max
         W_median = median(W_norm)
         
         # To map values under and over the median we have to calculate difference and transform it
@@ -682,10 +681,10 @@ function sust_opinion_exchange_all_hh!(
             updated_2 = true
         end
 
-        if (model[id_1].Sust_Score < 0) println("Opa1<") end
-        if (model[id_2].Sust_Score < 0) println("Opa2<") end
-        if (model[id_1].Sust_Score > 1) println("Opa1>") end
-        if (model[id_2].Sust_Score > 1) println("Opa2>") end
+        # if (model[id_1].Sust_Score < 0) println("Opa1<") end
+        # if (model[id_2].Sust_Score < 0) println("Opa2<") end
+        # if (model[id_1].Sust_Score > 1) println("Opa1>") end
+        # if (model[id_2].Sust_Score > 1) println("Opa2>") end
 
         #println(model[id_1].Sust_Score, " ", w_1, " | ", model[id_2].Sust_Score, " ", w_2)
 

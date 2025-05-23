@@ -89,7 +89,7 @@ Bonus on Opinioon: If I want to include opinion dynamics to showcase them. How t
 
 11) Write thesis chapter on experimens and explain the results of all the experiments (Fixed Opinion, Politic, Scientific, Wealth)      ! In Progress
 
-11) Do experiments without the stabilized economy, when everything crashed with original params.
+11) Do experiments without the stabilized economy, when everything crashed with original params.    -> Done! It influences dynamics. They are still present but much less pronounced.
 
 11) Find out why brown energy is always persistent in the economy and why it goes to 0 and bounces back in the green economy. 
 
