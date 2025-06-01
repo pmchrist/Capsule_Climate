@@ -342,8 +342,8 @@ function check_funding_restrictions_cp!(
     # NW_no_prod = (cp.balance.NW + max((cp.Dᵉ - cp.D[end]), 0) * cp.p[end] * globalparam.Λᵉ + cp.curracc.rev_dep           # <- Additional coeff to avoid overborrowing in high bankruptcy economy
     #               - cp.debt_installments[1] - cp.balance.debt * globalparam.r)
 
-    NW_no_prod = (cp.balance.NW + cp.Dᵁ[end] * cp.p[end] * globalparam.Λᵉ + cp.curracc.rev_dep           # <- Additional coeff to avoid overborrowing in high bankruptcy economy (Possible sales which are not accounted in previous debt calculations)
-                  - cp.debt_installments[1] - cp.balance.debt * globalparam.r)
+    NW_no_prod = (cp.balance.NW + cp.Dᵁ[end] * cp.p[end - 1] * globalparam.Λᵉ + cp.curracc.rev_dep           # <- Additional coeff to avoid overborrowing in high bankruptcy economy (Possible sales which are not accounted in previous debt calculations)
+                  - cp.debt_installments[1] - cp.balance.debt * globalparam.r)  # It does not depend solely on price, therefore demand can not go low enough with higher newer prices, that is why we use old one
 
     cp.possible_I = NW_no_prod + max_add_debt - TCLᵉ - TCE
 
@@ -464,15 +464,15 @@ end
     # cp.kp_ranking[1] = brochure[:kp_id]
     # cp.kp_ranking = 
 
-"""
-Sort machines by cost of production
-"""
-function rank_machines_cp!(
-    cp::ConsumerGoodProducer
-)
+# """
+# Sort machines by cost of production
+# """
+# function rank_machines_cp!(
+#     cp::ConsumerGoodProducer
+# )
 
-    sort!(cp.Ξ , by = machine -> machine.cop; rev=true)
-end
+#     sort!(cp.Ξ , by = machine -> machine.cop; rev=true)
+# end
 
 
 """
@@ -1225,7 +1225,7 @@ function update_emissions_cp!(
     if cp.Q[end] > 0
         shift_and_append!(cp.emissions_per_item, cp.emissions / cp.Q[end])
     else
-        shift_and_append!(cp.emissions_per_item, mean(cp.emissions_per_item))       # Use last average for score
+        shift_and_append!(cp.emissions_per_item, cp.emissions_per_item[end])       # Use last average for score
     end
 
 end

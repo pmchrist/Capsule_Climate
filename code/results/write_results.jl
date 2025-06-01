@@ -90,12 +90,17 @@ function save_final_dist(
     model::ABM,
     folder_name::String
 )
-    # Save income data of households 
+    # Save income data of households and Opinion data
     df = DataFrame(
         all_I = map(hh_id -> model[hh_id].total_I, all_hh),
         all_w = map(hh_id -> model[hh_id].w[end], all_hh),
         all_W = map(hh_id -> model[hh_id].W, all_hh),
-        skills = map(hh_id -> model[hh_id].skill, all_hh)
+        skills = map(hh_id -> model[hh_id].skill, all_hh),
+
+        sust_opinion_init = map(hh_id -> model[hh_id].Sust_Score_Init, all_hh),
+        sust_uncert_init = map(hh_id -> model[hh_id].Sust_Score_Uncertainty_Init, all_hh),
+        sust_opinion_end = map(hh_id -> model[hh_id].Sust_Score, all_hh),
+        sust_uncert_end = map(hh_id -> model[hh_id].Sust_Score_Uncertainty, all_hh)
     )
 
     full_path = joinpath(@__DIR__, "data", folder_name, "$seed final_income_dists.csv")     # Each time has its own snapshot saved
@@ -109,7 +114,8 @@ function save_final_dist(
         all_f_cp = map(cp_id -> model[cp_id].f[end], all_cp),           # Market Share
         all_L_cp = map(cp_id -> model[cp_id].L, all_cp),                # Labor Units (Workers amount)
         all_p_cp = map(cp_id -> model[cp_id].p[end], all_cp),           # Price of Good
-        all_w_cp = map(cp_id -> model[cp_id].w̄[end], all_cp),            # Wage Level
+        all_w_cp = map(cp_id -> model[cp_id].w̄[end], all_cp),           # Wage Level
+        all_emiss_cp = map(cp_id -> model[cp_id].emissions_per_item[end], all_cp),           # Wage Level
     )
     full_path = joinpath(@__DIR__, "data", folder_name, "$seed final_profit_dists_cp.csv")     # Each time has its own snapshot saved
     mkpath(dirname(full_path))      # Ensure the directory exists

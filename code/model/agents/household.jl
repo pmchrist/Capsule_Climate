@@ -40,9 +40,11 @@
     P̄ᵉ::Float64 = 1.0                          # expected weighted average price of bp
     #c_L::Float64 = 0.5                         # share of income used to buy luxury goods      # Never implemented
     
-    Sust_Score::Float64                        # Opinion on how much environment is important [0-not important, 1-important]
-    Sust_Score_Old::Float64 = Sust_Score       # Opinion from a previous step (used in opinion dynamics model)
+    Sust_Score::Float64                       # Opinion on how much environment is important [0-not important, 1-important]
+    Sust_Score_Old::Float64 = Sust_Score             # Opinion from a previous step (used in opinion dynamics model)
     Sust_Score_Uncertainty::Float64            # Uncertainty in beliefs on how important sustainability is [0-not sur, 1-sure in his opinion] (used in opinion dynamics model, influences dynamics of change)
+    Sust_Score_Init::Float64 = Sust_Score                                    # Just for visualization of Wealth Experiment
+    Sust_Score_Uncertainty_Init::Float64 = Sust_Score_Uncertainty            # Just for visualization of Wealth Experiment
 
 end
 
@@ -649,6 +651,12 @@ function sust_opinion_exchange_all_hh!(
         if (any(isnan, W_all)) println("GOT NAN") end
         if (any(isinf, W_all)) println("GOT INF") end
 
+    end
+
+    # A helper for the visualization of wealth run, no need to keep a whole vector of values
+    if model.t == 1
+        foreach(hh_id -> (model[hh_id].Sust_Score_Init = model[hh_id].Sust_Score), all_hh_shuffled)
+        foreach(hh_id -> (model[hh_id].Sust_Score_Uncertainty_Init = model[hh_id].Sust_Score_Uncertainty), all_hh_shuffled)
     end
 
     # Updating opinions

@@ -6,21 +6,26 @@ from scipy.stats import gaussian_kde
 from scipy.interpolate import interp1d
 
 # Parameters
+VARIABLE_LEFT = "sust_opinion_init"
+VARIABLE_RIGHT = "sust_opinion_end"
 OPINIONS_INIT = [
     [1.0, 1.0], [2.0, 2.0], [4.0, 4.0], [0.8, 0.8], [0.4, 0.4],
     [1.0, 0.8], [4.0, 2.0], [0.8, 1.0], [2.0, 4.0]
 ]
-EXPERIMENT_TYPE = "Scientific"
-#EXPERIMENT_TYPE = "Politic"
+EXPERIMENT_TYPE = "POLITIC"     # "SCIENTIFIC" , "POLITIC"
+WEALTH = True
 
 # Unique scaling for sides based on the experiment (to make visualizations nicer)
-if (EXPERIMENT_TYPE == "Scientific"):
+if (EXPERIMENT_TYPE == "SCIENTIFIC"):
     # Each must have length == len(OPINIONS_INIT)
     widths_l = [1.2, 1.2, 1.2, 1.6, 1.6, 1.2, 1.2, 1.2, 1.2]
     widths_r = [0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8]
-if (EXPERIMENT_TYPE == "Politic"):
+if (EXPERIMENT_TYPE == "POLITIC"):
     widths_l = [0.5, 0.5, 0.5, 0.3, 0.3, 0.6, 0.7, 0.6, 0.7]
     widths_r = [0.5, 0.5, 0.5, 0.3, 0.3, 0.6, 0.7, 0.6, 0.7]
+if (WEALTH):
+    widths_l = [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
+    widths_r = [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
 
 labels = [f"α={α}\nβ={β}" for α, β in OPINIONS_INIT]    # X axis labels for experiment
 
@@ -35,8 +40,8 @@ for α, β in OPINIONS_INIT:
     filepath = os.path.join(current_folder, filename)
     if os.path.isfile(filepath):
         df = pd.read_csv(filepath)
-        init_opinions.append(df["init_opinion"].dropna().values)
-        final_opinions.append(df["final_opinion"].dropna().values)
+        init_opinions.append(df[VARIABLE_LEFT].dropna().values)
+        final_opinions.append(df[VARIABLE_RIGHT].dropna().values)
     else:
         print(f"File not found: {filepath}")
         init_opinions.append(np.array([]))

@@ -145,10 +145,10 @@ for opinion in OPINIONS_INIT
             α = fill(α, n),
             β = fill(β, n),
             seed = fill(seed, n),
-            init_opinion = init_op,
-            final_opinion = final_op,
-            init_uncertainty = init_unc,
-            final_uncertainty = final_unc
+            sust_opinion_init = init_op,
+            sust_opinion_end = final_op,
+            sust_uncert_init = init_unc,
+            sust_uncert_end = final_unc
         )
     end
 

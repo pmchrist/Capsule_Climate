@@ -1,3 +1,4 @@
+# Cost of Production
 function cop(
     w::Float64,
     π_LP::Float64,
@@ -8,13 +9,20 @@ function cop(
     π_EF::Float64
     )
     temp = w / π_LP + (τᴱ + pₑ) / π_EE + τᶜ * π_EF
-
-    if isnan(temp)
-        println("cop is nan aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-    end
     
     return temp
 end
+
+# # Emission of Production (DOES NOT TAKE INTO ACCOUNT TAXES)
+# function eop(
+#     Qᵉ::Float64,
+#     π_EE::Float64,
+#     π_EF::Float64
+#     )
+#     temp = π_EF / π_EE
+    
+#     return temp
+# end
 
 
 """

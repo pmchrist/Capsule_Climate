@@ -2,8 +2,9 @@ using Distributed
 using Random
 
 # Launch workers
-n_proc_main = 13
+n_proc_main = 14
 addprocs(n_proc_main)
+@everywhere using Printf
 
 # Defining all the Functions and Initial Params for all workers
 @everywhere begin
@@ -41,7 +42,7 @@ addprocs(n_proc_main)
                                     (:sust_upd_rule_use_wealth, opinion_wealth)],
                 changed_taxrates = changed_taxrates,
                 #folder_name = exp_name + " alpha=$a beta=$b p_f=$pf t_c=$(changed_taxrates[1][2])"
-                folder_name = exp_name * " alpha=$a beta=$b p_f=$pf"
+                folder_name = exp_name * (@sprintf(" alpha=%.1f beta=%.1f p_f=%.2f", a, b, pf))
             )
         end
         return nothing  # or return a result if needed-
@@ -49,81 +50,61 @@ addprocs(n_proc_main)
 end
 
 # Define your list of seeds on the master process
-# num_sim_ci = 48     # 12 * 8
+# num_sim_ci = 50     # 18 * 3
 # all_seeds = rand(1:10_000_000, num_sim_ci)
 
-# all_seeds = [2571810, 9390529, 2141354, 8117981, 1029419, 6524129, 2188404, 5612874, 9603489, 4287723, 5677055, 4506482,
-#             5155673, 1425357, 8290646, 1684337, 9209424, 1334281, 7768006, 6180382, 8702647, 9809029, 5054851, 7928006,
-#             5812938, 5952884, 5542161, 9217744, 1862368, 4104468, 9373123, 7667192, 3435424, 9679097, 6265179, 5147301,
-#             376902, 1097721, 1582135, 5905392, 8290356, 3683202, 3383379, 7830028, 6816856, 3741042, 7775786, 1765213]
+all_seeds = [
+            9306530, 3465618, 9609750, 5348241, 7765573, 1368160, 7203177, 7051399, 9150468, 8767209,
+            1634374, 8751645, 1046358, 3557456,
+            #5717721, 1700500, 7588531, 4072019, 999711, 5693268,
+            #6666175, 1079953, 3940265, 5661647, 87540, 5252603, 3705839, 4256929, 9371169, 7042693,
+            #3094985, 5791134, 7623378, 6033806, 3609702, 7736236, 914974, 301849, 6587281, 7463000,
+            #8493421, 8733655, 1890914, 412147, 704807, 145297, 7824684, 6443024, 9653123, 2290810
+]
 
-all_seeds = [2571810, 9390529, 2141354, 8117981, 1029419, 6524129, 2188404, 5612874, 9603489, 4287723, 5677055, 4506482]
+# all_seeds = [
+#             7037729, 3056271, 5276478, 9966343, 5033711, 9550621, 3255722, 6004412, 7860851, 2154647, 2382506, 1517787, 4193039, 6827896, 168548, 6258674,
+#             1985660, 4664124, 880208, 6695154, 7285728, 8045833, 3450557, 4411763, 5484498, 3533143, 4259935, 2294235, 3247623, 606869, 5933908, 2001805,
+#             1078872, 7162668, 3705171, 3876635, 5188929, 6450600, 7613907, 7755798, 7470811, 2495445, 8836219, 7184376, 3074564, 7286562, 7372053, 2171950]
+
+# all_seeds = [5812938, 5952884, 5542161, 9217744, 1862368, 4104468, 9373123, 7667192, 3435424, 9679097, 6265179, 5147301,
+#              376902, 1097721, 1582135, 5905392, 8290356, 3683202, 3383379, 7830028, 6816856, 3741042, 7775786, 1765213]
+
 println("Simulation started for seeds: ", all_seeds)
 
 
-# Default run
-@everywhere begin
-    # Define Experiment
-    opinion_scientific = false
-    opinion_politic = false
-    opinion_wealth = false
-    if opinion_scientific
-        exp_name = opinion_wealth ? "Scientific Wealth" : "Scientific"
-    elseif opinion_politic
-        exp_name = opinion_wealth ? "Politic Wealth" : "Politic"
-    else
-        exp_name = opinion_wealth ? "Default Wealth" : "Default"
-    end
+# # Default run
+# @everywhere begin
+#     # Define Experiment
+#     opinion_scientific = false
+#     opinion_politic = false
+#     opinion_wealth = true
+#     if opinion_scientific
+#         exp_name = opinion_wealth ? "Scientific Wealth" : "Scientific"
+#     elseif opinion_politic
+#         exp_name = opinion_wealth ? "Politic Wealth" : "Politic"
+#     else
+#         exp_name = opinion_wealth ? "Default Wealth" : "Default"
+#     end
 
-    # Define Parameters
-    alpha_betas = [(0.0, 0.0), (1.0e4, 9.0e4), (2.0e4, 8.0e4), (3.0e4, 7.0e4), (4.0e4, 5.0e4), (5.0e4, 5.0e4),
-                    (6.0e4, 4.0e4), (7.0e4, 3.0e4), (8.0e4, 2.0e4), (9.0e4, 1.0e4), (1.0e5, 1.0e1)]
-    prices_fossils = [0.36, 0.39, 0.40, 0.41, 0.44]
+#     # Define Parameters
+#     alpha_betas = [(0.0, 0.0), (1.0e4, 9.0e4), (2.0e4, 8.0e4), (3.0e4, 7.0e4), (4.0e4, 6.0e4), (5.0e4, 5.0e4),
+#                     (6.0e4, 4.0e4), (7.0e4, 3.0e4), (8.0e4, 2.0e4), (9.0e4, 1.0e4), (1.0e5, 1.0e1)]
+#     prices_fossils = [0.36, 0.39, 0.40, 0.41, 0.44]
 
-    combined_params = []
-    for (α, β) in alpha_betas
-        for p_f in prices_fossils
-            push!(combined_params, [α, β, p_f])
-        end
-    end
+#     combined_params = []
+#     for (α, β) in alpha_betas
+#         for p_f in prices_fossils
+#             push!(combined_params, [α, β, p_f])
+#         end
+#     end
 
-    sims_n = length(combined_params)
-end
-# Distribute seeds using pmap (one seed at a time per worker)
-pmap(run_sim_for_seed, all_seeds)
-println("Simulation finished for run with homogenic opinion: ", all_seeds)
+#     sims_n = length(combined_params)
+# end
+# # Distribute seeds using pmap (one seed at a time per worker)
+# pmap(run_sim_for_seed, all_seeds)
+# println("Simulation finished for run with homogenic opinion: ", all_seeds)
 
-# Scientific
-@everywhere begin
-    # Define Experiment
-    opinion_scientific = true
-    opinion_politic = false
-    opinion_wealth = false
-    if opinion_scientific
-        exp_name = opinion_wealth ? "Scientific Wealth" : "Scientific"
-    elseif opinion_politic
-        exp_name = opinion_wealth ? "Politic Wealth" : "Politic"
-    else
-        exp_name = opinion_wealth ? "Default Wealth" : "Default"
-    end
-
-    # Define Parameters
-    alpha_betas = [(0.0, 0.0), (1.0, 1.0), (2.0, 2.0), (4.0, 4.0), (0.8, 0.8), (0.4, 0.4),
-                    (0.8, 1.0), (2.0, 4.0), (1.0, 0.8), (4.0, 2.0)]
-    prices_fossils = [0.36, 0.39, 0.40, 0.41, 0.44]
-
-    combined_params = []
-    for (α, β) in alpha_betas
-        for p_f in prices_fossils
-            push!(combined_params, [α, β, p_f])
-        end
-    end
-
-    sims_n = length(combined_params)
-end
-# Distribute seeds using pmap (one seed at a time per worker)
-pmap(run_sim_for_seed, all_seeds)
-println("Simulation finished for dynamic opinion Scientific Experiment: ", all_seeds)
 
 # Politic
 @everywhere begin
@@ -140,9 +121,9 @@ println("Simulation finished for dynamic opinion Scientific Experiment: ", all_s
     end
 
     # Define Parameters
-    alpha_betas = [(0.0, 0.0), (1.0, 1.0), (2.0, 2.0), (4.0, 4.0), (0.8, 0.8), (0.4, 0.4),
+    alpha_betas = [(1.0, 1.0), (2.0, 2.0), (4.0, 4.0), (0.8, 0.8), (0.4, 0.4),
                     (0.8, 1.0), (2.0, 4.0), (1.0, 0.8), (4.0, 2.0)]
-    prices_fossils = [0.36, 0.39, 0.40, 0.41, 0.44]
+    prices_fossils = [0.40]
 
     combined_params = []
     for (α, β) in alpha_betas
@@ -156,3 +137,36 @@ end
 # Distribute seeds using pmap (one seed at a time per worker)
 pmap(run_sim_for_seed, all_seeds)
 println("Simulation finished for dynamic opinion Politic Experiment: ", all_seeds)
+
+
+# # Scientific
+# @everywhere begin
+#     # Define Experiment
+#     opinion_scientific = true
+#     opinion_politic = false
+#     opinion_wealth = true
+#     if opinion_scientific
+#         exp_name = opinion_wealth ? "Scientific Wealth" : "Scientific"
+#     elseif opinion_politic
+#         exp_name = opinion_wealth ? "Politic Wealth" : "Politic"
+#     else
+#         exp_name = opinion_wealth ? "Default Wealth" : "Default"
+#     end
+
+#     # Define Parameters
+#     alpha_betas = [(1.0, 1.0), (2.0, 2.0), (4.0, 4.0), (0.8, 0.8), (0.4, 0.4),
+#                     (0.8, 1.0), (2.0, 4.0), (1.0, 0.8), (4.0, 2.0)]
+#     prices_fossils = [0.40]
+
+#     combined_params = []
+#     for (α, β) in alpha_betas
+#         for p_f in prices_fossils
+#             push!(combined_params, [α, β, p_f])
+#         end
+#     end
+
+#     sims_n = length(combined_params)
+# end
+# # Distribute seeds using pmap (one seed at a time per worker)
+# pmap(run_sim_for_seed, all_seeds)
+# println("Simulation finished for dynamic opinion Scientific Experiment: ", all_seeds)
