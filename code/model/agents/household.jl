@@ -41,11 +41,10 @@
     #c_L::Float64 = 0.5                         # share of income used to buy luxury goods      # Never implemented
     
     Sust_Score::Float64                       # Opinion on how much environment is important [0-not important, 1-important]
-    Sust_Score_Old::Float64 = Sust_Score             # Opinion from a previous step (used in opinion dynamics model)
+    Sust_Score_Base::Float64 = Sust_Score             # Opinion from a previous step (used in opinion dynamics model)
     Sust_Score_Uncertainty::Float64            # Uncertainty in beliefs on how important sustainability is [0-not sur, 1-sure in his opinion] (used in opinion dynamics model, influences dynamics of change)
     Sust_Score_Init::Float64 = Sust_Score                                    # Just for visualization of Wealth Experiment
     Sust_Score_Uncertainty_Init::Float64 = Sust_Score_Uncertainty            # Just for visualization of Wealth Experiment
-
 end
 
 
@@ -665,48 +664,48 @@ function sust_opinion_exchange_all_hh!(
         id_1 = all_hh_shuffled[hh_id]
         id_2 = all_hh_shuffled[hh_id + 1]
 
+        # First we incorporate Wealth into opinion
         if USE_WEALTH
-            w_1 = W_all[hh_id]
-            w_2 = W_all[hh_id + 1]
-        else
-            w_1 = 0
-            w_2 = 0
-        end
-
-        updated_1 = false
-        updated_2 = false
-        # Update rules as per https://www.jasss.org/19/1/6.html
-        if abs(model[id_1].Sust_Score_Old - model[id_2].Sust_Score_Old) < model[id_1].Sust_Score_Uncertainty
-            model[id_1].Sust_Score = model[id_1].Sust_Score_Old + rate * (model[id_2].Sust_Score_Old - model[id_1].Sust_Score_Old) + w_1
+            model[id_1].Sust_Score = model[id_1].Sust_Score_Base + W_all[id_1]
             if (model[id_1].Sust_Score < 0) model[id_1].Sust_Score = 0 end
             if (model[id_1].Sust_Score > 1) model[id_1].Sust_Score = 1 end
-            updated_1 = true
-        end
-        if abs(model[id_1].Sust_Score_Old - model[id_2].Sust_Score_Old) < model[id_2].Sust_Score_Uncertainty
-            model[id_2].Sust_Score = model[id_2].Sust_Score_Old + rate * (model[id_1].Sust_Score_Old - model[id_2].Sust_Score_Old) + w_2
+
+            model[id_2].Sust_Score = model[id_2].Sust_Score_Base + W_all[id_2]
             if (model[id_2].Sust_Score < 0) model[id_2].Sust_Score = 0 end
             if (model[id_2].Sust_Score > 1) model[id_2].Sust_Score = 1 end
-            updated_2 = true
+        else
+            model[id_1].Sust_Score = model[id_1].Sust_Score_Base
+            model[id_2].Sust_Score = model[id_2].Sust_Score_Base
         end
 
-        # if (model[id_1].Sust_Score < 0) println("Opa1<") end
-        # if (model[id_2].Sust_Score < 0) println("Opa2<") end
-        # if (model[id_1].Sust_Score > 1) println("Opa1>") end
-        # if (model[id_2].Sust_Score > 1) println("Opa2>") end
-
-        #println(model[id_1].Sust_Score, " ", w_1, " | ", model[id_2].Sust_Score, " ", w_2)
-
-        if updated_1
-            if POLITIC_UPD model[id_1].Sust_Score_Uncertainty = (0.5-abs(0.5-model[id_1].Sust_Score))*2 end
-            if SCIENTIFIC_UPD model[id_1].Sust_Score_Uncertainty = (1.0 - model[id_1].Sust_Score) end
-            model[id_1].Sust_Score_Old = model[id_1].Sust_Score
+        # Second we perform the DW model step
+        sust_score_old_1 = model[id_1].Sust_Score
+        sust_score_old_2 = model[id_2].Sust_Score
+        # Update rules as per https://www.jasss.org/19/1/6.html
+        if abs(sust_score_old_1 - sust_score_old_2) < model[id_1].Sust_Score_Uncertainty
+            model[id_1].Sust_Score_Base = model[id_1].Sust_Score_Base + rate * (sust_score_old_2 - sust_score_old_1)
+            if USE_WEALTH
+                model[id_1].Sust_Score = model[id_1].Sust_Score_Base + W_all[id_1]
+            else
+                model[id_1].Sust_Score = model[id_1].Sust_Score_Base
+            end
         end
-        if updated_2
-            if POLITIC_UPD model[id_2].Sust_Score_Uncertainty = (0.5-abs(0.5-model[id_2].Sust_Score))*2 end
-            if SCIENTIFIC_UPD model[id_2].Sust_Score_Uncertainty = (1.0 - model[id_2].Sust_Score) end
-            model[id_2].Sust_Score_Old = model[id_2].Sust_Score
+        if abs(sust_score_old_1 - sust_score_old_2) < model[id_2].Sust_Score_Uncertainty
+            model[id_2].Sust_Score_Base = model[id_2].Sust_Score_Base + rate * (sust_score_old_1 - sust_score_old_2)
+            if USE_WEALTH
+                model[id_2].Sust_Score = model[id_2].Sust_Score_Base + W_all[id_2]
+            else
+                model[id_2].Sust_Score = model[id_2].Sust_Score_Base
+            end
         end
-        
+
+        # Finally, we update the uncertainty
+        if POLITIC_UPD model[id_1].Sust_Score_Uncertainty = (0.5-abs(0.5-model[id_1].Sust_Score))*2 end
+        if SCIENTIFIC_UPD model[id_1].Sust_Score_Uncertainty = (1.0 - model[id_1].Sust_Score) end
+
+        if POLITIC_UPD model[id_2].Sust_Score_Uncertainty = (0.5-abs(0.5-model[id_2].Sust_Score))*2 end
+        if SCIENTIFIC_UPD model[id_2].Sust_Score_Uncertainty = (1.0 - model[id_2].Sust_Score) end
+
     end
 
 end

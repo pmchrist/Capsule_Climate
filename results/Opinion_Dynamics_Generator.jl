@@ -157,8 +157,8 @@ for opinion in OPINIONS_INIT
 
     # Save intermediate results
     file_name = ""
-    if SCIENTIFIC_UPD file_name = "opinion_results_α=$(α)_β=$(β)_Scientific.csv" end
-    if POLITIC_UPD file_name = "opinion_results_α=$(α)_β=$(β)_Politic.csv" end
+    if SCIENTIFIC_UPD file_name = "opinion_results_α=$(α)_β=$(β)_Scientific_.csv" end
+    if POLITIC_UPD file_name = "opinion_results_α=$(α)_β=$(β)_Politic_.csv" end
 
     full_path = joinpath(@__DIR__, "opinion_dynamics", file_name)
     mkpath(dirname(full_path))      # Ensure the directory exists
