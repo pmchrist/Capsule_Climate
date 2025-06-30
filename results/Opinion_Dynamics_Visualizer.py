@@ -62,18 +62,18 @@ base_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), "opinion_
 current_folder = os.path.join(base_folder, "csvs")
 for α, β in OPINIONS_INIT:
     if WITH_BASELINE_WEALTH:
-        filename_l = f"opinion_results_α={α}_β={β}_p_f=p_f={P_F}_{EXPERIMENT_TYPE}_Wealth={False}.csv"
+        filename_l = f"opinion_results_α={α}_β={β}_p_f={P_F}_{EXPERIMENT_TYPE}_Wealth={False}.csv"
         filepath = os.path.join(current_folder, filename_l)
         if os.path.isfile(filepath):
             df = pd.read_csv(filepath)
             init_opinions.append(df[VARIABLE_RIGHT].dropna().values)
-        filename_r = f"opinion_results_α={α}_β={β}_p_f=p_f={P_F}_{EXPERIMENT_TYPE}_Wealth={True}.csv"
+        filename_r = f"opinion_results_α={α}_β={β}_p_f={P_F}_{EXPERIMENT_TYPE}_Wealth={True}.csv"
         filepath = os.path.join(current_folder, filename_r)
         if os.path.isfile(filepath):
             df = pd.read_csv(filepath)
             final_opinions.append(df[VARIABLE_RIGHT].dropna().values)
     else:
-        filename = f"opinion_results_α={α}_β={β}_p_f=p_f={P_F}_{EXPERIMENT_TYPE}_Wealth={WITH_WEALTH}.csv"
+        filename = f"opinion_results_α={α}_β={β}_p_f={P_F}_{EXPERIMENT_TYPE}_Wealth={WITH_WEALTH}.csv"
         filepath = os.path.join(current_folder, filename)
         if os.path.isfile(filepath):
             df = pd.read_csv(filepath)

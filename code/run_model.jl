@@ -2,7 +2,7 @@ using Distributed
 using Random
 
 # Launch workers
-n_proc_main = 18
+n_proc_main = 5
 addprocs(n_proc_main)
 @everywhere using Printf
 

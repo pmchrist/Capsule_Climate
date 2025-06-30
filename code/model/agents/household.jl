@@ -686,6 +686,8 @@ function sust_opinion_exchange_all_hh!(
             model[id_1].Sust_Score_Base = model[id_1].Sust_Score_Base + rate * (sust_score_old_2 - sust_score_old_1)
             if USE_WEALTH
                 model[id_1].Sust_Score = model[id_1].Sust_Score_Base + W_all[id_1]
+                if model[id_1].Sust_Score < 0 model[id_1].Sust_Score = 0 end
+                if model[id_1].Sust_Score > 1 model[id_1].Sust_Score = 1 end
             else
                 model[id_1].Sust_Score = model[id_1].Sust_Score_Base
             end
@@ -694,6 +696,8 @@ function sust_opinion_exchange_all_hh!(
             model[id_2].Sust_Score_Base = model[id_2].Sust_Score_Base + rate * (sust_score_old_1 - sust_score_old_2)
             if USE_WEALTH
                 model[id_2].Sust_Score = model[id_2].Sust_Score_Base + W_all[id_2]
+                if model[id_2].Sust_Score < 0 model[id_2].Sust_Score = 0 end
+                if model[id_2].Sust_Score > 1 model[id_2].Sust_Score = 1 end
             else
                 model[id_2].Sust_Score = model[id_2].Sust_Score_Base
             end
